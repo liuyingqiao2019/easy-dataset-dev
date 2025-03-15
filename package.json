@@ -46,6 +46,7 @@
     "@mui/icons-material": "5.16.14",
     "@mui/lab": "5.0.0-alpha.175",
     "@mui/material": "5.16.14",
+    "electron-updater": "^6.3.9",
     "framer-motion": "^12.4.10",
     "i18next": "^24.2.2",
     "i18next-browser-languagedetector": "^8.0.4",
