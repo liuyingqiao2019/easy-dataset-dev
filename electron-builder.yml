@@ -25,7 +25,7 @@ extraResources:
   - from: locales
     to: locales
 
-asar: true
+asar: false
 compression: maximum
 
 afterbuild: ["rm -rf node_modules/.cache", "rm -rf node_modules/.vite"]
@@ -66,4 +66,8 @@ dmg:
 
 publish:
   provider: github
+  owner: ConardLi
+  repo: easy-dataset
   releaseType: release
+  private: false
+  publishAutoUpdate: true
