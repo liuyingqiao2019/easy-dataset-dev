@@ -47,7 +47,7 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
       <b>Windows</b>
     </td>
     <td width="25%" align="center" colspan="2">
-      <b>MacOS</b>
+      <b>MacOS（No Sign...）</b>
     </td>
     <td width="25%" align="center">
       <b>Linux</b>

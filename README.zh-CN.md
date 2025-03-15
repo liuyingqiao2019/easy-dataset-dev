@@ -48,7 +48,7 @@ Easy Dataset 是一个专为创建大型语言模型（LLM）微调数据集而�
       <b>Windows</b>
     </td>
     <td width="25%" align="center" colspan="2">
-      <b>MacOS</b>
+      <b>MacOS（无签名..）</b>
     </td>
     <td width="25%" align="center">
       <b>Linux</b>
