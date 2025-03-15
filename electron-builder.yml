@@ -1,6 +1,6 @@
 appId: com.easydataset.app
 productName: Easy Dataset
-copyright: Copyright © 2025 Easy Dataset
+copyright: Copyright 2025 Easy Dataset
 description: A application for creating large model fine-tuning datasets
 
 directories:
@@ -34,12 +34,25 @@ mac:
   category: public.app-category.developer-tools
   target:
     - target: dmg
-      arch: [arm64]
-  icon: public/favicon.ico
+      arch: [arm64, x64] # 同时支持 M 芯片和 Intel 芯片
+  icon: public/imgs/logo.icns
   hardenedRuntime: true
   gatekeeperAssess: false
   darkModeSupport: true
   electronLanguages: ["zh_CN", "en"]
+
+# 添加 Windows 配置
+win:
+  icon: public/imgs/logo.ico
+  target:
+    - target: nsis
+      arch: [x64]
+
+# 添加 Linux 配置
+linux:
+  icon: public/imgs/logo.png
+  target: [deb]
+  category: Development
 
 dmg:
   contents:

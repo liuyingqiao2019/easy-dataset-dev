@@ -50,7 +50,7 @@ function createWindow() {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js')
     },
-    icon: path.join(__dirname, '../public/favicon.ico')
+    icon: path.join(__dirname, '../public/imgs/logo.ico')
   });
 
   // 设置窗口标题
@@ -139,28 +139,28 @@ function createMenu() {
 // 启动 Next.js 服务
 async function startNextServer() {
   console.log(`Easy Dataset 客户端启动中，当前版本: ${getAppVersion()}`);
-  
+
   // 检查端口是否被占用
   const isPortBusy = await checkPort(port);
   if (isPortBusy) {
     console.log(`端口 ${port} 已被占用，尝试直接连接...`);
     return `http://localhost:${port}`;
   }
-  
+
   console.log(`启动 Next.js 服务，端口: ${port}`);
-  
+
   try {
     // 动态导入 Next.js
     const next = require('next');
     nextApp = next({ dev: false, dir: path.join(__dirname, '..') });
     const handle = nextApp.getRequestHandler();
-    
+
     await nextApp.prepare();
-    
+
     const server = http.createServer((req, res) => {
       handle(req, res);
     });
-    
+
     return new Promise((resolve) => {
       server.listen(port, (err) => {
         if (err) throw err;
