@@ -1,6 +1,6 @@
 {
   "name": "easy-dataset",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "author": {
     "name": "ConardLi",
@@ -11,7 +11,30 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "package": "node ./desktop/scripts/package.js",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"pnpm dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-build": "next build && electron-builder",
+    "electron-pack": "electron-builder --dir",
+    "electron-dist": "electron-builder"
+  },
+  "bin": "desktop/server.js",
+  "pkg": {
+    "assets": [
+      ".next/**/*",
+      "public/**/*",
+      "locales/**/*",
+      "package.json",
+      "node_modules/next/**/*"
+    ],
+    "targets": [
+      "node18-macos-arm64",
+      "node18-macos-x64",
+      "node18-win-x64",
+      "node18-linux-x64"
+    ],
+    "outputPath": "dist"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
@@ -26,11 +49,55 @@
     "i18next-browser-languagedetector": "^8.0.4",
     "next": "14.1.0",
     "next-themes": "^0.2.1",
+    "opener": "^1.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^15.4.1",
     "react-markdown": "^10.0.1",
     "uuid": "^11.1.0"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^29.4.6",
+    "electron-builder": "^24.13.3",
+    "pkg": "^5.8.1",
+    "wait-on": "^7.2.0"
+  },
+  "main": "electron/main.js",
+  "description": "一个用于创建大模型微调数据集的应用程序",
+  "build": {
+    "appId": "com.easydataset.app",
+    "productName": "Easy Dataset",
+    "files": [
+      ".next/**/*",
+      "!.next/cache/**/*",
+      "public/**/*",
+      "locales/**/*",
+      "package.json",
+      "electron/**/*",
+      "node_modules/**/*",
+      "!node_modules/.cache/**/*",
+      "!node_modules/.bin/**/*",
+      "!node_modules/.vite/**/*",
+      "!**/*.{md,d.ts,map}",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}"
+    ],
+    "directories": {
+      "buildResources": "public",
+      "output": "dist"
+    },
+    "asar": true,
+    "compression": "maximum",
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64"]
+        }
+      ],
+      "electronLanguages": ["zh_CN", "en"]
+    }
+  }
 }
