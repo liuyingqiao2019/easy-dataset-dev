@@ -40,52 +40,6 @@ Easy Dataset 是一个专为创建大型语言模型（LLM）微调数据集而�
 
 ## 本地运行
 
-### 下载客户端
-
-<table style="width: 100%">
-  <tr>
-    <td width="25%" align="center">
-      <b>Windows</b>
-    </td>
-    <td width="25%" align="center" colspan="2">
-      <b>MacOS（无签名..）</b>
-    </td>
-    <td width="25%" align="center">
-      <b>Linux</b>
-    </td>
-  </tr>
-  <tr style="text-align: center">
-    <td align="center" valign="middle">
-      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
-        <img src='./public/imgs/windows.png' style="height:24px; width: 24px" />
-        <br />
-        <b>Setup.exe</b>
-      </a>
-    </td>
-    <td align="center" valign="middle">
-      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
-        <img src='./public/imgs/mac.png' style="height:24px; width: 24px" />
-        <br />
-        <b>Intel</b>
-      </a>
-    </td>
-    <td align="center" valign="middle">
-      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
-        <img src='./public/imgs/mac.png' style="height:24px; width: 24px" />
-        <br />
-        <b>M</b>
-      </a>
-    </td>
-    <td align="center" valign="middle">
-      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
-        <img src='./public/imgs/linux.png' style="height:24px; width: 24px" />
-        <br />
-        <b>AppImage</b>
-      </a>
-    </td>
-  </tr>
-</table>
-
 
 
 

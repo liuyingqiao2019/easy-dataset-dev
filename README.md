@@ -39,52 +39,6 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
 
 ## Getting Started
 
-### Download Client
-
-<table style="width: 400px">
-  <tr>
-    <td width="25%" align="center">
-      <b>Windows</b>
-    </td>
-    <td width="25%" align="center" colspan="2">
-      <b>MacOS（No Sign...）</b>
-    </td>
-    <td width="25%" align="center">
-      <b>Linux</b>
-    </td>
-  </tr>
-  <tr style="text-align: center">
-    <td align="center" valign="middle">
-      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
-        <img src='./public/imgs/windows.png' style="height:24px; width: 24px" />
-        <br />
-        <b>Setup.exe</b>
-      </a>
-    </td>
-    <td align="center" valign="middle">
-      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
-        <img src='./public/imgs/mac.png' style="height:24px; width: 24px" />
-        <br />
-        <b>Intel</b>
-      </a>
-    </td>
-    <td align="center" valign="middle">
-      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
-        <img src='./public/imgs/mac.png' style="height:24px; width: 24px" />
-        <br />
-        <b>M</b>
-      </a>
-    </td>
-    <td align="center" valign="middle">
-      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
-        <img src='./public/imgs/linux.png' style="height:24px; width: 24px" />
-        <br />
-        <b>AppImage</b>
-      </a>
-    </td>
-  </tr>
-</table>
-
 
 ### Using npm
 
