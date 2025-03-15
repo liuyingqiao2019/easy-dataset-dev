@@ -16,6 +16,8 @@
 
 </div>
 
+If you like this project, please leave a Star ⭐️ for it. Or you can buy the author a cup of coffee => [Support the author](./public/imgs/aw.jpg) ❤️! 
+
 ## Overview
 
 Easy Dataset is a specialized application designed to streamline the creation of fine-tuning datasets for Large Language Models (LLMs). It offers an intuitive interface for uploading domain-specific files, intelligently splitting content, generating questions, and producing high-quality training data for model fine-tuning.
@@ -37,12 +39,57 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
 
 ## Getting Started
 
-### Prerequisites
+### Download Client
+
+<table style="width: 400px">
+  <tr>
+    <td width="25%" align="center">
+      <b>Windows</b>
+    </td>
+    <td width="25%" align="center" colspan="2">
+      <b>MacOS</b>
+    </td>
+    <td width="25%" align="center">
+      <b>Linux</b>
+    </td>
+  </tr>
+  <tr style="text-align: center">
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/windows.png' style="height:24px; width: 24px" />
+        <br />
+        <b>Setup.exe</b>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/mac.png' style="height:24px; width: 24px" />
+        <br />
+        <b>Intel</b>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/mac.png' style="height:24px; width: 24px" />
+        <br />
+        <b>M</b>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/linux.png' style="height:24px; width: 24px" />
+        <br />
+        <b>AppImage</b>
+      </a>
+    </td>
+  </tr>
+</table>
+
+
+### Using npm
 
 - Node.js 18.x or higher
 - pnpm (recommended) or npm
-
-### Using npm
 
 1. Clone the repository:
    ```bash
@@ -227,6 +274,10 @@ Please make sure to update tests as appropriate and adhere to the existing codin
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ConardLi/easy-dataset&type=Date)](https://www.star-history.com/#ConardLi/easy-dataset&Date)
 
 
 <div align="center">
