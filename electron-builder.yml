@@ -51,8 +51,9 @@ win:
 # 添加 Linux 配置
 linux:
   icon: public/imgs/logo.png
-  target: [deb]
+  target: [AppImage, deb]
   category: Development
+  maintainer: "1009903985@qq.com"
 
 dmg:
   contents:
