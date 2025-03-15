@@ -1,9 +1,10 @@
 {
   "name": "easy-dataset",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "private": true,
   "author": {
     "name": "ConardLi",
+    "email": "1009903985@qq.com",
     "url": "https://github.com/ConardLi"
   },
   "homepage": "https://github.com/ConardLi/easy-dataset",
@@ -12,12 +13,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "package": "node ./desktop/scripts/package.js",
     "electron": "electron .",
     "electron-dev": "concurrently \"pnpm dev\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron-build": "next build && electron-builder",
     "electron-pack": "electron-builder --dir",
-    "electron-dist": "electron-builder"
+    "electron-dist": "electron-builder",
+    "electron-build": "next build && electron-builder -mwl",
+    "electron-build-mac": "next build && electron-builder --mac",
+    "electron-build-win": "next build && electron-builder --win",
+    "electron-build-linux": "next build && electron-builder --linux"
   },
   "bin": "desktop/server.js",
   "pkg": {
@@ -44,6 +47,7 @@
     "@mui/icons-material": "5.16.14",
     "@mui/lab": "5.0.0-alpha.175",
     "@mui/material": "5.16.14",
+    "electron-updater": "^6.3.9",
     "framer-motion": "^12.4.10",
     "i18next": "^24.2.2",
     "i18next-browser-languagedetector": "^8.0.4",
@@ -90,14 +94,46 @@
     "asar": true,
     "compression": "maximum",
     "mac": {
+      "icon": "public/imgs/logo.icns",
       "category": "public.app-category.developer-tools",
       "target": [
         {
           "target": "dmg",
-          "arch": ["arm64"]
+          "arch": [
+            "arm64",
+            "x64"
+          ]
         }
       ],
-      "electronLanguages": ["zh_CN", "en"]
+      "electronLanguages": [
+        "zh_CN",
+        "en"
+      ]
+    },
+    "win": {
+      "icon": "public/imgs/logo.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "public/imgs/logo.png",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Development"
     }
   }
 }

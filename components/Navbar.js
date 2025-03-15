@@ -94,29 +94,28 @@ export default function Navbar({ projects = [], currentProject, models = [] }) {
             mr: 2,
             '&:hover': { opacity: 0.9 }
           }}
-            // 鼠标悬浮放大、动画效果
             style={{ cursor: 'pointer', '&:hover': { opacity: 0.9 } }}
             onClick={() => {
               window.location.href = '/';
             }}
           >
-            <Avatar
+            <Box
+              component="img"
+              src="/imgs/logo.svg"
+              alt="Easy Dataset Logo"
               sx={{
-                bgcolor: 'secondary.main',
-                mr: 1.5,
                 width: 36,
-                height: 36
+                height: 36,
+                mr: 1.5
               }}
-              variant="rounded"
-            >
-              <DataObjectIcon fontSize="small" />
-            </Avatar>
+            />
             <Typography
               variant="h6"
               component="div"
               sx={{
                 fontWeight: 600,
-                letterSpacing: '-0.5px'
+                letterSpacing: '-0.5px',
+                fontSize: '1.2rem'
               }}
               className={theme.palette.mode === 'dark' ? 'gradient-text' : ''}
               color={theme.palette.mode === 'dark' ? 'inherit' : 'white'}
@@ -303,7 +302,7 @@ export default function Navbar({ projects = [], currentProject, models = [] }) {
               <GitHubIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-          
+
           {/* 更新检查器 */}
           <UpdateChecker />
 

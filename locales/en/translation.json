@@ -276,9 +276,19 @@
         "newVersionAvailable": "New Version Available",
         "currentVersion": "Current Version",
         "latestVersion": "Latest Version",
-        "updateNow": "Update Now",
+        "downloadNow": "Download Now",
+        "downloading": "Downloading: {{percent}}%",
+        "installNow": "Install Now",
         "updating": "Updating...",
-        "viewRelease": "View Release Notes"
+        "updateNow": "Update Now",
+        "viewRelease": "View Release Notes",
+        "checking": "Checking for updates...",
+        "noUpdates": "Already up to date",
+        "updateError": "Update Error",
+        "updateSuccess": "Update Successful",
+        "restartRequired": "Restart Required",
+        "restartNow": "Restart Now",
+        "restartLater": "Restart Later"
     },
     "datasetSquare": {
         "title": "Dataset Square",
