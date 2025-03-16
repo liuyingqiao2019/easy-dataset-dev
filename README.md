@@ -85,7 +85,6 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
   </tr>
 </table>
 
-
 ### Using npm
 
 - Node.js 18.x or higher
@@ -109,9 +108,6 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
    npm run start
    ```
 
-4. Open your browser and navigate to `http://localhost:3000`
-
-
 ### Using Docker
 
 1. Pull the image:
@@ -126,8 +122,6 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
 
 > Note: To prevent data loss, replace YOUR_LOCAL_DB_PATH with the path where you want to store the local database.
 
-
-3. Open your browser and navigate to `http://localhost:3000`
 
 ### Build with Local Dockerfile  
 
