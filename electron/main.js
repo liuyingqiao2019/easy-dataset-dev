@@ -183,7 +183,6 @@ async function startNextServer() {
 
 // 自动更新配置
 function setupAutoUpdater() {
-  // 禁用自动下载，我们将手动控制下载过程
   autoUpdater.autoDownload = false;
   autoUpdater.allowDowngrade = false;
 
