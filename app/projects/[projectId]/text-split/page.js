@@ -35,10 +35,10 @@ export default function TextSplitPage({ params }) {
 
   // 进度状态
   const [progress, setProgress] = useState({
-    total: 0, // 总共选择的文本块数量
-    completed: 0, // 已处理完成的数量
-    percentage: 0, // 进度百分比
-    questionCount: 0 // 已生成的问题数量
+    total: 0,         // 总共选择的文本块数量
+    completed: 0,     // 已处理完成的数量
+    percentage: 0,    // 进度百分比
+    questionCount: 0  // 已生成的问题数量
   });
 
   // 加载文本块数据
