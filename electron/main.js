@@ -37,7 +37,7 @@ const checkPort = (port) => {
 
 // 是否是开发环境
 const isDev = process.env.NODE_ENV === 'development';
-const port = 3000;
+const port = 1717;
 let mainWindow;
 let nextApp;
 
@@ -46,6 +46,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    fullscreen: true,  // 隐藏窗口
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -185,7 +186,6 @@ function setupAutoUpdater() {
   // 禁用自动下载，我们将手动控制下载过程
   autoUpdater.autoDownload = false;
   autoUpdater.allowDowngrade = false;
-  autoUpdater.forceDevUpdateConfig = true;
 
 
   // 检查更新时出错
