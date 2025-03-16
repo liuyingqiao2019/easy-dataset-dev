@@ -108,8 +108,41 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
    npm run start
    ```
 
-4. Open your browser and navigate to `http://localhost:1717`
+### Using Docker
 
+1. Pull the image:
+   ```bash
+   docker pull conardli17/easy-dataset:latest
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -d -p 3000:3000 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset conardli17/easy-dataset:latest
+   ```
+
+> Note: To prevent data loss, replace YOUR_LOCAL_DB_PATH with the path where you want to store the local database.
+
+
+### Build with Local Dockerfile  
+
+If you want to build the image yourself, you can use the Dockerfile in the project root directory:  
+
+1. Clone the repository:  
+   ```bash
+   git clone https://github.com/ConardLi/easy-dataset.git
+   cd easy-dataset
+   ```  
+2. Build the Docker image:  
+   ```bash
+   docker build -t easy-dataset .
+   ```  
+3. Run the container:  
+   ```bash
+   docker run -d -p 3000:3000 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset easy-dataset
+   ```  
+   **Note:** Replace `{YOUR_LOCAL_DB_PATH}` with the actual path where you want to store the local database.  
+
+4. Open your browser and navigate to `http://localhost:3000`
 
 ## Usage
 
