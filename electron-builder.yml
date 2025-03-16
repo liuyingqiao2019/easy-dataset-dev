@@ -35,11 +35,17 @@ mac:
   target:
     - target: dmg
       arch: [arm64, x64] # 同时支持 M 芯片和 Intel 芯片
+  target:
+    - target: zip
+      arch: [arm64, x64] # 同时支持 M 芯片和 Intel 芯片
   icon: public/imgs/logo.icns
   hardenedRuntime: true
   gatekeeperAssess: false
   darkModeSupport: true
   electronLanguages: ["zh_CN", "en"]
+  identity: "Developer ID Application: Conard LI (JRL9ZUXR95)"
+  entitlements: "electron/entitlements.mac.plist"
+  entitlementsInherit: "electron/entitlements.mac.plist"
 
 # 添加 Windows 配置
 win:

@@ -87,8 +87,6 @@ Easy Dataset 是一个专为创建大型语言模型（LLM）微调数据集而�
 </table>
 
 
-
-
 ### 使用 NPM 安装
 
 1. 克隆仓库：
@@ -115,9 +113,28 @@ Easy Dataset 是一个专为创建大型语言模型（LLM）微调数据集而�
    npm run start
    ```
 
-4. 打开浏览器并访问 `http://localhost:3000`
+4. 打开浏览器并访问 `http://localhost:1717`
 
+### 使用本地 Dockerfile 构建  
 
+如果你想自行构建镜像，可以使用项目根目录中的 Dockerfile：  
+
+1. 克隆仓库：  
+   ```bash
+   git clone https://github.com/ConardLi/easy-dataset.git
+   cd easy-dataset
+   ```  
+2. 构建 Docker 镜像：  
+   ```bash
+   docker build -t easy-dataset .
+   ```  
+3. 运行容器：  
+   ```bash
+   docker run -d -p 1717:1717 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset easy-dataset
+   ```  
+   **注意：** 请将 `{YOUR_LOCAL_DB_PATH}` 替换为你希望存储本地数据库的实际路径。  
+
+4. 打开浏览器，访问 `http://localhost:1717`
 
 ## 使用方法
 
