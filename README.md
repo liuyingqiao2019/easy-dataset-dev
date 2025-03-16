@@ -63,7 +63,7 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
    npm run start
    ```
 
-4. Open your browser and navigate to `http://localhost:3000`
+4. Open your browser and navigate to `http://localhost:1717`
 
 ### Using Docker
 
@@ -74,13 +74,13 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
 
 2. Run the container:
    ```bash
-   docker run -d -p 3000:3000 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset conardli17/easy-dataset:latest
+   docker run -d -p 1717:1717 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset conardli17/easy-dataset:latest
    ```
 
 > Note: To prevent data loss, replace YOUR_LOCAL_DB_PATH with the path where you want to store the local database.
 
 
-3. Open your browser and navigate to `http://localhost:3000`
+3. Open your browser and navigate to `http://localhost:1717`
 
 ## Usage
 

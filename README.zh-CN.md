@@ -69,7 +69,7 @@ Easy Dataset 是一个专为创建大型语言模型（LLM）微调数据集而�
    npm run start
    ```
 
-4. 打开浏览器并访问 `http://localhost:3000`
+4. 打开浏览器并访问 `http://localhost:1717`
 
 
 
