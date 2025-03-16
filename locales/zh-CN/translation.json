@@ -278,7 +278,7 @@
         "currentVersion": "当前版本",
         "latestVersion": "最新版本",
         "downloadNow": "立即下载",
-        "downloading": "正在下载",
+        "downloading": "正在下载:",
         "installNow": "立即安装",
         "updating": "更新中...",
         "updateNow": "立即更新",
@@ -343,3 +343,4 @@
         "provider": "提供商"
     }
 }
+
