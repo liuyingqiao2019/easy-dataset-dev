@@ -31,7 +31,8 @@
         "huggingfaceSettings": "Hugging Face 设置",
         "huggingfaceToken": "Hugging Face Token",
         "huggingfaceNotImplemented": "Hugging Face 功能暂未实现",
-        "characters": "字符"
+        "characters": "字符",
+        "concurrencyLimit": "并发限制数量"
     },
     "questions": {
         "title": "问题管理",
@@ -347,3 +348,4 @@
         "provider": "提供商"
     }
 }
+
