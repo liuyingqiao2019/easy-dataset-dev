@@ -26,13 +26,14 @@ const ExportDatasetDialog = ({ open, onClose, onExport }) => {
     const { t } = useTranslation();
     const [formatType, setFormatType] = useState('alpaca');
     const [systemPrompt, setSystemPrompt] = useState('');
-    const [confirmedOnly, setConfirmedOnly] = useState(true);
+    const [confirmedOnly, setConfirmedOnly] = useState(false);
     const [fileFormat, setFileFormat] = useState('json');
     // 新增状态
     const [includeCOT, setIncludeCOT] = useState(true);
     const [customFields, setCustomFields] = useState({
         questionField: 'instruction',
         answerField: 'output',
+        cotField: 'complexCOT',  // 添加思维链字段名
         includeLabels: false
     });
 
@@ -100,14 +101,19 @@ const ExportDatasetDialog = ({ open, onClose, onExport }) => {
 
     // 自定义格式的示例
     const getCustomFormatExample = () => {
-        const { questionField, answerField, includeLabels } = customFields;
+        const { questionField, answerField, cotField, includeLabels } = customFields;
         const example = {
             [questionField]: "问题内容",
             [answerField]: "答案内容"
         };
 
+        // 如果包含思维链字段，添加到示例中
+        if (includeCOT) {
+            example[cotField] = "思维链过程内容";
+        }
+
         if (includeLabels) {
-            example.labels = ["标签1", "标签2"];
+            example.labels = ["领域标签1"];
         }
 
         return fileFormat === 'json'
@@ -180,6 +186,17 @@ const ExportDatasetDialog = ({ open, onClose, onExport }) => {
                                     label={t('export.answerFieldName')}
                                     value={customFields.answerField}
                                     onChange={handleCustomFieldChange('answerField')}
+                                    margin="normal"
+                                />
+                            </Grid>
+                            {/* 添加思维链字段名输入框 */}
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    label={t('export.cotFieldName')}
+                                    value={customFields.cotField}
+                                    onChange={handleCustomFieldChange('cotField')}
                                     margin="normal"
                                 />
                             </Grid>
@@ -266,7 +283,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport }) => {
                     />
                 </Box>
 
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{ mb: 2, display: 'flex', flexDirection: 'row', gap: 4 }}>
                     <FormControlLabel
                         control={
                             <Checkbox
@@ -276,24 +293,18 @@ const ExportDatasetDialog = ({ open, onClose, onExport }) => {
                         }
                         label={t('export.onlyConfirmed')}
                     />
-                </Box>
 
-                {/* 新增 COT 拼接选项 */}
-                <Box>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={includeCOT}
-                                onChange={handleIncludeCOTChange}
-                            />
-                        }
-                        label={t('export.includeCOT')}
-                    />
-                    {includeCOT && (
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', ml: 4 }}>
-                            {t('export.cotDescription')}
-                        </Typography>
-                    )}
+                    <Box>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={includeCOT}
+                                    onChange={handleIncludeCOTChange}
+                                />
+                            }
+                            label={t('export.includeCOT')}
+                        />
+                    </Box>
                 </Box>
             </DialogContent>
             <DialogActions>

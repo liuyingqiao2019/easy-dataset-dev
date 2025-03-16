@@ -31,7 +31,9 @@
         "huggingfaceSettings": "Hugging Face 设置",
         "huggingfaceToken": "Hugging Face Token",
         "huggingfaceNotImplemented": "Hugging Face 功能暂未实现",
-        "characters": "字符"
+        "characters": "字符",
+        "concurrencyLimit": "并发限制数量",
+        "saveTaskConfig": "保存任务配置"
     },
     "questions": {
         "title": "问题管理",
@@ -59,7 +61,7 @@
         "batchGenerate": "批量构造数据集",
         "generating": "正在生成数据集",
         "generatingProgress": "已完成: {{completed}}/{{total}}",
-        "generatedCount": "已生成: {{count}}",
+        "generatedCount": "已成功生成: {{count}} 个",
         "pleaseWait": "请耐心等待，正在处理中..."
     },
     "common": {
@@ -77,7 +79,6 @@
         "yes": "是",
         "no": "否",
         "confirmDelete": "确认删除吗？",
-        "confirmDeleteProject": "确认删除项目吗？",
         "saving": "保存中...",
         "deleting": "删除中...",
         "actions": "操作",
@@ -90,7 +91,8 @@
         "confirmDeleteDescription": "确认删除吗？此操作不可恢复。",
         "fetchError": "获取数据出错",
         "confirmDeleteQuestion": "确认删除此问题吗？此操作不可恢复。",
-        "deleteSuccess": "删除成功"
+        "deleteSuccess": "删除成功",
+        "visitGitHub": "访问GitHub仓库"
     },
     "home": {
         "title": "Easy Dataset",
@@ -118,7 +120,8 @@
         "deleteConfirm": "确认删除项目吗？此操作不可恢复。",
         "deleteSuccess": "项目删除成功",
         "deleteFailed": "删除项目失败",
-        "backToHome": "返回首页"
+        "backToHome": "返回首页",
+        "deleteConfirmTitle": "确认删除项目"
     },
     "textSplit": {
         "noFilesUploaded": "暂未上传文件",
@@ -168,13 +171,14 @@
         "oneFileLimit": "已有上传文件，不允许选择新文件",
         "unsupportedFormat": "不支持的文件格式: {{files}}",
         "modelInfoParseError": "解析模型信息失败",
-        "uploadFailed": "上传失败",
+        "uploadFailed": "上传失败，请刷新页面后重试！",
         "uploadSuccess": "成功上传 {{count}} 个文件",
         "deleteFailed": "删除文件失败",
         "deleteSuccess": "文件 {{fileName}} 已成功删除",
         "generatedQuestions": "{{count}} 个问题",
         "viewDetails": "查看详情",
-        "generateQuestions": "生成问题"
+        "generateQuestions": "生成问题",
+        "characters": "字符"
     },
     "domain": {
         "title": "领域知识树",
@@ -256,6 +260,11 @@
         "exportFailed": "导出失败",
         "loading": "加载数据集...",
         "stats": "共 {{total}} 个数据集，已确认 {{confirmed}} 个（{{percentage}}%）",
+        "selected": "共选中{{ count }}个数据集",
+        "batchconfirmDeleteMessage": "您确定要删除选中的 {{count}} 个数据集吗？此操作不可恢复。",
+        "batchDelete": "批量删除",
+        "batchDeleteProgress": "已完成: {{completed}}/{{total}}",
+        "batchDeleteCount": "已生成: {{count}}",
         "searchPlaceholder": "搜索数据集...",
         "viewDetails": "查看详情",
         "datasetDetail": "数据集详情",
@@ -277,11 +286,11 @@
         "currentVersion": "当前版本",
         "latestVersion": "最新版本",
         "downloadNow": "立即下载",
-        "downloading": "正在下载: {{percent}}%",
+        "downloading": "正在下载:",
         "installNow": "立即安装",
         "updating": "更新中...",
         "updateNow": "立即更新",
-        "viewRelease": "查看发布说明",
+        "viewRelease": "下载最新版本",
         "checking": "正在检查更新...",
         "noUpdates": "已是最新版本",
         "updateError": "更新出错",
