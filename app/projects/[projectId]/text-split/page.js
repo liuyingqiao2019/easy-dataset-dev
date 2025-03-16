@@ -19,6 +19,7 @@ import {
 import FileUploader from '@/components/text-split/FileUploader';
 import ChunkList from '@/components/text-split/ChunkList';
 import DomainAnalysis from '@/components/text-split/DomainAnalysis';
+import { processInParallel } from '@/lib/utils/async'
 import useTaskSettings from '@/hooks/useTaskSettings';
 
 export default function TextSplitPage({ params }) {
@@ -158,33 +159,6 @@ export default function TextSplitPage({ params }) {
       console.error(t('textSplit.deleteChunkError'), error);
       setError(error.message);
     }
-  };
-
-  // 并行处理数组的辅助函数，限制并发数
-  const processInParallel = async (items, processFunction, concurrencyLimit) => {
-    const results = [];
-    const inProgress = new Set();
-    const queue = [...items];
-
-    while (queue.length > 0 || inProgress.size > 0) {
-      // 如果有空闲槽位且队列中还有任务，启动新任务
-      while (inProgress.size < concurrencyLimit && queue.length > 0) {
-        const item = queue.shift();
-        const promise = processFunction(item).then(result => {
-          inProgress.delete(promise);
-          return result;
-        });
-        inProgress.add(promise);
-        results.push(promise);
-      }
-
-      // 等待其中一个任务完成
-      if (inProgress.size > 0) {
-        await Promise.race(inProgress);
-      }
-    }
-
-    return Promise.all(results);
   };
 
   // 处理生成问题
