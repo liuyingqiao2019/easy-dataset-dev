@@ -16,6 +16,9 @@
 
 </div>
 
+
+如果喜欢本项目，请给本项目留下 Star⭐️，或者请作者喝杯咖啡呀 => [打赏作者](./public/imgs/aw.jpg) ❤️！
+
 ## 概述
 
 Easy Dataset 是一个专为创建大型语言模型（LLM）微调数据集而设计的应用程序。它提供了直观的界面，用于上传特定领域的文件，智能分割内容，生成问题，并为模型微调生成高质量的训练数据。
@@ -36,6 +39,53 @@ Easy Dataset 是一个专为创建大型语言模型（LLM）微调数据集而�
 * **自定义系统提示**：添加自定义系统提示以引导模型响应
 
 ## 本地运行
+
+### 下载客户端
+
+<table style="width: 100%">
+  <tr>
+    <td width="25%" align="center">
+      <b>Windows</b>
+    </td>
+    <td width="25%" align="center" colspan="2">
+      <b>MacOS</b>
+    </td>
+    <td width="25%" align="center">
+      <b>Linux</b>
+    </td>
+  </tr>
+  <tr style="text-align: center">
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/windows.png' style="height:24px; width: 24px" />
+        <br />
+        <b>Setup.exe</b>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/mac.png' style="height:24px; width: 24px" />
+        <br />
+        <b>Intel</b>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/mac.png' style="height:24px; width: 24px" />
+        <br />
+        <b>M</b>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/linux.png' style="height:24px; width: 24px" />
+        <br />
+        <b>AppImage</b>
+      </a>
+    </td>
+  </tr>
+</table>
+
 
 ### 使用 NPM 安装
 
@@ -63,27 +113,28 @@ Easy Dataset 是一个专为创建大型语言模型（LLM）微调数据集而�
    npm run start
    ```
 
-4. 打开浏览器并访问 `http://localhost:3000`
+4. 打开浏览器并访问 `http://localhost:1717`
 
-### 使用 Docker
+### 使用本地 Dockerfile 构建  
 
-1. 拉取镜像：
-   
+如果你想自行构建镜像，可以使用项目根目录中的 Dockerfile：  
 
-```bash
-   docker pull conardli17/easy-dataset:latest
-   ```
+1. 克隆仓库：  
+   ```bash
+   git clone https://github.com/ConardLi/easy-dataset.git
+   cd easy-dataset
+   ```  
+2. 构建 Docker 镜像：  
+   ```bash
+   docker build -t easy-dataset .
+   ```  
+3. 运行容器：  
+   ```bash
+   docker run -d -p 1717:1717 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset easy-dataset
+   ```  
+   **注意：** 请将 `{YOUR_LOCAL_DB_PATH}` 替换为你希望存储本地数据库的实际路径。  
 
-2. 运行容器：
-   
-
-```bash
-   docker run -d -p 3000:3000 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset conardli17/easy-dataset:latest
-   ```
-
-> 注意：为了防止数据丢失，YOUR_LOCAL_DB_PATH 应替换为你希望存储本地数据库的路径。
-
-3. 打开浏览器并访问 `http://localhost:3000`
+4. 打开浏览器，访问 `http://localhost:1717`
 
 ## 使用方法
 
@@ -209,7 +260,8 @@ easy-dataset/
 
 ## 文档
 
-有关所有功能和 API 的详细文档，请访问我们的[文档站点](https://github.com/ConardLi/easy-dataset/wiki)。
+- 查看本项目的演示视频：[Easy Dataset 演示视频](https://www.bilibili.com/video/BV1y8QpYGE57/)
+- 有关所有功能和 API 的详细文档，请访问我们的[文档站点](https://github.com/ConardLi/easy-dataset/wiki)。
 
 ## 贡献
 
@@ -227,6 +279,10 @@ easy-dataset/
 ## 许可证
 
 本项目采用 Apache License 2.0 许可证 - 有关详细信息，请参阅 [LICENSE](LICENSE) 文件。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ConardLi/easy-dataset&type=Date)](https://www.star-history.com/#ConardLi/easy-dataset&Date)
 
 <div align="center">
   <sub>由 <a href="https://github.com/ConardLi">ConardLi</a> 用 ❤️ 构建 • 关注我：<a href="https://mp.weixin.qq.com/s/ac9XWvVsaXpSH1HH2x4TRQ">公众号</a>｜<a href="https://space.bilibili.com/474921808">B站</a>｜<a href="https://juejin.cn/user/3949101466785709">掘金</a>｜<a href="https://www.zhihu.com/people/wen-ti-chao-ji-duo-de-xiao-qi">知乎</a></sub>

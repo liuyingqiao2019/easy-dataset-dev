@@ -30,7 +30,10 @@
         "questionGenDescription": "设置生成问题的最大长度",
         "huggingfaceSettings": "Hugging Face 设置",
         "huggingfaceToken": "Hugging Face Token",
-        "huggingfaceNotImplemented": "Hugging Face 功能暂未实现"
+        "huggingfaceNotImplemented": "Hugging Face 功能暂未实现",
+        "characters": "字符",
+        "concurrencyLimit": "并发限制数量",
+        "saveTaskConfig": "保存任务配置"
     },
     "questions": {
         "title": "问题管理",
@@ -58,7 +61,7 @@
         "batchGenerate": "批量构造数据集",
         "generating": "正在生成数据集",
         "generatingProgress": "已完成: {{completed}}/{{total}}",
-        "generatedCount": "已生成: {{count}}",
+        "generatedCount": "已成功生成: {{count}} 个",
         "pleaseWait": "请耐心等待，正在处理中..."
     },
     "common": {
@@ -168,7 +171,7 @@
         "oneFileLimit": "已有上传文件，不允许选择新文件",
         "unsupportedFormat": "不支持的文件格式: {{files}}",
         "modelInfoParseError": "解析模型信息失败",
-        "uploadFailed": "上传失败",
+        "uploadFailed": "上传失败，请刷新页面后重试！",
         "uploadSuccess": "成功上传 {{count}} 个文件",
         "deleteFailed": "删除文件失败",
         "deleteSuccess": "文件 {{fileName}} 已成功删除",
@@ -257,6 +260,11 @@
         "exportFailed": "导出失败",
         "loading": "加载数据集...",
         "stats": "共 {{total}} 个数据集，已确认 {{confirmed}} 个（{{percentage}}%）",
+        "selected": "共选中{{ count }}个数据集",
+        "batchconfirmDeleteMessage": "您确定要删除选中的 {{count}} 个数据集吗？此操作不可恢复。",
+        "batchDelete": "批量删除",
+        "batchDeleteProgress": "已完成: {{completed}}/{{total}}",
+        "batchDeleteCount": "已生成: {{count}}",
         "searchPlaceholder": "搜索数据集...",
         "viewDetails": "查看详情",
         "datasetDetail": "数据集详情",
@@ -277,9 +285,19 @@
         "newVersionAvailable": "发现新版本",
         "currentVersion": "当前版本",
         "latestVersion": "最新版本",
-        "updateNow": "立即更新",
+        "downloadNow": "立即下载",
+        "downloading": "正在下载:",
+        "installNow": "立即安装",
         "updating": "更新中...",
-        "viewRelease": "查看发布说明"
+        "updateNow": "立即更新",
+        "viewRelease": "下载最新版本",
+        "checking": "正在检查更新...",
+        "noUpdates": "已是最新版本",
+        "updateError": "更新出错",
+        "updateSuccess": "更新成功",
+        "restartRequired": "需要重启应用",
+        "restartNow": "立即重启",
+        "restartLater": "稍后重启"
     },
     "datasetSquare": {
         "title": "数据集广场",

@@ -16,6 +16,8 @@
 
 </div>
 
+If you like this project, please leave a Star ⭐️ for it. Or you can buy the author a cup of coffee => [Support the author](./public/imgs/aw.jpg) ❤️! 
+
 ## Overview
 
 Easy Dataset is a specialized application designed to streamline the creation of fine-tuning datasets for Large Language Models (LLMs). It offers an intuitive interface for uploading domain-specific files, intelligently splitting content, generating questions, and producing high-quality training data for model fine-tuning.
@@ -37,12 +39,56 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
 
 ## Getting Started
 
-### Prerequisites
+### Download Client
+
+<table style="width: 400px">
+  <tr>
+    <td width="25%" align="center">
+      <b>Windows</b>
+    </td>
+    <td width="25%" align="center" colspan="2">
+      <b>MacOS</b>
+    </td>
+    <td width="25%" align="center">
+      <b>Linux</b>
+    </td>
+  </tr>
+  <tr style="text-align: center">
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/windows.png' style="height:24px; width: 24px" />
+        <br />
+        <b>Setup.exe</b>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/mac.png' style="height:24px; width: 24px" />
+        <br />
+        <b>Intel</b>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/mac.png' style="height:24px; width: 24px" />
+        <br />
+        <b>M</b>
+      </a>
+    </td>
+    <td align="center" valign="middle">
+      <a href='https://github.com/ConardLi/easy-dataset/releases/latest'>
+        <img src='./public/imgs/linux.png' style="height:24px; width: 24px" />
+        <br />
+        <b>AppImage</b>
+      </a>
+    </td>
+  </tr>
+</table>
+
+### Using npm
 
 - Node.js 18.x or higher
 - pnpm (recommended) or npm
-
-### Using npm
 
 1. Clone the repository:
    ```bash
@@ -62,24 +108,26 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
    npm run start
    ```
 
-4. Open your browser and navigate to `http://localhost:3000`
+### Build with Local Dockerfile  
 
-### Using Docker
+If you want to build the image yourself, you can use the Dockerfile in the project root directory:  
 
-1. Pull the image:
+1. Clone the repository:  
    ```bash
-   docker pull conardli17/easy-dataset:latest
-   ```
-
-2. Run the container:
+   git clone https://github.com/ConardLi/easy-dataset.git
+   cd easy-dataset
+   ```  
+2. Build the Docker image:  
    ```bash
-   docker run -d -p 3000:3000 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset conardli17/easy-dataset:latest
-   ```
+   docker build -t easy-dataset .
+   ```  
+3. Run the container:  
+   ```bash
+   docker run -d -p 1717:1717 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset easy-dataset
+   ```  
+   **Note:** Replace `{YOUR_LOCAL_DB_PATH}` with the actual path where you want to store the local database.  
 
-> Note: To prevent data loss, replace YOUR_LOCAL_DB_PATH with the path where you want to store the local database.
-
-
-3. Open your browser and navigate to `http://localhost:3000`
+4. Open your browser and navigate to `http://localhost:1717`
 
 ## Usage
 
@@ -227,6 +275,10 @@ Please make sure to update tests as appropriate and adhere to the existing codin
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ConardLi/easy-dataset&type=Date)](https://www.star-history.com/#ConardLi/easy-dataset&Date)
 
 
 <div align="center">

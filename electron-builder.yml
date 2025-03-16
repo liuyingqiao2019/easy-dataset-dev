@@ -1,6 +1,6 @@
 appId: com.easydataset.app
 productName: Easy Dataset
-copyright: Copyright © 2025 Easy Dataset
+copyright: Copyright 2025 Easy Dataset
 description: A application for creating large model fine-tuning datasets
 
 directories:
@@ -25,7 +25,7 @@ extraResources:
   - from: locales
     to: locales
 
-asar: true
+asar: false
 compression: maximum
 
 afterbuild: ["rm -rf node_modules/.cache", "rm -rf node_modules/.vite"]
@@ -34,12 +34,32 @@ mac:
   category: public.app-category.developer-tools
   target:
     - target: dmg
-      arch: [arm64]
-  icon: public/favicon.ico
+      arch: [arm64, x64] # 同时支持 M 芯片和 Intel 芯片
+  target:
+    - target: zip
+      arch: [arm64, x64] # 同时支持 M 芯片和 Intel 芯片
+  icon: public/imgs/logo.icns
   hardenedRuntime: true
   gatekeeperAssess: false
   darkModeSupport: true
   electronLanguages: ["zh_CN", "en"]
+  identity: "Developer ID Application: Conard LI (JRL9ZUXR95)"
+  entitlements: "electron/entitlements.mac.plist"
+  entitlementsInherit: "electron/entitlements.mac.plist"
+
+# 添加 Windows 配置
+win:
+  icon: public/imgs/logo.ico
+  target:
+    - target: nsis
+      arch: [x64]
+
+# 添加 Linux 配置
+linux:
+  icon: public/imgs/logo.png
+  target: [AppImage, deb]
+  category: Development
+  maintainer: "1009903985@qq.com"
 
 dmg:
   contents:
@@ -52,4 +72,8 @@ dmg:
 
 publish:
   provider: github
+  owner: ConardLi
+  repo: easy-dataset
   releaseType: release
+  private: false
+  publishAutoUpdate: true

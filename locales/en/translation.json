@@ -30,7 +30,9 @@
         "questionGenDescription": "Set the maximum length for generated questions",
         "huggingfaceSettings": "Hugging Face Settings",
         "huggingfaceToken": "Hugging Face Token",
-        "huggingfaceNotImplemented": "Hugging Face functionality is not yet implemented"
+        "huggingfaceNotImplemented": "Hugging Face functionality is not yet implemented",
+        "concurrencyLimit": "Concurrency Limit",
+        "saveTaskConfig": "Save Task Config"
     },
     "questions": {
         "title": "Questions",
@@ -257,6 +259,11 @@
         "exportFailed": "Export failed",
         "loading": "Loading datasets...",
         "stats": "Total {{total}} datasets, {{confirmed}} confirmed ({{percentage}}%)",
+        "actions": "Total selected: {{count}}",
+        "batchDelete": "Batch Delete",
+        "batchDeleteContent": "Are you sure you want to delete {{count}} selected questions? This action cannot be undone.",
+        "batchDeleteProgress": "Completed: {{completed}}/{{total}}",
+        "batchDeleteCount": "Delete count: {{count}}",
         "searchPlaceholder": "Search datasets...",
         "viewDetails": "View Details",
         "datasetDetail": "Dataset Details",
@@ -277,9 +284,19 @@
         "newVersionAvailable": "New Version Available",
         "currentVersion": "Current Version",
         "latestVersion": "Latest Version",
-        "updateNow": "Update Now",
+        "downloadNow": "Download Now",
+        "downloading": "Downloading",
+        "installNow": "Install Now",
         "updating": "Updating...",
-        "viewRelease": "View Release Notes"
+        "updateNow": "Update Now",
+        "viewRelease": "View Release Notes",
+        "checking": "Checking for updates...",
+        "noUpdates": "Already up to date",
+        "updateError": "Update Error",
+        "updateSuccess": "Update Successful",
+        "restartRequired": "Restart Required",
+        "restartNow": "Restart Now",
+        "restartLater": "Restart Later"
     },
     "datasetSquare": {
         "title": "Dataset Square",
