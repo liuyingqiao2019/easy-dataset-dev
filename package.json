@@ -9,6 +9,7 @@
   },
   "homepage": "https://github.com/ConardLi/easy-dataset",
   "scripts": {
+    "prepare": "husky",
     "dev": "next dev -p 1717",
     "build": "next build",
     "start": "next start -p 1717",
@@ -62,9 +63,12 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
     "concurrently": "^8.2.2",
     "electron": "^29.4.6",
     "electron-builder": "^24.13.3",
+    "husky": "^9.1.7",
     "pkg": "^5.8.1",
     "wait-on": "^7.2.0"
   },
