@@ -31,7 +31,8 @@
         "huggingfaceSettings": "Hugging Face Settings",
         "huggingfaceToken": "Hugging Face Token",
         "huggingfaceNotImplemented": "Hugging Face functionality is not yet implemented",
-        "concurrencyLimit": "Concurrency Limit"
+        "concurrencyLimit": "Concurrency Limit",
+        "saveTaskConfig": "Save Task Config"
     },
     "questions": {
         "title": "Questions",
