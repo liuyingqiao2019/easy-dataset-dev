@@ -20,7 +20,7 @@ import FileUploader from '@/components/text-split/FileUploader';
 import ChunkList from '@/components/text-split/ChunkList';
 import DomainAnalysis from '@/components/text-split/DomainAnalysis';
 import request from '@/lib/util/request';
-import { processInParallel } from '@/lib/utils/async'
+import { processInParallel } from '@/lib/util/async'
 import useTaskSettings from '@/hooks/useTaskSettings';
 
 export default function TextSplitPage({ params }) {
