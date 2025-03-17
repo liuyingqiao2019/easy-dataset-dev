@@ -109,12 +109,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
 
     try {
       // 从 localStorage 获取当前选择的模型信息
-      const selectedModelId = localStorage.getItem('selectedModelId');
       let selectedModelInfo = null;
-
-      if (!selectedModelId) {
-        throw new Error(t('textSplit.selectModelFirst'));
-      }
 
       // 尝试从 localStorage 获取完整的模型信息
       const modelInfoStr = localStorage.getItem('selectedModelInfo');
@@ -125,6 +120,8 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
         } catch (e) {
           throw new Error(t('textSplit.modelInfoParseError'));
         }
+      } else {
+        throw new Error(t('textSplit.selectModelFirst'));
       }
 
       const uploadedFileNames = [];
@@ -137,13 +134,13 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
           reader.onerror = reject;
           reader.readAsArrayBuffer(file);
         });
-        
+
         // 使用自定义请求头发送文件
         const response = await fetch(`/api/projects/${projectId}/files`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/octet-stream',
-            'x-file-name': file.name
+            'x-file-name': encodeURIComponent(file.name)
           },
           body: fileContent
         });

@@ -20,7 +20,7 @@ import FileUploader from '@/components/text-split/FileUploader';
 import ChunkList from '@/components/text-split/ChunkList';
 import DomainAnalysis from '@/components/text-split/DomainAnalysis';
 import request from '@/lib/util/request';
-import { processInParallel } from '@/lib/utils/async'
+import { processInParallel } from '@/lib/util/async'
 import useTaskSettings from '@/hooks/useTaskSettings';
 
 export default function TextSplitPage({ params }) {
@@ -176,8 +176,6 @@ export default function TextSplitPage({ params }) {
         questionCount: 0
       });
 
-      // 从 localStorage 获取当前选择的模型信息
-      const selectedModelId = localStorage.getItem('selectedModelId');
       let model = null;
 
       // 尝试从 localStorage 获取完整的模型信息
@@ -187,13 +185,13 @@ export default function TextSplitPage({ params }) {
         try {
           model = JSON.parse(modelInfoStr);
         } catch (e) {
-          console.error(t('解析模型信息出错:'), e);
+          console.error('解析模型信息出错:', e);
           // 继续执行，将在下面尝试获取模型信息
         }
       }
 
       // 如果仍然没有模型信息，抛出错误
-      if (!selectedModelId) {
+      if (!model) {
         throw new Error(t('textSplit.selectModelFirst'));
       }
 
