@@ -35,6 +35,9 @@
         "saveTaskConfig": "Save Task Config"
     },
     "questions": {
+        "filterAll": "All Questions",
+        "filterAnswered": "With Answers",
+        "filterUnanswered": "Without Answers",
         "title": "Questions",
         "confirmDeleteTitle": "Confirm Delete Question",
         "confirmDeleteContent": "Are you sure you want to delete the question \"{{question}}\"? This action cannot be undone.",
@@ -99,6 +102,8 @@
         "searchDataset": "Search Public Datasets"
     },
     "projects": {
+        "reuseConfig": "Reuse Model Config",
+        "noReuse": "No Configuration Reuse",
         "selectProject": "Select Project",
         "fetchFailed": "Failed to fetch project list",
         "fetchError": "Error fetching project list",
@@ -132,15 +137,18 @@
         "deleteTag": "Delete Tag",
         "addTag": "Add Tag",
         "selectedCount": "Selected {{count}} text chunks",
+        "totalCount":"total {{count}} text chunks",
         "batchGenerateQuestions": "Batch Generate Questions",
-        "uploadedDocuments": "Uploaded Documents",
+        "uploadedDocuments": "Uploaded {{count}} Documents",
         "title": "Texts",
         "uploadNewDocument": "Upload New Document",
         "selectFile": "Select File",
         "markdownOnly": "Currently only supports Markdown (.md) format files",
+        "supportedFormats": "Supported formats: .md, .txt, .docx",
         "uploadAndProcess": "Upload and Process",
         "selectedFiles": "Selected Files ({{count}})",
         "oneFileMessage": "File upload not allowed, please delete the existing file first",
+        "mutilFileMessage":"After uploading a new file, the domain tree will be rebuilt",
         "noChunks": " No text chunks found",
         "chunkDetails": "Chunk Details: {{chunkId}}",
         "fetchChunksFailed": "Failed to fetch text chunks",
@@ -241,6 +249,7 @@
         "aiOptimizeAdvicePlaceholder": "Please enter your suggestions for improving the answer, and AI will optimize the answer and reasoning chain based on your suggestions",
         "aiOptimizeAdvice": "Please enter your suggestions for improving the answer, and AI will optimize the answer and reasoning chain based on your suggestions",
         "aiOptimize": "AI Optimize",
+        "partialSuccess": "Partially successful dataset generation ({{successCount}}/{{total}}), {{failCount}} questions failed",
         "generating": "Generating Dataset",
         "generateError": "Failed to generate dataset",
         "management": "Datasets",
@@ -337,7 +346,8 @@
         "selectModelMax3": "Please select up to 3 models to test"
     },
     "chunks": {
-        "title": "Text Chunk"
+        "title": "Text Chunk",
+        "defaultTitle": "Default Title"
     },
     "models": {
         "configNotFound": "Model config not found",

@@ -35,6 +35,9 @@
         "saveTaskConfig": "保存任务配置"
     },
     "questions": {
+        "filterAll": "全部问题",
+        "filterAnswered": "已生成答案",
+        "filterUnanswered": "未生成答案",
         "title": "问题管理",
         "confirmDeleteTitle": "确认删除问题",
         "confirmDeleteContent": "您确定要删除问题\"{{question}}\"吗？此操作不可恢复。",
@@ -99,6 +102,8 @@
         "searchDataset": "搜索公开数据集"
     },
     "projects": {
+        "reuseConfig": "复用模型配置",
+        "noReuse": "不复用配置",
         "selectProject": "选择项目",
         "fetchFailed": "获取项目列表失败",
         "fetchError": "获取项目列表出错",
@@ -132,15 +137,18 @@
         "deleteTag": "删除标签",
         "addTag": "添加标签",
         "selectedCount": "已选择 {{count}} 个文本块",
+        "totalCount": "共 {{count}} 个文本块",
         "batchGenerateQuestions": "批量生成问题",
-        "uploadedDocuments": "已上传的文档",
+        "uploadedDocuments": "已上传 {{count}}个文档",
         "title": "文献处理",
         "uploadNewDocument": "上传新文献",
-        "selectFile": "选择文件",
-        "markdownOnly": "目前仅支持上传 Markdown (.md) 格式文件",
+        "selectFile": "选择文件（支持多个）",
+        "markdownOnly": "目前仅支持上传 Markdown (.md) 格式文件（建议上传同一领域的文献）",
+        "supportedFormats": "支持的格式: .md, .txt, .docx（建议上传同一领域的文献）",
         "uploadAndProcess": "上传并处理文件",
         "selectedFiles": "已选择文件（{{count}}）",
         "oneFileMessage": "一个项目限制处理一个文件，如需上传新文件请先删除现有文件",
+        "mutilFileMessage": "上传新文件后会重新构建领域树",
         "noChunks": "暂无文本块，请先上传并处理文献",
         "chunkDetails": "文本块详情: {{chunkId}}",
         "fetchChunksFailed": "获取文本块失败",
@@ -242,6 +250,7 @@
         "aiOptimizeAdvice": "请输入您对答案的改进建议，AI将根据您的建议优化答案和思维链",
         "aiOptimize": "AI 智能优化",
         "generating": "正在生成数据集",
+        "partialSuccess": "部分问题生成数据集成功 ({{successCount}}/{{total}})，{{failCount}} 个问题失败",
         "generateError": "生成数据集失败",
         "management": "数据集管理",
         "question": "问题",
@@ -337,7 +346,8 @@
         "selectModelMax3": "选择模型（最多3个）"
     },
     "chunks": {
-        "title": "文本块"
+        "title": "文本块",
+        "defaultTitle": "默认标题"
     },
     "models": {
         "configNotFound": "模型配置未找到，请检查！",

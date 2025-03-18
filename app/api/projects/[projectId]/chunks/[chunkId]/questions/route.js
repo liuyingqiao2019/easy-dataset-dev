@@ -13,12 +13,14 @@ import { getTags } from '@/lib/db/tags';
 // 为指定文本块生成问题
 export async function POST(request, { params }) {
   try {
-    const { projectId, chunkId } = params;
+    const { projectId, chunkId: c } = params;
 
     // 验证项目ID和文本块ID
-    if (!projectId || !chunkId) {
+    if (!projectId || !c) {
       return NextResponse.json({ error: '项目ID或文本块ID不能为空' }, { status: 400 });
     }
+
+    const chunkId = decodeURIComponent(c);
 
     // 获取请求体
     const { model, language = '中文', number } = await request.json();
@@ -53,11 +55,7 @@ export async function POST(request, { params }) {
     // 生成问题
     const prompt = promptFunc(chunk.content, questionNumber, language);
 
-    const llmRes = await llmClient.chat(prompt);
-
-    const response = llmRes.choices?.[0]?.message?.content ||
-      llmRes.response ||
-      '';
+    const response = await llmClient.getResponse(prompt);
 
     // 从LLM输出中提取JSON格式的问题列表
     const questions = extractJsonFromLLMOutput(response);
@@ -73,10 +71,7 @@ export async function POST(request, { params }) {
     // 根据语言选择相应的标签提示词函数
     const labelPromptFunc = language === 'en' ? getAddLabelEnPrompt : getAddLabelPrompt;
     const labelPrompt = labelPromptFunc(JSON.stringify(tags), JSON.stringify(questions));
-    const llmLabelRes = await llmClient.chat(labelPrompt);
-    const labelResponse = llmLabelRes.choices?.[0]?.message?.content ||
-      llmLabelRes.response ||
-      '';
+    const labelResponse = await llmClient.getResponse(labelPrompt);
     // 从LLM输出中提取JSON格式的问题列表
     const labelQuestions = extractJsonFromLLMOutput(labelResponse);
     console.log(projectId, chunkId, 'Label Questions：', labelQuestions);
