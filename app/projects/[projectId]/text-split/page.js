@@ -145,7 +145,7 @@ export default function TextSplitPage({ params }) {
   // 处理删除文本块
   const handleDeleteChunk = async chunkId => {
     try {
-      const response = await fetch(`/api/projects/${projectId}/chunks/${chunkId}`, {
+      const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`, {
         method: 'DELETE'
       });
 
@@ -205,7 +205,7 @@ export default function TextSplitPage({ params }) {
         // 获取当前语言环境
         const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
 
-        const response = await request(`/api/projects/${projectId}/chunks/${chunkId}/questions`, {
+        const response = await request(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}/questions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -238,7 +238,7 @@ export default function TextSplitPage({ params }) {
             // 获取当前语言环境
             const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
 
-            const response = await request(`/api/projects/${projectId}/chunks/${chunkId}/questions`, {
+            const response = await request(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}/questions`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'

@@ -5,6 +5,8 @@ import LLMClient from '@/lib/llm/core/index';
 import getQuestionPrompt from '@/lib/llm/prompts/question';
 import getQuestionEnPrompt from '@/lib/llm/prompts/questionEn';
 import { addQuestionsForChunk } from '@/lib/db/questions';
+import { getTaskConfig } from '@/lib/db/projects';
+
 const { extractJsonFromLLMOutput } = require('@/lib/llm/common/util');
 
 // 批量生成问题
@@ -61,20 +63,20 @@ export async function POST(request, { params }) {
     const results = [];
     const errors = [];
 
+    // 获取项目 task-config 信息
+    const taskConfig = await getTaskConfig(projectId);
+    const { questionGenerationLength } = taskConfig;
+
     for (const chunk of chunks) {
       try {
         // 根据文本长度自动计算问题数量
-        const questionNumber = Math.floor(chunk.length / 240);
+        const questionNumber = Math.floor(chunk.length / questionGenerationLength);
 
         // 根据语言选择相应的提示词函数
         const promptFunc = language === 'en' ? getQuestionEnPrompt : getQuestionPrompt;
         // 生成问题
         const prompt = promptFunc(chunk.content, questionNumber, language);
-        const llmRes = await llmClient.chat(prompt);
-
-        const response = llmRes.choices?.[0]?.message?.content ||
-          llmRes.response ||
-          '';
+        const response = await llmClient.getResponse(prompt);
 
         // 从LLM输出中提取JSON格式的问题列表
         const questions = extractJsonFromLLMOutput(response);

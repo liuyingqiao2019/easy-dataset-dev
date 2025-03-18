@@ -52,21 +52,8 @@ export async function POST(request, { params }) {
     // 生成答案的提示词
     const prompt = language === 'en' ? getAnswerEnPrompt(chunk.content, question.question) : getAnswerPrompt(chunk.content, question.question);
 
-    // console.log(prompt);
     // 调用大模型生成答案
-    const llmRes = await llmClient.chat(prompt);
-    let answer = llmRes.choices?.[0]?.message?.content ||
-      llmRes.response ||
-      '';
-
-    let cot = '';
-    if (answer.startsWith('<think>') || answer.startsWith('<thinking>')) {
-      cot = extractThinkChain(answer);
-      answer = extractAnswer(answer);
-    } else {
-      cot = llmRes.choices?.[0]?.message?.reasoning_content || llmRes.choices?.[0]?.message?.reasoning || '';
-    }
-
+    const { answer, cot } = await llmClient.getResponseWithCOT(prompt);
 
     // console.log(questionId, 'answer:', answer, cot);
     // 获取现有数据集
