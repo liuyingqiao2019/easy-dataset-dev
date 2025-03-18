@@ -34,7 +34,7 @@ export default function TextSplitPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null); // 可以是字符串或对象 { severity, message }
-  const { taskSettings } = useTaskSettings(projectId);
+  const {taskSettings } = useTaskSettings(projectId);
 
   // 进度状态
   const [progress, setProgress] = useState({
@@ -353,10 +353,30 @@ export default function TextSplitPage({ params }) {
   };
 
   // 处理文件删除
-  const handleFileDeleted = fileName => {
-    console.log(t('textSplit.fileDeleted', { fileName }));
-    // 刷新文本块列表
-    fetchChunks();
+  const handleFileDeleted = (fileName,filesCount)=> {
+    console.log(t('textSplit.fileDeleted', { fileName}));
+    // 从 localStorage 获取当前选择的模型信息
+    let selectedModelInfo = null;
+
+    // 尝试从 localStorage 获取完整的模型信息
+    const modelInfoStr = localStorage.getItem('selectedModelInfo');
+
+    if (modelInfoStr) {
+      try {
+        selectedModelInfo = JSON.parse(modelInfoStr);
+      } catch (e) {
+        throw new Error(t('textSplit.modelInfoParseError'));
+      }
+    } else {
+      throw new Error(t('textSplit.selectModelFirst'));
+    }
+    //如果多个文件的情况下，删除的不是最后一个文件，就复用handleSplitText重新构建领域树
+    if(filesCount > 1){
+      handleSplitText(["rebuildToc.md"],selectedModelInfo); 
+    }else{//删除最后一个文件仅刷新界面即可
+      location.reload();
+    }
+       
   };
 
   // 关闭错误提示
