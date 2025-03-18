@@ -28,6 +28,7 @@ export default function TextSplitPage({ params }) {
   const { projectId } = params;
   const [activeTab, setActiveTab] = useState(0);
   const [chunks, setChunks] = useState([]);
+  const [showChunks, setShowChunks] = useState([]);
   const [tocData, setTocData] = useState('');
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -61,6 +62,7 @@ export default function TextSplitPage({ params }) {
 
       const data = await response.json();
       setChunks(data.chunks || []);
+      setShowChunks(data.chunks || []);
 
       // 如果有文件结果，处理详细信息
       if (data.toc) {
@@ -126,6 +128,16 @@ export default function TextSplitPage({ params }) {
         return newChunks;
       });
 
+      setShowChunks(prev => {
+        const newChunks = [...prev];
+        data.chunks.forEach(chunk => {
+          if (!newChunks.find(c => c.id === chunk.id)) {
+            newChunks.push(chunk);
+          }
+        });
+        return newChunks;
+      });
+
       // 更新目录结构
       if (data.toc) {
         setTocData(data.toc);
@@ -156,6 +168,7 @@ export default function TextSplitPage({ params }) {
 
       // 更新文本块列表
       setChunks(prev => prev.filter(chunk => chunk.id !== chunkId));
+      setShowChunks(prev => prev.filter(chunk => chunk.id !== chunkId));
     } catch (error) {
       console.error(t('textSplit.deleteChunkError'), error);
       setError(error.message);
@@ -372,6 +385,25 @@ export default function TextSplitPage({ params }) {
     );
   };
 
+  const handleSelected = (array)  =>{
+    if(array.length > 0){
+      let selectedChunks = [];
+      for(let i = 0;i<array.length;i++){
+        const name = array[i].replace(/\.md$/, "");
+        console.log(name);
+        const tempChunks = chunks.filter(item => item.id.includes(name))
+        tempChunks.forEach(item=>{
+          selectedChunks.push(item);
+        })
+      }
+      setShowChunks(selectedChunks);
+      console.log(selectedChunks);
+    }else{
+      const allChunks = chunks;
+      setShowChunks(allChunks);
+    }
+  }
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8, position: 'relative' }}>
       {/* 文件上传组件 */}
@@ -380,6 +412,7 @@ export default function TextSplitPage({ params }) {
         onUploadSuccess={handleUploadSuccess}
         onProcessStart={handleSplitText}
         onFileDeleted={handleFileDeleted}
+        sendToPages={handleSelected}
       />
 
       {/* 标签页 */}
@@ -398,7 +431,7 @@ export default function TextSplitPage({ params }) {
         {activeTab === 0 && (
           <ChunkList
             projectId={projectId}
-            chunks={chunks}
+            chunks={showChunks}
             onDelete={handleDeleteChunk}
             onGenerateQuestions={handleGenerateQuestions}
             loading={loading}
