@@ -35,6 +35,9 @@
         "saveTaskConfig": "保存任务配置"
     },
     "questions": {
+        "filterAll": "全部问题",
+        "filterAnswered": "已生成答案",
+        "filterUnanswered": "未生成答案",
         "title": "问题管理",
         "confirmDeleteTitle": "确认删除问题",
         "confirmDeleteContent": "您确定要删除问题\"{{question}}\"吗？此操作不可恢复。",
