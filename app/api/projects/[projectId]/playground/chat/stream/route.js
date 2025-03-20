@@ -4,9 +4,7 @@ import LLMClient from '@/lib/llm/core/index';
 /**
  * 流式输出的聊天接口
  */
-export async function POST(request, { params }) {
-  const { projectId } = params;
-  
+export async function POST(request) {
   try {
     const body = await request.json();
     const { model, messages } = body;
