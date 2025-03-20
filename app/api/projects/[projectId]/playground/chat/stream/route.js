@@ -4,9 +4,7 @@ import LLMClient from '@/lib/llm/core/index';
 /**
  * 流式输出的聊天接口
  */
-export async function POST(request, { params }) {
-  const { projectId } = params;
-  
+export async function POST(request) {
   try {
     const body = await request.json();
     const { model, messages } = body;
@@ -31,16 +29,7 @@ export async function POST(request, { params }) {
     
     try {
       // 调用流式 API
-      const stream = await llmClient.chatStream(formattedMessages);
-      
-      // 返回流式响应
-      return new Response(stream, {
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive'
-        }
-      });
+      return llmClient.chatStream(formattedMessages);
     } catch (error) {
       console.error('调用 LLM API 失败:', error);
       return NextResponse.json({ 
