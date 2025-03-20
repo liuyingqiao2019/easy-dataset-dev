@@ -242,7 +242,16 @@
         "questionFieldName": "问题字段名",
         "answerFieldName": "答案字段名",
         "cotFieldName": "思维链字段名",
-        "includeLabels": "包含标签"
+        "includeLabels": "包含标签",
+        "localTab": "导出到本地",
+        "llamaFactoryTab": "在 LLaMA Factory 中使用",
+        "huggingFaceTab": "上传至远程仓库",
+        "configExists": "已存在配置文件",
+        "configPath": "配置文件路径",
+        "updateConfig": "更新 LLaMA Factory 配置",
+        "noConfig": "暂无配置文件，点击下方按钮生成",
+        "generateConfig": "生成 LLaMA Factory 配置",
+        "huggingFaceComingSoon": "HuggingFace 导出功能即将推出"
     },
     "datasets": {
         "generatingDataset": "正在生成数据集",

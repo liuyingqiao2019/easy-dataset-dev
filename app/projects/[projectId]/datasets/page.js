@@ -924,6 +924,7 @@ export default function DatasetsPage({ params }) {
         open={exportDialog.open}
         onClose={handleCloseExportDialog}
         onExport={handleExportDatasets}
+        projectId={projectId}
       />
     </Container>
   );
