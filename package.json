@@ -41,6 +41,8 @@
     "outputPath": "dist"
   },
   "dependencies": {
+    "@ai-sdk/deepseek": "^0.1.16",
+    "@ai-sdk/openai": "^1.2.6",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@fontsource/inter": "^5.0.16",
@@ -48,6 +50,7 @@
     "@mui/icons-material": "5.16.14",
     "@mui/lab": "5.0.0-alpha.175",
     "@mui/material": "5.16.14",
+    "ai": "^4.1.63",
     "electron-updater": "^6.3.9",
     "formidable": "^3.5.2",
     "framer-motion": "^12.4.10",
@@ -56,6 +59,7 @@
     "mammoth": "^1.9.0",
     "next": "14.1.0",
     "next-themes": "^0.2.1",
+    "ollama-ai-provider": "^1.2.0",
     "opener": "^1.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
