@@ -109,7 +109,7 @@ export default function TaskSettings({ projectId }) {
                 step={100}
                 marks
                 min={1000}
-                max={5000}
+                max={10000}
               />
 
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
