@@ -22,8 +22,12 @@ import {
     Tabs,
     Tab,
     Alert,
-    CircularProgress
+    CircularProgress,
+    IconButton,
+    Tooltip
 } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CheckIcon from '@mui/icons-material/Check';
 
 const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
     const theme = useTheme();
@@ -46,6 +50,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
         cotField: 'complexCOT',  // 添加思维链字段名
         includeLabels: false
     });
+    const [copied, setCopied] = useState(false);
 
     const handleFileFormatChange = (event) => {
         setFileFormat(event.target.value);
@@ -106,6 +111,15 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
             fileFormat,
             includeCOT,
             customFields: formatType === 'custom' ? customFields : undefined
+        });
+    };
+
+    // 复制路径到剪贴板
+    const handleCopyPath = () => {
+        const path = configPath.replace('dataset_info.json', '');
+        navigator.clipboard.writeText(path).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
         });
     };
 
@@ -199,11 +213,11 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                     <Tabs
                         value={currentTab}
                         onChange={(e, newValue) => setCurrentTab(newValue)}
-                        variant="fullWidth"
+                        aria-label="export tabs"
                     >
                         <Tab label={t('export.localTab')} />
                         <Tab label={t('export.llamaFactoryTab')} />
-                        <Tab label={t('export.huggingFaceTab')} />
+                        <Tab label={t('export.huggingFaceTab')} disabled />
                     </Tabs>
                 </Box>
 
@@ -393,9 +407,9 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
 
                 {/* 第二个标签页：Llama Factory */}
                 {currentTab === 1 && (
-                    <Box sx={{ p: 2 }}>
+                    <Box sx={{ mt: 2 }}>
                         {error && (
-                            <Alert severity="error" sx={{ mb: 2 }}>
+                            <Alert severity="error" sx={{ mt: 2 }}>
                                 {error}
                             </Alert>
                         )}
@@ -441,53 +455,43 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                                 <Alert severity="success" sx={{ mb: 2 }}>
                                     {t('export.configExists')}
                                 </Alert>
-                                <Typography variant="body2" color="text.secondary" gutterBottom>
-                                    {t('export.configPath')}: {configPath.replace('dataset_info.json', '')}
-                                </Typography>
-                                <Button
-                                    variant="contained"
-                                    onClick={handleGenerateConfig}
-                                    disabled={generating}
-                                    sx={{ mt: 2 }}
-                                >
-                                    {generating ? (
-                                        <CircularProgress size={24} />
-                                    ) : (
-                                        t('export.updateConfig')
-                                    )}
-                                </Button>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {t('export.configPath')}: {configPath.replace('dataset_info.json', '')}
+                                    </Typography>
+                                    <Tooltip title={copied ? t('common.copied') : t('common.copy')}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={handleCopyPath}
+                                            sx={{ ml: 1 }}
+                                        >
+                                            {copied ? (
+                                                <CheckIcon fontSize="small" color="success" />
+                                            ) : (
+                                                <ContentCopyIcon fontSize="small" />
+                                            )}
+                                        </IconButton>
+                                    </Tooltip>
+                                </Box>
                             </>
                         ) : (
-                            <>
-                                <Alert severity="info" sx={{ mb: 2 }}>
-                                    {t('export.noConfig')}
-                                </Alert>
-                                <Button
-                                    variant="contained"
-                                    onClick={handleGenerateConfig}
-                                    disabled={generating}
-                                >
-                                    {generating ? (
-                                        <CircularProgress size={24} />
-                                    ) : (
-                                        t('export.generateConfig')
-                                    )}
-                                </Button>
-                            </>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                                {t('export.noConfig')}
+                            </Typography>
                         )}
                     </Box>
                 )}
 
                 {/* 第三个标签页：HuggingFace */}
                 {currentTab === 2 && (
-                    <Box sx={{ p: 2 }}>
-                        <Alert severity="info">
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body1">
                             {t('export.huggingFaceComingSoon')}
-                        </Alert>
+                        </Typography>
                     </Box>
                 )}
             </DialogContent>
-            <DialogActions>
+            <DialogActions sx={{ px: 3, pb: 2 }}>
                 <Button onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
                     {t('common.cancel')}
                 </Button>
@@ -498,6 +502,22 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                         sx={{ borderRadius: 2 }}
                     >
                         {t('export.confirmExport')}
+                    </Button>
+                )}
+                {currentTab === 1 && (
+                    <Button
+                        onClick={handleGenerateConfig}
+                        variant="contained"
+                        disabled={generating}
+                        sx={{ borderRadius: 2 }}
+                    >
+                        {generating ? (
+                            <CircularProgress size={24} />
+                        ) : configExists ? (
+                            t('export.updateConfig')
+                        ) : (
+                            t('export.generateConfig')
+                        )}
                     </Button>
                 )}
             </DialogActions>

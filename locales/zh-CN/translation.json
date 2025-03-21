@@ -93,7 +93,9 @@
         "fetchError": "获取数据出错",
         "confirmDeleteQuestion": "确认删除此问题吗？此操作不可恢复。",
         "deleteSuccess": "删除成功",
-        "visitGitHub": "访问GitHub仓库"
+        "visitGitHub": "访问GitHub仓库",
+        "copy": "复制",
+        "copied": "已复制"
     },
     "home": {
         "title": "Easy Dataset",
