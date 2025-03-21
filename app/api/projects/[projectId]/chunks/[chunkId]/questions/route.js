@@ -9,6 +9,8 @@ import { addQuestionsForChunk, getQuestionsForChunk } from '@/lib/db/questions';
 import { extractJsonFromLLMOutput } from '@/lib/llm/common/util';
 import { getTaskConfig } from '@/lib/db/projects';
 import { getTags } from '@/lib/db/tags';
+import logger from '@/lib/util/logger';
+
 
 // 为指定文本块生成问题
 export async function POST(request, { params }) {
@@ -86,7 +88,7 @@ export async function POST(request, { params }) {
       total: labelQuestions.length
     });
   } catch (error) {
-    console.error('Error generating questions:', error);
+    logger.error('Error generating questions:', error);
     return NextResponse.json({ error: error.message || 'Error generating questions' }, { status: 500 });
   }
 }

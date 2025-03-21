@@ -1,7 +1,6 @@
 const { app, BrowserWindow, dialog, Menu, shell, ipcMain } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
-const { fork } = require('child_process');
 const http = require('http');
 const fs = require('fs');
 const url = require('url');
@@ -159,6 +158,16 @@ function createMenu() {
     {
       label: '帮助',
       submenu: [
+        {
+          label: '打开日志目录',
+          click: () => {
+            const logsDir = path.join(app.getPath('userData'), 'logs');
+            if (!fs.existsSync(logsDir)) {
+              fs.mkdirSync(logsDir, { recursive: true });
+            }
+            shell.openPath(logsDir);
+          }
+        },
         {
           label: '关于',
           click: () => {
@@ -363,4 +372,22 @@ app.on('before-quit', () => {
     console.log('正在关闭 Next.js 服务...');
     // 这里可以添加清理 Next.js 服务的代码
   }
+});
+
+ipcMain.on('log', (event, { level, message }) => {
+  const timestamp = new Date().toISOString();
+  const logEntry = `[${timestamp}] [${level.toUpperCase()}] ${message}\n`;
+
+  // 只在客户端环境下写入文件
+  if (!isDev || true) {
+    const logsDir = path.join(app.getPath('userData'), 'logs');
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+    const logFile = path.join(logsDir, `${new Date().toISOString().split('T')[0]}.log`);
+    fs.appendFileSync(logFile, logEntry);
+  }
+
+  // 同时输出到控制台
+  console[level](message);
 });
