@@ -238,11 +238,13 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                                 >
                                     <FormControlLabel value="json" control={<Radio />} label="JSON" />
                                     <FormControlLabel value="jsonl" control={<Radio />} label="JSONL" />
+                                    <FormControlLabel value="csv" control={<Radio />} label="CSV" />
                                 </RadioGroup>
                             </FormControl>
                         </Box>
-
-                        <Box sx={{ mb: 3 }}>
+                        
+                        {/* 数据集风格 */}
+                        {fileFormat !== 'csv' && <Box sx={{ mb: 3 }}>
                             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                                 {t('export.format')}
                             </Typography>
@@ -259,7 +261,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                                     <FormControlLabel value="custom" control={<Radio />} label={t('export.customFormat')} />
                                 </RadioGroup>
                             </FormControl>
-                        </Box>
+                        </Box>}
 
                         {/* 自定义格式选项 */}
                         {formatType === 'custom' && (
@@ -313,7 +315,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                             </Box>
                         )}
 
-                        <Box sx={{ mb: 3 }}>
+                        {fileFormat !== 'csv' && <Box sx={{ mb: 3 }}>
                             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                                 {t('export.example')}
                             </Typography>
@@ -364,7 +366,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                                         )}
                                 </pre>
                             </Paper>
-                        </Box>
+                        </Box>}
 
                         <Box sx={{ mb: 3 }}>
                             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
