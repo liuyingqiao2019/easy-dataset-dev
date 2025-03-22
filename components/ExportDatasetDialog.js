@@ -238,11 +238,11 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                                 >
                                     <FormControlLabel value="json" control={<Radio />} label="JSON" />
                                     <FormControlLabel value="jsonl" control={<Radio />} label="JSONL" />
-                                    <FormControlLabel value="csv" control={<Radio />} label="CSV" />
+                                    {/* <FormControlLabel value="csv" control={<Radio />} label="CSV" /> */}
                                 </RadioGroup>
                             </FormControl>
                         </Box>
-                        
+
                         {/* 数据集风格 */}
                         {fileFormat !== 'csv' && <Box sx={{ mb: 3 }}>
                             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
