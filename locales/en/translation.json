@@ -63,7 +63,19 @@
         "generating": "Generating Dataset",
         "generatingProgress": "Completed: {{completed}}/{{total}}",
         "generatedCount": "Generated: {{count}}",
-        "pleaseWait": "Please wait, processing..."
+        "pleaseWait": "Please wait, processing...",
+        "createSuccess": "Question created successfully",
+        "updateSuccess": "Question updated successfully",
+        "operationSuccess": "Operation successful",
+        "operationFailed": "Operation failed",
+        "editQuestion": "Edit Question",
+        "questionContent": "Question Content",
+        "selectChunk": "Select Text Chunk",
+        "selectTag": "Select Tag",
+        "createQuestion": "Create Question",
+        "questionPlaceholder": "Please enter your question",
+        "noChunkSelected": "Please select a text chunk first",
+        "noTagSelected": "Please select a tag"
     },
     "common": {
         "unknownError": "Unknown Error",

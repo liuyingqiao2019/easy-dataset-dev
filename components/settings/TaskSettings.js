@@ -94,8 +94,8 @@ export default function TaskSettings({ projectId }) {
                 valueLabelDisplay="auto"
                 step={100}
                 marks
-                min={500}
-                max={3000}
+                min={100}
+                max={5000}
               />
 
               <Typography id="text-split-max-length-slider" gutterBottom sx={{ mt: 3 }}>

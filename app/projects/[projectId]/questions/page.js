@@ -32,11 +32,15 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import DeleteIcon from '@mui/icons-material/Delete';
 import i18n from '@/lib/i18n';
 import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
 import QuestionListView from '@/components/questions/QuestionListView';
 import QuestionTreeView from '@/components/questions/QuestionTreeView';
 import TabPanel from '@/components/text-split/components/TabPanel';
 import request from '@/lib/util/request'
 import useTaskSettings from '@/hooks/useTaskSettings';
+import QuestionEditDialog from './components/QuestionEditDialog';
+import { useQuestionEdit } from './hooks/useQuestionEdit';
+import { useSnackbar } from '@/hooks/useSnackbar';
 
 export default function QuestionsPage({ params }) {
   const { t } = useTranslation();
@@ -67,7 +71,32 @@ export default function QuestionsPage({ params }) {
     datasetCount: 0   // 已生成的数据集数量
   });
 
-  // 确认对话框状态
+  const { showSuccess, SnackbarComponent } = useSnackbar();
+
+
+  const {
+    editDialogOpen,
+    editMode,
+    editingQuestion,
+    handleOpenCreateDialog,
+    handleOpenEditDialog,
+    handleCloseDialog,
+    handleSubmitQuestion,
+  } = useQuestionEdit(projectId, (updatedQuestion) => {
+    // 直接更新 questions 数组中的数据
+    setQuestions(prevQuestions => {
+      if (editMode === 'create') {
+        return [...prevQuestions, updatedQuestion];
+      } else {
+        return prevQuestions.map(q =>
+          q.question === editingQuestion.question ? updatedQuestion : q
+        );
+      }
+    });
+
+    showSuccess(t('questions.operationSuccess'));
+  });
+
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
     title: '',
@@ -675,6 +704,7 @@ export default function QuestionsPage({ params }) {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+      <SnackbarComponent />
       {/* 处理中的进度显示 - 全局蒙版样式 */}
       {processing && (
         <Box
@@ -768,6 +798,14 @@ export default function QuestionsPage({ params }) {
             disabled={selectedQuestions.length === 0}
           >
             {t('questions.deleteSelected')}
+          </Button>
+
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenCreateDialog}
+          >
+            {t('questions.createQuestion')}
           </Button>
           <Button
             variant="contained"
@@ -904,6 +942,7 @@ export default function QuestionsPage({ params }) {
             onSelectQuestion={handleSelectQuestion}
             onDeleteQuestion={handleDeleteQuestion}
             onGenerateDataset={handleGenerateDataset}
+            onEditQuestion={handleOpenEditDialog}
             projectId={projectId}
           />
         </TabPanel>
@@ -932,6 +971,7 @@ export default function QuestionsPage({ params }) {
             onSelectQuestion={handleSelectQuestion}
             onDeleteQuestion={handleDeleteQuestion}
             onGenerateDataset={handleGenerateDataset}
+            onEditQuestion={handleOpenEditDialog}
             projectId={projectId}
           />
         </TabPanel>
@@ -983,6 +1023,16 @@ export default function QuestionsPage({ params }) {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <QuestionEditDialog
+        open={editDialogOpen}
+        onClose={handleCloseDialog}
+        onSubmit={handleSubmitQuestion}
+        initialData={editingQuestion}
+        chunks={chunks}
+        tags={tags}
+        mode={editMode}
+      />
     </Container>
   );
 }
