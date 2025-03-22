@@ -239,6 +239,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                                     <FormControlLabel value="json" control={<Radio />} label="JSON" />
                                     <FormControlLabel value="jsonl" control={<Radio />} label="JSONL" />
                                     {/* <FormControlLabel value="csv" control={<Radio />} label="CSV" /> */}
+                                    {/* 暂时注释，修复完问题后再放开 */}
                                 </RadioGroup>
                             </FormControl>
                         </Box>
