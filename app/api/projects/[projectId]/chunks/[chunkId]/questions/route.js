@@ -7,7 +7,7 @@ import getAddLabelPrompt from '@/lib/llm/prompts/addLabel';
 import getAddLabelEnPrompt from '@/lib/llm/prompts/addLabelEn';
 import { addQuestionsForChunk, getQuestionsForChunk } from '@/lib/db/questions';
 import { extractJsonFromLLMOutput } from '@/lib/llm/common/util';
-import { getTaskConfig } from '@/lib/db/projects';
+import { getTaskConfig, getProject } from '@/lib/db/projects';
 import { getTags } from '@/lib/db/tags';
 import logger from '@/lib/util/logger';
 
@@ -39,7 +39,9 @@ export async function POST(request, { params }) {
 
     // 获取项目 task-config 信息
     const taskConfig = await getTaskConfig(projectId);
+    const config = await getProject(projectId);
     const { questionGenerationLength } = taskConfig;
+    const { globalPrompt, questionPrompt } = config;
 
     // 创建LLM客户端
     const llmClient = new LLMClient({
@@ -55,7 +57,7 @@ export async function POST(request, { params }) {
     // 根据语言选择相应的提示词函数
     const promptFunc = language === 'en' ? getQuestionEnPrompt : getQuestionPrompt;
     // 生成问题
-    const prompt = promptFunc(chunk.content, questionNumber, language);
+    const prompt = promptFunc({ text: chunk.content, number: questionNumber, language, globalPrompt, questionPrompt });
 
     const response = await llmClient.getResponse(prompt);
 
