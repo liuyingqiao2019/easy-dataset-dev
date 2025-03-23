@@ -133,8 +133,8 @@ export default function TaskSettings({ projectId }) {
                 valueLabelDisplay="auto"
                 step={20}
                 marks
-                min={100}
-                max={500}
+                min={20}
+                max={1000}
               />
 
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
