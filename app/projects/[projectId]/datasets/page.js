@@ -634,6 +634,8 @@ export default function DatasetsPage({ params }) {
 
       // 根据选择的格式转换数据
       let formattedData;
+      // 不同文件格式
+      let mimeType = 'application/json';
 
       if (exportOptions.formatType === 'alpaca') {
         formattedData = dataToExport.map(({ question, answer, cot }) => ({
@@ -712,6 +714,7 @@ export default function DatasetsPage({ params }) {
                     .map(header => {
                         // 处理包含逗号、换行符或双引号的字段
                         let field = item[header]?.toString() || '';
+                        if(exportOptions.formatType === 'sharegpt') field = JSON.stringify(item[header] )
                         if (field.includes(',') || field.includes('\n') || field.includes('"')) {
                             field = `"${field.replace(/"/g, '""')}"`;
                         }
@@ -722,14 +725,14 @@ export default function DatasetsPage({ params }) {
         ];
         content = csvRows.join('\n');
         fileExtension = 'csv';
+        mimeType = 'text/csv;charset=utf-8';
     } else {
         // 默认 JSON 格式
         content = JSON.stringify(formattedData, null, 2);
         fileExtension = 'json';
       }
-
       // 创建 Blob 对象
-      const blob = new Blob([content], { type: 'application/json' });
+      const blob = new Blob([content], { type: mimeType || 'application/json' });
 
       // 创建下载链接
       const url = URL.createObjectURL(blob);
