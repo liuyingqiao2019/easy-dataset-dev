@@ -94,8 +94,8 @@ export default function TaskSettings({ projectId }) {
                 valueLabelDisplay="auto"
                 step={100}
                 marks
-                min={500}
-                max={3000}
+                min={100}
+                max={5000}
               />
 
               <Typography id="text-split-max-length-slider" gutterBottom sx={{ mt: 3 }}>
@@ -109,7 +109,7 @@ export default function TaskSettings({ projectId }) {
                 step={100}
                 marks
                 min={1000}
-                max={5000}
+                max={10000}
               />
 
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
@@ -133,8 +133,8 @@ export default function TaskSettings({ projectId }) {
                 valueLabelDisplay="auto"
                 step={20}
                 marks
-                min={100}
-                max={500}
+                min={20}
+                max={1000}
               />
 
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>

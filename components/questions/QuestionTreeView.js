@@ -21,6 +21,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import EditIcon from '@mui/icons-material/Edit';
 import FolderIcon from '@mui/icons-material/Folder';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
@@ -42,13 +43,14 @@ export default function QuestionTreeView({
   selectedQuestions = [],
   onSelectQuestion,
   onDeleteQuestion,
-  onGenerateDataset
+  onGenerateDataset,
+  onEditQuestion
 }) {
   const { t } = useTranslation();
   const [expandedTags, setExpandedTags] = useState({});
   const [questionsByTag, setQuestionsByTag] = useState({});
   const [processingQuestions, setProcessingQuestions] = useState({});
-  
+
   // 使用 useMemo 缓存 chunks 的映射，避免在渲染时重复查找
   const chunksMap = useMemo(() => {
     const map = {};
@@ -207,6 +209,7 @@ export default function QuestionTreeView({
         onSelect={onSelectQuestion}
         onDelete={onDeleteQuestion}
         onGenerate={handleGenerateDataset}
+        onEdit={onEditQuestion}
         isProcessing={processingQuestions[`${question.chunkId}-${question.question}`]}
         chunkTitle={chunksMap[question.chunkId]}
         t={t}
@@ -217,21 +220,21 @@ export default function QuestionTreeView({
   // 计算标签及其子标签下的所有问题数量 - 使用 useMemo 缓存计算结果
   const tagQuestionCounts = useMemo(() => {
     const counts = {};
-    
+
     const countQuestions = (tag) => {
       const directQuestions = questionsByTag[tag.label] || [];
       let total = directQuestions.length;
-      
+
       if (tag.child && tag.child.length > 0) {
         for (const childTag of tag.child) {
           total += countQuestions(childTag);
         }
       }
-      
+
       counts[tag.label] = total;
       return total;
     };
-    
+
     tags.forEach(countQuestions);
     return counts;
   }, [questionsByTag, tags]);
@@ -365,17 +368,18 @@ export default function QuestionTreeView({
 }
 
 // 使用 memo 优化问题项渲染
-const QuestionItem = memo(({ 
-  question, 
-  index, 
-  total, 
-  isSelected, 
-  onSelect, 
-  onDelete, 
-  onGenerate, 
-  isProcessing, 
-  chunkTitle, 
-  t 
+const QuestionItem = memo(({
+  question,
+  index,
+  total,
+  isSelected,
+  onSelect,
+  onDelete,
+  onGenerate,
+  onEdit,
+  isProcessing,
+  chunkTitle,
+  t
 }) => {
   return (
     <Box key={`${question.chunkId}-${question.question}`}>
@@ -422,6 +426,20 @@ const QuestionItem = memo(({
           }
         />
         <Box>
+          <Tooltip title={t('questions.edit')}>
+            <IconButton
+              size="small"
+              sx={{ mr: 1 }}
+              onClick={() => onEdit({
+                question: question.question,
+                chunkId: question.chunkId,
+                label: question.label || 'other'
+              })}
+              disabled={isProcessing}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Tooltip title={t('datasets.generateDataset')}>
             <IconButton
               size="small"
@@ -452,13 +470,13 @@ const QuestionItem = memo(({
 });
 
 // 使用 memo 优化标签项渲染
-const TagItem = memo(({ 
-  tag, 
-  level, 
-  isExpanded, 
-  totalQuestions, 
-  onToggle, 
-  t 
+const TagItem = memo(({
+  tag,
+  level,
+  isExpanded,
+  totalQuestions,
+  onToggle,
+  t
 }) => {
   return (
     <ListItem

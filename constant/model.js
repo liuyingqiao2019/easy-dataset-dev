@@ -55,5 +55,10 @@ export const MODEL_PROVIDERS = [
         name: 'OpenRouter',
         defaultEndpoint: 'https://openrouter.ai/api/v1/',
         defaultModels: ['google/gemma-2-9b-it:free', 'meta-llama/llama-3-8b-instruct:free', 'microsoft/phi-3-mini-128k-instruct:free']
+    }, {
+        id:'alibailian',
+        name:'阿里云百炼',
+        defaultEndpoint:'https://dashscope.aliyuncs.com/compatible-mode/v1',
+        defaultModels: ['qwen-max-latest', 'qwen-max-2025-01-25']
     }
 ];

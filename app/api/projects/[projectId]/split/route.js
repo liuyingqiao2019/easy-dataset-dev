@@ -29,6 +29,8 @@ export async function POST(request, { params }) {
     if (!fileName) {
       return NextResponse.json({ error: '文件名不能为空' }, { status: 400 });
     }
+    const project = await getProject(projectId);
+    const { globalPrompt, domainTreePrompt } = project;
 
     // 分割文本
     const result = await splitProjectFile(projectId, fileName);
@@ -42,11 +44,14 @@ export async function POST(request, { params }) {
     });
     // 生成领域树
     console.log(projectId, fileName, '分割完成，开始构建领域树');
-    const response = await llmClient.getResponse(language === 'en' ? getLabelEnPrompt(toc) : getLabelPrompt(toc));
+    const promptFunc = language === 'en' ? getLabelEnPrompt : getLabelPrompt;
+    const prompt = promptFunc({ text: toc, globalPrompt, domainTreePrompt });
+    const response = await llmClient.getResponse(prompt);
     const tags = extractJsonFromLLMOutput(response);
+
+
     if (!response || !tags) {
       // 删除前面生成的文件
-      const project = await getProject(projectId);
       await deleteFile(projectId, fileName);
       const uploadedFiles = project.uploadedFiles || [];
       const updatedFiles = uploadedFiles.filter(f => f !== fileName);
