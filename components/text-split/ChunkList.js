@@ -23,8 +23,18 @@ import { useTranslation } from 'react-i18next';
  * @param {Array} props.chunks - Chunk array
  * @param {Function} props.onDelete - Delete callback
  * @param {Function} props.onGenerateQuestions - Generate questions callback
+ * @param {string} props.questionFilter - Question filter
+ * @param {Function} props.onQuestionFilterChange - Question filter change callback
  */
-export default function ChunkList({ projectId, chunks = [], onDelete, onGenerateQuestions, loading = false }) {
+export default function ChunkList({
+  projectId,
+  chunks = [],
+  onDelete,
+  onGenerateQuestions,
+  loading = false,
+  questionFilter,
+  onQuestionFilterChange
+}) {
   const theme = useTheme();
   const [page, setPage] = useState(1);
   const [selectedChunks, setSelectedChunks] = useState([]);
@@ -113,23 +123,6 @@ export default function ChunkList({ projectId, chunks = [], onDelete, onGenerate
     );
   }
 
-  if (chunks.length === 0) {
-    return (
-      <Paper
-        sx={{
-          p: 4,
-          textAlign: 'center',
-          border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 2
-        }}
-      >
-        <Typography variant="body1" color="textSecondary">
-          {t('textSplit.noChunks')}
-        </Typography>
-      </Paper>
-    );
-  }
-
   return (
     <Box>
       <ChunkListHeader
@@ -137,6 +130,8 @@ export default function ChunkList({ projectId, chunks = [], onDelete, onGenerate
         selectedChunks={selectedChunks}
         onSelectAll={handleSelectAll}
         onBatchGenerateQuestions={handleBatchGenerateQuestions}
+        questionFilter={questionFilter}
+        onQuestionFilterChange={(event) => onQuestionFilterChange(event.target.value)}
       />
 
       <Grid container spacing={2}>
@@ -153,6 +148,21 @@ export default function ChunkList({ projectId, chunks = [], onDelete, onGenerate
           </Grid>
         ))}
       </Grid>
+
+      {
+        chunks.length === 0 && (<Paper
+          sx={{
+            p: 4,
+            textAlign: 'center',
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 2
+          }}
+        >
+          <Typography variant="body1" color="textSecondary">
+            {t('textSplit.noChunks')}
+          </Typography>
+        </Paper>)
+      }
 
       {totalPages > 1 && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>

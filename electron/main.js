@@ -244,7 +244,7 @@ function setupAutoUpdater() {
 
   // 检查更新时出错
   autoUpdater.on('error', (error) => {
-    dialog.showErrorBox('更新错误', `检查更新时出错: ${error.message}`);
+    // dialog.showErrorBox('更新错误', `检查更新时出错: ${error.message}`);
     if (mainWindow) {
       mainWindow.webContents.send('update-error', error.message);
     }

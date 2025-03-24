@@ -14,7 +14,7 @@ const LLMClient = require('@/lib/llm/core');
 async function optimizeCot(originalQuestion, answer, originalCot, language, llmClient, id, projectId) {
   const prompt = language === 'en' ? getOptimizeCotEnPrompt(originalQuestion, answer, originalCot) : getOptimizeCotPrompt(originalQuestion, answer, originalCot);
   const { answer: optimizedAnswer } = await llmClient.getResponseWithCOT(prompt);
-  await updateDataset(projectId, id, { cot: optimizedAnswer });
+  await updateDataset(projectId, id, { cot: optimizedAnswer.replace('优化后的思维链', '') });
   console.log(originalQuestion, id, '已成功优化思维链');
 }
 
