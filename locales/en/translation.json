@@ -159,6 +159,9 @@
         "deleteConfirmTitle": "Confirm Delete"
     },
     "textSplit": {
+        "allChunks": "All Text Chunks",
+        "generatedQuestions2": "With Questions",
+        "ungeneratedQuestions": "Without Questions",
         "noFilesUploaded": "No files uploaded yet",
         "unknownFile": "Unknown File",
         "fetchFilesFailed": "Failed to fetch files",
