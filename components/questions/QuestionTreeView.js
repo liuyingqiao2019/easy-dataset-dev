@@ -171,27 +171,28 @@ export default function QuestionTreeView({
   }, []);
 
   // 检查问题是否被选中 - 使用 useCallback 优化
-  const isQuestionSelected = useCallback((questionId, chunkId) => {
-    return selectedQuestions.includes(`${chunkId}-${questionId}`);
+  const isQuestionSelected = useCallback((questionKey) => {
+    return selectedQuestions.includes(questionKey);
   }, [selectedQuestions]);
 
   // 处理生成数据集 - 使用 useCallback 优化
-  const handleGenerateDataset = useCallback(async (questionId, chunkId) => {
+  const handleGenerateDataset = useCallback(async (questionKey) => {
     if (!onGenerateDataset) return;
 
+    const [question, chunkId] = JSON.parse(questionKey);
     setProcessingQuestions(prev => ({
       ...prev,
-      [`${chunkId}-${questionId}`]: true
+      [questionKey]: true
     }));
 
     try {
-      await onGenerateDataset(questionId, chunkId);
+      await onGenerateDataset(question, chunkId);
     } catch (error) {
       console.error('生成数据集失败:', error);
     } finally {
       setProcessingQuestions(prev => {
         const newState = { ...prev };
-        delete newState[`${chunkId}-${questionId}`];
+        delete newState[questionKey];
         return newState;
       });
     }
@@ -199,18 +200,19 @@ export default function QuestionTreeView({
 
   // 渲染单个问题项 - 使用 useCallback 优化
   const renderQuestionItem = useCallback((question, index, total) => {
+    const questionKey = JSON.stringify({ question: question.question, chunkId: question.chunkId });
     return (
       <QuestionItem
-        key={`${question.chunkId}-${question.question}`}
+        key={questionKey}
         question={question}
         index={index}
         total={total}
-        isSelected={isQuestionSelected(question.question, question.chunkId)}
+        isSelected={isQuestionSelected(questionKey)}
         onSelect={onSelectQuestion}
         onDelete={onDeleteQuestion}
         onGenerate={handleGenerateDataset}
         onEdit={onEditQuestion}
-        isProcessing={processingQuestions[`${question.chunkId}-${question.question}`]}
+        isProcessing={processingQuestions[questionKey]}
         chunkTitle={chunksMap[question.chunkId]}
         t={t}
       />
@@ -381,8 +383,9 @@ const QuestionItem = memo(({
   chunkTitle,
   t
 }) => {
+  const questionKey = JSON.stringify({ question: question.question, chunkId: question.chunkId });
   return (
-    <Box key={`${question.chunkId}-${question.question}`}>
+    <Box key={questionKey}>
       <ListItem
         sx={{
           pl: 4,
@@ -397,11 +400,10 @@ const QuestionItem = memo(({
           }
         }}
       >
-        {/* 内部内容保持不变 */}
         <Checkbox
           checked={isSelected}
-          onChange={() => onSelect(question.question, question.chunkId)}
-          sx={{ mr: 1 }}
+          onChange={() => onSelect(questionKey)}
+          size="small"
         />
         <QuestionMarkIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }} />
         <ListItemText
@@ -444,7 +446,7 @@ const QuestionItem = memo(({
             <IconButton
               size="small"
               sx={{ mr: 1 }}
-              onClick={() => onGenerate(question.question, question.chunkId)}
+              onClick={() => onGenerate(questionKey)}
               disabled={isProcessing}
             >
               {isProcessing ? (
