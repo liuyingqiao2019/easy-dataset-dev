@@ -7,7 +7,7 @@ export async function GET(request, { params }) {
     try {
         const { projectId } = params;
         if (!projectId) {
-            return NextResponse.json({ error: '需要项目 ID' }, { status: 400 });
+            return NextResponse.json({ error: 'The project ID cannot be empty' }, { status: 400 });
         }
 
         const projectRoot = await getProjectRoot();

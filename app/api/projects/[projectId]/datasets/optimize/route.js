@@ -13,28 +13,28 @@ export async function POST(request, { params }) {
 
     // 验证项目ID
     if (!projectId) {
-      return NextResponse.json({ error: '项目ID不能为空' }, { status: 400 });
+      return NextResponse.json({ error: 'Project ID cannot be empty' }, { status: 400 });
     }
 
     // 获取请求体
     const { datasetId, model, advice, language } = await request.json();
 
     if (!datasetId) {
-      return NextResponse.json({ error: '数据集ID不能为空' }, { status: 400 });
+      return NextResponse.json({ error: 'Dataset ID cannot be empty' }, { status: 400 });
     }
 
     if (!model) {
-      return NextResponse.json({ error: '请选择模型' }, { status: 400 });
+      return NextResponse.json({ error: 'Model cannot be empty' }, { status: 400 });
     }
 
     if (!advice) {
-      return NextResponse.json({ error: '请提供优化建议' }, { status: 400 });
+      return NextResponse.json({ error: 'Please provide optimization suggestions' }, { status: 400 });
     }
 
     // 获取数据集内容
     const dataset = await getDataset(projectId, datasetId);
     if (!dataset) {
-      return NextResponse.json({ error: '数据集不存在' }, { status: 404 });
+      return NextResponse.json({ error: 'Dataset does not exist' }, { status: 404 });
     }
 
     // 创建LLM客户端
@@ -64,7 +64,7 @@ export async function POST(request, { params }) {
     const optimizedResult = extractJsonFromLLMOutput(response);
 
     if (!optimizedResult || !optimizedResult.answer) {
-      return NextResponse.json({ error: '优化答案失败，请重试' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to optimize answer, please try again' }, { status: 500 });
     }
 
     // 更新数据集
@@ -82,7 +82,7 @@ export async function POST(request, { params }) {
       dataset: updatedDataset
     });
   } catch (error) {
-    console.error('优化答案出错:', error);
-    return NextResponse.json({ error: error.message || '优化答案失败' }, { status: 500 });
+    console.error('Failed to optimize answer:', error);
+    return NextResponse.json({ error: error.message || 'Failed to optimize answer' }, { status: 500 });
   }
 }

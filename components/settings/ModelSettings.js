@@ -142,7 +142,6 @@ export default function ModelSettings({ projectId }) {
   // 保存所有模型配置
   const saveAllModels = async () => {
     try {
-      console.log('开始保存模型配置...');
       const response = await fetch(`/api/projects/${projectId}/models`, {
         method: 'PUT',
         headers: {
@@ -155,11 +154,10 @@ export default function ModelSettings({ projectId }) {
         throw new Error(t('models.saveFailed'));
       }
 
-      console.log('模型配置保存成功');
       setSuccess(true);
       return true; // 返回成功状态
     } catch (error) {
-      console.error('保存模型配置出错:', error);
+      console.error('Failed to save model configuration:', error);
       setError(error.message);
       return false; // 返回失败状态
     }

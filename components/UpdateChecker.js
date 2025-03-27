@@ -17,7 +17,7 @@ const UpdateChecker = () => {
   // 检查更新
   const checkForUpdates = async () => {
     if (!window.electron?.updater) {
-      console.warn('更新功能不可用，可能是在浏览器环境运行');
+      console.warn('Update feature is not available, possibly running in browser environment');
       return;
     }
 
@@ -26,7 +26,7 @@ const UpdateChecker = () => {
       setUpdateError(null);
 
       const result = await window.electron.updater.checkForUpdates();
-      console.log('检查更新结果:', result);
+      console.log('Update check result:', result);
 
       // 返回当前版本信息
       if (result) {
@@ -36,8 +36,8 @@ const UpdateChecker = () => {
         }));
       }
     } catch (error) {
-      console.error('检查更新失败:', error);
-      setUpdateError(error.message || '检查更新失败');
+      console.error('Failed to check for updates:', error);
+      // setUpdateError(error.message || 'Failed to check for updates');
     } finally {
       setChecking(false);
     }
@@ -65,8 +65,8 @@ const UpdateChecker = () => {
     try {
       await window.electron.updater.installUpdate();
     } catch (error) {
-      console.error('安装更新失败:', error);
-      setUpdateError(error.message || '安装更新失败');
+      console.error('Failed to install update:', error);
+      // setUpdateError(error.message || 'Failed to install update');
     }
   };
 
@@ -95,7 +95,7 @@ const UpdateChecker = () => {
     // 更新错误
     const removeUpdateError = window.electron.updater.onUpdateError((error) => {
       console.error('更新错误:', error);
-      setUpdateError(error);
+      // setUpdateError(error);
     });
 
     // 下载进度

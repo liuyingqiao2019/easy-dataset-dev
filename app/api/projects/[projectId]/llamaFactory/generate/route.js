@@ -10,7 +10,7 @@ export async function POST(request, { params }) {
         const { formatType, systemPrompt, confirmedOnly, includeCOT } = await request.json();
 
         if (!projectId) {
-            return NextResponse.json({ error: '需要项目 ID' }, { status: 400 });
+            return NextResponse.json({ error: 'The project ID cannot be empty' }, { status: 400 });
         }
 
         // 获取项目根目录

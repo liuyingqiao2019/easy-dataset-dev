@@ -85,7 +85,6 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: 'The project ID cannot be empty' }, { status: 400 });
   }
 
-  console.log('开始获取项目信息, projectId:', projectId);
   // 获取项目信息
   const project = await getProject(projectId);
   if (!project) {
@@ -109,14 +108,11 @@ export async function POST(request, { params }) {
 
     // 检查文件类型
     if (!fileName.endsWith('.md')) {
-      console.log('文件类型不支持:', fileName);
-      return NextResponse.json({ error: '只支持上传Markdown文件' }, { status: 400 });
+      return NextResponse.json({ error: 'Only Markdown files are supported' }, { status: 400 });
     }
 
     // 直接从请求体中读取二进制数据
-    console.log('开始读取请求体数据...');
     const fileBuffer = Buffer.from(await request.arrayBuffer());
-    console.log('请求体数据读取成功, 大小:', fileBuffer.length, 'bytes');
 
     // 保存文件
     const projectRoot = await getProjectRoot();
