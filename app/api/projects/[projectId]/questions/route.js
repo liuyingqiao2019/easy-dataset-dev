@@ -69,9 +69,7 @@ export async function POST(request, { params }) {
     }
 
     // 检查问题是否已存在
-    const existingQuestion = questionsData[chunkIndex].questions.find(
-      q => q.question === question
-    );
+    const existingQuestion = questionsData[chunkIndex].questions.find(q => q.question === question);
     if (existingQuestion) {
       return NextResponse.json({ error: 'Question already exists' }, { status: 400 });
     }
@@ -90,7 +88,7 @@ export async function POST(request, { params }) {
       question,
       chunkId,
       label,
-      dataSites: []  // 新问题还没有数据集
+      dataSites: [] // 新问题还没有数据集
     });
   } catch (error) {
     console.error('Failed to create question:', error);
@@ -120,9 +118,7 @@ export async function PUT(request, { params }) {
     }
 
     // 找到原问题在文本块中的位置
-    const oldQuestionIndex = questionsData[oldChunkIndex].questions.findIndex(
-      q => q.question === oldQuestion
-    );
+    const oldQuestionIndex = questionsData[oldChunkIndex].questions.findIndex(q => q.question === oldQuestion);
     if (oldQuestionIndex === -1) {
       return NextResponse.json({ error: 'Original question not found' }, { status: 404 });
     }

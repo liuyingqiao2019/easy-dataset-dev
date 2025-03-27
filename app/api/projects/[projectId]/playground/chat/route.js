@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import LLMClient from '@/lib/llm/core/index';
 
-
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
@@ -28,7 +27,7 @@ export async function POST(request, { params }) {
       provider: model.provider,
       endpoint: model.endpoint,
       apiKey: model.apiKey,
-      model: model.name,
+      model: model.name
     });
 
     // 格式化消息历史
@@ -43,9 +42,12 @@ export async function POST(request, { params }) {
       response = await llmClient.getResponse(formattedMessages);
     } catch (error) {
       console.error('Failed to call LLM API:', error);
-      return NextResponse.json({
-        error: `Failed to call ${model.provider} model: ${error.message}`
-      }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: `Failed to call ${model.provider} model: ${error.message}`
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ response });

@@ -40,7 +40,7 @@ export async function POST(request, { params }) {
       provider: model.provider,
       endpoint: model.endpoint,
       apiKey: model.apiKey,
-      model: model.name,
+      model: model.name
     });
     // 生成领域树
     console.log(projectId, fileName, 'Text split completed, starting to build domain tree');
@@ -48,7 +48,6 @@ export async function POST(request, { params }) {
     const prompt = promptFunc({ text: toc, globalPrompt, domainTreePrompt });
     const response = await llmClient.getResponse(prompt);
     const tags = extractJsonFromLLMOutput(response);
-
 
     if (!response || !tags) {
       // 删除前面生成的文件
@@ -59,7 +58,10 @@ export async function POST(request, { params }) {
         ...project,
         uploadedFiles: updatedFiles
       });
-      return NextResponse.json({ error: 'AI analysis failed, please check model configuration, delete file and retry!' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'AI analysis failed, please check model configuration, delete file and retry!' },
+        { status: 400 }
+      );
     }
     console.log(projectId, fileName, 'Domain tree built:', tags);
     await saveTags(projectId, tags);

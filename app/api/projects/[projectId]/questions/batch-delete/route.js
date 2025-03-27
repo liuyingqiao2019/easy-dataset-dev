@@ -21,7 +21,10 @@ export async function DELETE(request, { params }) {
     // 验证每个问题都有必要的字段
     for (const question of questions) {
       if (!question.questionId || !question.chunkId) {
-        return NextResponse.json({ error: 'Question information is incomplete, must include questionId and chunkId' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Question information is incomplete, must include questionId and chunkId' },
+          { status: 400 }
+        );
       }
     }
 

@@ -27,7 +27,6 @@ export async function GET(request, { params }) {
 
     const taskConfig = await getTaskConfig(projectId);
     return NextResponse.json(taskConfig);
-
   } catch (error) {
     console.error('Failed to obtain task configuration:', error);
     return NextResponse.json({ error: 'Failed to obtain task configuration' }, { status: 500 });

@@ -34,7 +34,7 @@ export async function POST(request, { params }) {
     } else {
       // 获取指定的文本块
       chunks = await Promise.all(
-        chunkIds.map(async (chunkId) => {
+        chunkIds.map(async chunkId => {
           const chunk = await getTextChunk(projectId, chunkId);
           if (chunk) {
             return {
@@ -57,7 +57,7 @@ export async function POST(request, { params }) {
       provider: model.provider,
       endpoint: model.endpoint,
       apiKey: model.apiKey,
-      model: model.name,
+      model: model.name
     });
 
     const results = [];

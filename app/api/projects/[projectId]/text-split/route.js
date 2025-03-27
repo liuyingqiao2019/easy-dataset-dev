@@ -115,11 +115,7 @@ export async function POST(request, { params }) {
       const directory = extractDirectoryFromMarkdown(text);
 
       // 分割文本
-      const chunks = splitTextContent(
-        text,
-        textSplitSettings.minChars,
-        textSplitSettings.maxChars
-      );
+      const chunks = splitTextContent(text, textSplitSettings.minChars, textSplitSettings.maxChars);
 
       // 保存分割后的文本片段
       const chunkResults = [];

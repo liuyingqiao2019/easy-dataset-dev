@@ -20,7 +20,7 @@ export async function POST(request, { params }) {
       provider: model.provider,
       endpoint: model.endpoint,
       apiKey: model.apiKey,
-      model: model.name,
+      model: model.name
     });
 
     // 格式化消息历史
@@ -38,14 +38,17 @@ export async function POST(request, { params }) {
         headers: {
           'Content-Type': 'text/plain; charset=utf-8',
           'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive'
+          Connection: 'keep-alive'
         }
       });
     } catch (error) {
       console.error('Failed to call LLM API:', error);
-      return NextResponse.json({
-        error: `Failed to call ${model.provider} model: ${error.message}`
-      }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: `Failed to call ${model.provider} model: ${error.message}`
+        },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error('Failed to process stream chat request:', error);

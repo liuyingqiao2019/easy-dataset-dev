@@ -103,7 +103,10 @@ export async function POST(request, { params }) {
 
     if (!fileName) {
       console.log('The request header does not contain a file name');
-      return NextResponse.json({ error: 'The request header does not contain a file name (x-file-name)' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'The request header does not contain a file name (x-file-name)' },
+        { status: 400 }
+      );
     }
 
     // 检查文件类型
@@ -145,8 +148,11 @@ export async function POST(request, { params }) {
   } catch (error) {
     console.error('Error processing file upload:', error);
     console.error('Error stack:', error.stack);
-    return NextResponse.json({
-      error: 'File upload failed: ' + (error.message || 'Unknown error')
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'File upload failed: ' + (error.message || 'Unknown error')
+      },
+      { status: 500 }
+    );
   }
 }

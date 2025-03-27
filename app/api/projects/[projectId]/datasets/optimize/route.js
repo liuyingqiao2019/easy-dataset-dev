@@ -42,21 +42,14 @@ export async function POST(request, { params }) {
       provider: model.provider,
       endpoint: model.endpoint,
       apiKey: model.apiKey,
-      model: model.name,
+      model: model.name
     });
 
     // 生成优化后的答案和思维链
-    const prompt = language === 'en' ? getNewAnswerEnPrompt(
-      dataset.question,
-      dataset.answer || '',
-      dataset.cot || '',
-      advice
-    ) : getNewAnswerPrompt(
-      dataset.question,
-      dataset.answer || '',
-      dataset.cot || '',
-      advice
-    );
+    const prompt =
+      language === 'en'
+        ? getNewAnswerEnPrompt(dataset.question, dataset.answer || '', dataset.cot || '', advice)
+        : getNewAnswerPrompt(dataset.question, dataset.answer || '', dataset.cot || '', advice);
 
     const response = await llmClient.getResponse(prompt);
 
