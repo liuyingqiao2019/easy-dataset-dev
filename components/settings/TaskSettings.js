@@ -21,8 +21,7 @@ import useTaskSettings from '@/hooks/useTaskSettings';
 
 export default function TaskSettings({ projectId }) {
   const { t } = useTranslation();
-  const { taskSettings, setTaskSettings, loading, error, success, setSuccess } =
-    useTaskSettings(projectId);
+  const { taskSettings, setTaskSettings, loading, error, success, setSuccess } = useTaskSettings(projectId);
   // 处理设置变更
   const handleSettingChange = e => {
     const { name, value } = e.target;
