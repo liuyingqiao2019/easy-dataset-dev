@@ -131,9 +131,9 @@ export default function TaskSettings({ projectId }) {
                 onChange={handleSliderChange('questionGenerationLength')}
                 aria-labelledby="question-generation-length-slider"
                 valueLabelDisplay="auto"
-                step={20}
+                step={10}
                 marks
-                min={20}
+                min={10}
                 max={1000}
               />
 
