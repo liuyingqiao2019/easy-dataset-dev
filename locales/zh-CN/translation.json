@@ -29,6 +29,9 @@
         "questionGenLength": "{{length}} 个字符生成一个问题",
         "questionGenDescription": "设置生成问题的最大长度",
         "huggingfaceSettings": "Hugging Face 设置",
+        "minerUSettings": "MinerU 设置",
+        "minerUToken": "MinerU Token",
+        "minerUHelper": "MinerU Token 只有14天有效期，请及时更换Token",
         "huggingfaceToken": "Hugging Face Token",
         "huggingfaceNotImplemented": "Hugging Face 功能暂未实现",
         "concurrencyLimit": "并发限制数量",
@@ -178,6 +181,9 @@
         "fetchingDocuments": "正在获取文献数据",
         "processing": "处理中...",
         "progressStatus": "已选择 {{total}} 个文本块，已处理完成 {{completed}} 个",
+        "pdfProcessStatus": "共{{total}}个PDF文件，{{completed}}个已完成转换",
+        "pdfProcessing":"正在转换PDF文件...",
+        "pdfProcessingFailed":"PDF文件转换失败！",
         "processingPleaseWait": "正在努力处理中，请稍候！",
         "oneFileLimit": "已有上传文件，不允许选择新文件",
         "unsupportedFormat": "不支持的文件格式: {{files}}",
@@ -189,7 +195,8 @@
         "generatedQuestions": "{{count}} 个问题",
         "viewDetails": "查看详情",
         "generateQuestions": "生成问题",
-        "characters": "字符"
+        "characters": "字符",
+        "pdfProcess":"检测到PDF文件！"
     },
     "domain": {
         "title": "领域知识树",

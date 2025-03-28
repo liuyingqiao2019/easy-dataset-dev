@@ -108,7 +108,7 @@ export async function POST(request, { params }) {
     }
 
     // 检查文件类型
-    if (!fileName.endsWith('.md')) {
+    if (!fileName.endsWith('.md')&&!fileName.endsWith('.pdf')) {
       console.log('文件类型不支持:', fileName);
       return NextResponse.json({ error: '只支持上传Markdown文件' }, { status: 400 });
     }
@@ -156,6 +156,7 @@ export async function POST(request, { params }) {
     return NextResponse.json({
       message: '文件上传成功',
       fileName,
+      uploadedFiles,
       filePath
     });
   } catch (error) {

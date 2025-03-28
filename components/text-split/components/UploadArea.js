@@ -52,7 +52,7 @@ export default function UploadArea({
         <input
           type="file"
           hidden
-          accept=".md,.txt,.docx"
+          accept=".md,.txt,.docx,.pdf"
           multiple
           onChange={onFileSelect}
           // disabled={uploadedFiles.length > 0}

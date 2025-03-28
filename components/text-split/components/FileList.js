@@ -18,11 +18,14 @@ export default function FileList({
   const [array, setArray] = useState([]);
 
   const handleCheckboxChange = (fileName, isChecked) => {
+    //判断当前复选框是否被选中
     if(isChecked){
+      //如果是选中状态，将文件名传递到父组件中，用于过滤chunks
       array.push(fileName);
       setArray(array);
       sendToFileUploader(array);
     }else{
+      //如果是取消选中，则从数组中移除
       const newArray  = array.filter(item => item !== fileName);
       setArray(newArray);
       sendToFileUploader(newArray);

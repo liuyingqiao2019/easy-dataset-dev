@@ -48,6 +48,8 @@
     "@mui/icons-material": "5.16.14",
     "@mui/lab": "5.0.0-alpha.175",
     "@mui/material": "5.16.14",
+    "@opendocsg/pdf2md": "^0.2.1",
+    "adm-zip": "^0.5.16",
     "electron-updater": "^6.3.9",
     "formidable": "^3.5.2",
     "framer-motion": "^12.4.10",

@@ -176,6 +176,21 @@ export default function TaskSettings({ projectId }) {
           </Grid>
 
           <Grid item xs={12}>
+            <Typography variant="subtitle1" gutterBottom>
+              {t('settings.minerUSettings')}
+            </Typography>
+            <TextField
+              fullWidth
+              label={t('settings.minerUToken')}
+              name="minerUToken"
+              value={taskSettings.minerUToken}
+              onChange={handleSettingChange}
+              type="password"
+              helperText={t('settings.minerUHelper')}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
             <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSaveTaskSettings}>
               {t('settings.saveTaskConfig')}
             </Button>
