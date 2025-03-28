@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getTextChunk } from '@/lib/db/texts';
 import { getQuestionsForChunk } from '@/lib/db/questions';
 import { getDatasets, saveDatasets, updateDataset } from '@/lib/db/datasets';
+import { getProject } from '@/lib/db/projects';
 import getAnswerPrompt from '@/lib/llm/prompts/answer';
 import getAnswerEnPrompt from '@/lib/llm/prompts/answerEn';
 import getOptimizeCotPrompt from '@/lib/llm/prompts/optimizeCot';
@@ -9,22 +10,14 @@ import getOptimizeCotEnPrompt from '@/lib/llm/prompts/optimizeCotEn';
 
 const LLMClient = require('@/lib/llm/core');
 
-async function optimizeCot(
-  originalQuestion,
-  answer,
-  originalCot,
-  language,
-  llmClient,
-  id,
-  projectId
-) {
+async function optimizeCot(originalQuestion, answer, originalCot, language, llmClient, id, projectId) {
   const prompt =
     language === 'en'
       ? getOptimizeCotEnPrompt(originalQuestion, answer, originalCot)
       : getOptimizeCotPrompt(originalQuestion, answer, originalCot);
   const { answer: optimizedAnswer } = await llmClient.getResponseWithCOT(prompt);
-  await updateDataset(projectId, id, { cot: optimizedAnswer });
-  console.log(originalQuestion, id, '已成功优化思维链');
+  await updateDataset(projectId, id, { cot: optimizedAnswer.replace('优化后的思维链', '') });
+  console.log(originalQuestion, id, 'Successfully optimized thought process');
 }
 
 /**
@@ -50,7 +43,7 @@ export async function POST(request, { params }) {
     if (!chunk) {
       return NextResponse.json(
         {
-          error: '文本块不存在'
+          error: 'Text block does not exist'
         },
         { status: 404 }
       );
@@ -62,11 +55,15 @@ export async function POST(request, { params }) {
     if (!question) {
       return NextResponse.json(
         {
-          error: '问题不存在'
+          error: 'Question not found'
         },
         { status: 404 }
       );
     }
+
+    // 获取项目配置
+    const project = await getProject(projectId);
+    const { globalPrompt, answerPrompt } = project;
 
     // 创建LLM客户端
     const llmClient = new LLMClient({
@@ -77,11 +74,15 @@ export async function POST(request, { params }) {
       temperature: model.temperature
     });
 
+    const promptFuc = language === 'en' ? getAnswerEnPrompt : getAnswerPrompt;
+
     // 生成答案的提示词
-    const prompt =
-      language === 'en'
-        ? getAnswerEnPrompt(chunk.content, question.question)
-        : getAnswerPrompt(chunk.content, question.question);
+    const prompt = promptFuc({
+      text: chunk.content,
+      question: question.question,
+      globalPrompt,
+      answerPrompt
+    });
 
     // 调用大模型生成答案
     const { answer, cot } = await llmClient.getResponseWithCOT(prompt);
@@ -110,17 +111,17 @@ export async function POST(request, { params }) {
     // 添加到数据集
     datasets.push(datasetItem);
     await saveDatasets(projectId, datasets);
-    console.log(datasets.length, '已成功生成数据集', question.question);
+    console.log(datasets.length, 'Successfully generated dataset', question.question);
 
     return NextResponse.json({
       success: true,
       dataset: datasetItem
     });
   } catch (error) {
-    console.error('生成数据集失败:', error);
+    console.error('Failed to generate dataset:', error);
     return NextResponse.json(
       {
-        error: error.message || '生成数据集失败'
+        error: error.message || 'Failed to generate dataset'
       },
       { status: 500 }
     );
@@ -172,7 +173,7 @@ export async function DELETE(request, { params }) {
     if (!projectId) {
       return NextResponse.json(
         {
-          error: '项目ID不能为空'
+          error: 'Project ID cannot be empty'
         },
         { status: 400 }
       );
@@ -181,7 +182,7 @@ export async function DELETE(request, { params }) {
     if (!datasetId) {
       return NextResponse.json(
         {
-          error: '数据集ID不能为空'
+          error: 'Dataset ID cannot be empty'
         },
         { status: 400 }
       );
@@ -196,7 +197,7 @@ export async function DELETE(request, { params }) {
     if (datasetIndex === -1) {
       return NextResponse.json(
         {
-          error: '数据集不存在'
+          error: 'Dataset does not exist'
         },
         { status: 404 }
       );
@@ -210,13 +211,13 @@ export async function DELETE(request, { params }) {
 
     return NextResponse.json({
       success: true,
-      message: '数据集删除成功'
+      message: 'Dataset deleted successfully'
     });
   } catch (error) {
-    console.error('删除数据集失败:', error);
+    console.error('Failed to delete dataset:', error);
     return NextResponse.json(
       {
-        error: error.message || '删除数据集失败'
+        error: error.message || 'Failed to delete dataset'
       },
       { status: 500 }
     );
@@ -237,7 +238,7 @@ export async function PATCH(request, { params }) {
     if (!projectId) {
       return NextResponse.json(
         {
-          error: '项目ID不能为空'
+          error: 'Project ID cannot be empty'
         },
         { status: 400 }
       );
@@ -246,7 +247,7 @@ export async function PATCH(request, { params }) {
     if (!datasetId) {
       return NextResponse.json(
         {
-          error: '数据集ID不能为空'
+          error: 'Dataset ID cannot be empty'
         },
         { status: 400 }
       );
@@ -261,7 +262,7 @@ export async function PATCH(request, { params }) {
     if (datasetIndex === -1) {
       return NextResponse.json(
         {
-          error: '数据集不存在'
+          error: 'Dataset does not exist'
         },
         { status: 404 }
       );
@@ -278,14 +279,14 @@ export async function PATCH(request, { params }) {
 
     return NextResponse.json({
       success: true,
-      message: '数据集更新成功',
+      message: 'Dataset updated successfully',
       dataset: dataset
     });
   } catch (error) {
-    console.error('编辑数据集失败:', error);
+    console.error('Failed to update dataset:', error);
     return NextResponse.json(
       {
-        error: error.message || '编辑数据集失败'
+        error: error.message || 'Failed to update dataset'
       },
       { status: 500 }
     );

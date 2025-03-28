@@ -1,15 +1,13 @@
 module.exports = {
-  semi: true,
-  trailingComma: 'none',
-  singleQuote: true,
-  printWidth: 100,
-  tabWidth: 2,
-  useTabs: false,
-  bracketSpacing: true,
-  jsxBracketSameLine: false,
-  arrowParens: 'always',
-  endOfLine: 'auto',
-  proseWrap: 'preserve',
-  commentSpacing: true,
-  trailingComments: true
+  "semi": true,
+  "trailingComma": "none",
+  "singleQuote": true,
+  "tabWidth": 2,
+  "useTabs": false,
+  "bracketSpacing": true,
+  "arrowParens": "avoid",
+  "proseWrap": "preserve",
+  "jsxBracketSameLine": true,
+  "printWidth": 120,
+  "endOfLine": "auto"
 };

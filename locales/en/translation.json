@@ -10,6 +10,21 @@
     "switchToDark": "Switch to Dark Mode"
   },
   "settings": {
+    "promptConfig": "Prompt Configuration",
+    "promptsDescription": "Configure prompt used in the project, supporting global prompts and scenario-specific prompts.",
+    "globalPrompt": "Global Prompt",
+    "questionPrompt": "Question Generation Prompt",
+    "answerPrompt": "Answer Generation Prompt",
+    "labelPrompt": "Question Labeling Prompt",
+    "domainTreePrompt": "Domain Tree Building Prompt",
+    "globalPromptPlaceholder": "Enter global prompt that will serve as the base prompt for all scenarios",
+    "questionPromptPlaceholder": "Enter prompt for generating questions",
+    "answerPromptPlaceholder": "Enter prompt for generating answers",
+    "labelPromptPlaceholder": "Enter prompt for question labeling (not supported currently)",
+    "domainTreePromptPlaceholder": "Enter prompt for building domain tree",
+    "loadPromptsFailed": "Failed to load prompt configurations",
+    "savePromptsSuccess": "Successfully saved prompt configurations",
+    "savePromptsFailed": "Failed to save prompt configurations",
     "title": "Settings",
     "basicInfo": "Basic Info",
     "modelConfig": "Model Configuration",
@@ -144,6 +159,9 @@
     "deleteConfirmTitle": "Confirm Delete"
   },
   "textSplit": {
+    "allChunks": "All Text Chunks",
+    "generatedQuestions2": "With Questions",
+    "ungeneratedQuestions": "Without Questions",
     "noFilesUploaded": "No files uploaded yet",
     "unknownFile": "Unknown File",
     "fetchFilesFailed": "Failed to fetch files",

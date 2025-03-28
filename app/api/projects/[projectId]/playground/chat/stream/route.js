@@ -12,7 +12,7 @@ export async function POST(request, { params }) {
     const { model, messages } = body;
 
     if (!model || !messages) {
-      return NextResponse.json({ error: '缺少必要参数' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing necessary parameters' }, { status: 400 });
     }
 
     // 创建 LLM 客户端
@@ -43,16 +43,16 @@ export async function POST(request, { params }) {
         }
       });
     } catch (error) {
-      console.error('调用 LLM API 失败:', error);
+      console.error('Failed to call LLM API:', error);
       return NextResponse.json(
         {
-          error: `调用${model.provider}模型失败: ${error.message}`
+          error: `Failed to call ${model.provider} model: ${error.message}`
         },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('处理流式聊天请求出错:', error);
-    return NextResponse.json({ error: `处理请求失败: ${error.message}` }, { status: 500 });
+    console.error('Failed to process stream chat request:', error);
+    return NextResponse.json({ error: `Failed to process stream chat request: ${error.message}` }, { status: 500 });
   }
 }

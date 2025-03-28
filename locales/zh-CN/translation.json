@@ -10,6 +10,21 @@
     "switchToDark": "切换到暗色模式"
   },
   "settings": {
+    "promptConfig": "提示词配置",
+    "promptsDescription": "配置项目中使用的各类自定义提示词，可用于人工干预数据集的生成效果。",
+    "globalPrompt": "全局提示词",
+    "questionPrompt": "生成问题提示词",
+    "answerPrompt": "生成答案提示词",
+    "labelPrompt": "问题打标提示词",
+    "domainTreePrompt": "构建领域树提示词",
+    "globalPromptPlaceholder": "请输入全局提示词（慎用，可能影响整体生成效果）",
+    "questionPromptPlaceholder": "请输入自定义生成问题的提示词",
+    "answerPromptPlaceholder": "请输入自定义生成答案的提示词",
+    "labelPromptPlaceholder": "请输入自定义问题打标的提示词（暂不支持配置）",
+    "domainTreePromptPlaceholder": "请输入自定义构建领域树的提示词",
+    "loadPromptsFailed": "加载提示词配置失败",
+    "savePromptsSuccess": "保存提示词配置成功",
+    "savePromptsFailed": "保存提示词配置失败",
     "title": "项目设置",
     "basicInfo": "基本信息",
     "modelConfig": "模型配置",
@@ -144,6 +159,9 @@
     "deleteConfirmTitle": "确认删除项目"
   },
   "textSplit": {
+    "allChunks": "全部文本块",
+    "generatedQuestions2": "已生成问题",
+    "ungeneratedQuestions": "未生成问题",
     "noFilesUploaded": "暂未上传文件",
     "unknownFile": "未知文件",
     "fetchFilesFailed": "获取文件列表出错",
