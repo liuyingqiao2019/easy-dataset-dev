@@ -33,7 +33,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import { DEFAULT_MODEL_SETTINGS, MODEL_PROVIDERS } from '@/constant/model';
 import { useTranslation } from 'react-i18next';
 
-const providerOptions = MODEL_PROVIDERS.map(provider => ({
+const providerOptions = MODEL_PROVIDERS.map((provider) => ({
   id: provider.id,
   label: provider.name
 }));
@@ -47,7 +47,7 @@ export default function ModelSettings({ projectId }) {
   const [ollamaModels, setOllamaModels] = useState([]);
 
   // 获取 Ollama 模型列表
-  const fetchOllamaModels = async endpoint => {
+  const fetchOllamaModels = async (endpoint) => {
     try {
       // 从 endpoint 中提取 host 和 port
       let host = '127.0.0.1';
@@ -66,7 +66,7 @@ export default function ModelSettings({ projectId }) {
       }
 
       const data = await response.json();
-      setOllamaModels(data.map(model => model.name));
+      setOllamaModels(data.map((model) => model.name));
     } catch (error) {
       console.error('获取 Ollama 模型列表出错:', error);
       setOllamaModels([]);
@@ -124,12 +124,12 @@ export default function ModelSettings({ projectId }) {
 
   // 当组件挂载或模型列表变化时，检查是否有 Ollama 模型
   useEffect(() => {
-    const ollamaModel = models.find(m => m.providerId === 'ollama');
+    const ollamaModel = models.find((m) => m.providerId === 'ollama');
     if (ollamaModel) {
       fetchOllamaModels(ollamaModel.endpoint).then(() => {
         // 如果获取到了模型列表，并且当前 Ollama 模型不在列表中，更新为列表中的第一个模型
         if (ollamaModels.length > 0 && !ollamaModels.includes(ollamaModel.name)) {
-          const updatedModels = models.map(m =>
+          const updatedModels = models.map((m) =>
             m.id === ollamaModel.id ? { ...m, name: ollamaModels[0] } : m
           );
           setModels(updatedModels);
@@ -202,13 +202,13 @@ export default function ModelSettings({ projectId }) {
           .then(() => {
             // 获取成功后，使用第一个可用的模型
             if (ollamaModels.length > 0) {
-              setModelForm(prev => ({
+              setModelForm((prev) => ({
                 ...prev,
                 name: ollamaModels[0]
               }));
             } else {
               // 如果没有获取到模型，使用默认模型
-              setModelForm(prev => ({
+              setModelForm((prev) => ({
                 ...prev,
                 name: defaultProvider.defaultModels[0]
               }));
@@ -216,7 +216,7 @@ export default function ModelSettings({ projectId }) {
           })
           .catch(() => {
             // 获取失败时，使用默认模型
-            setModelForm(prev => ({
+            setModelForm((prev) => ({
               ...prev,
               name: defaultProvider.defaultModels[0]
             }));
@@ -242,17 +242,17 @@ export default function ModelSettings({ projectId }) {
   };
 
   // 处理模型表单变更
-  const handleModelFormChange = e => {
+  const handleModelFormChange = (e) => {
     const { name, value } = e.target;
 
     if (name === 'providerId') {
       // 当选择提供商时，自动填充相关信息
-      const selectedProvider = MODEL_PROVIDERS.find(p => p.id === value);
+      const selectedProvider = MODEL_PROVIDERS.find((p) => p.id === value);
       if (selectedProvider) {
         // 如果选择的是 Ollama，获取本地模型列表后再设置模型
         if (value === 'ollama') {
           // 先设置基本信息，但不设置模型名称
-          setModelForm(prev => ({
+          setModelForm((prev) => ({
             ...prev,
             providerId: value,
             provider: selectedProvider.name,
@@ -264,13 +264,13 @@ export default function ModelSettings({ projectId }) {
             .then(() => {
               // 获取成功后，使用第一个可用的模型
               if (ollamaModels.length > 0) {
-                setModelForm(prev => ({
+                setModelForm((prev) => ({
                   ...prev,
                   name: ollamaModels[0]
                 }));
               } else {
                 // 如果没有获取到模型，使用默认模型
-                setModelForm(prev => ({
+                setModelForm((prev) => ({
                   ...prev,
                   name: selectedProvider.defaultModels[0]
                 }));
@@ -278,7 +278,7 @@ export default function ModelSettings({ projectId }) {
             })
             .catch(() => {
               // 获取失败时，使用默认模型
-              setModelForm(prev => ({
+              setModelForm((prev) => ({
                 ...prev,
                 name: selectedProvider.defaultModels[0]
               }));
@@ -296,13 +296,13 @@ export default function ModelSettings({ projectId }) {
       }
     } else if (name === 'endpoint' && modelForm.providerId === 'ollama') {
       // 当修改 Ollama 端点时，重新获取模型列表
-      setModelForm(prev => ({
+      setModelForm((prev) => ({
         ...prev,
         [name]: value
       }));
       fetchOllamaModels(value);
     } else {
-      setModelForm(prev => ({
+      setModelForm((prev) => ({
         ...prev,
         [name]: value
       }));
@@ -314,13 +314,13 @@ export default function ModelSettings({ projectId }) {
     let updatedModel = null;
     if (editingModel) {
       // 更新现有模型
-      setModels(prev => {
-        const updatedModels = prev.map(m =>
+      setModels((prev) => {
+        const updatedModels = prev.map((m) =>
           m.id === editingModel.id ? { ...m, ...modelForm } : m
         );
 
         // 保存更新后的模型引用，用于更新 localStorage
-        updatedModel = updatedModels.find(m => m.id === editingModel.id);
+        updatedModel = updatedModels.find((m) => m.id === editingModel.id);
         // 如果更新的是当前选中的模型，同时更新 localStorage
         localStorage.setItem('selectedModelInfo', JSON.stringify(updatedModel));
         console.log('已更新 localStorage 中的模型信息:', updatedModel);
@@ -329,7 +329,7 @@ export default function ModelSettings({ projectId }) {
     } else {
       // 添加新模型
       const newModel = { id: `model-${Date.now()}`, ...modelForm };
-      setModels(prev => {
+      setModels((prev) => {
         const updatedModels = [...prev, newModel];
         return updatedModels;
       });
@@ -339,9 +339,9 @@ export default function ModelSettings({ projectId }) {
   };
 
   // 删除模型
-  const handleDeleteModel = id => {
-    setModels(prev => {
-      const updatedModels = prev.filter(m => m.id !== id);
+  const handleDeleteModel = (id) => {
+    setModels((prev) => {
+      const updatedModels = prev.filter((m) => m.id !== id);
       return updatedModels;
     });
   };
@@ -362,7 +362,7 @@ export default function ModelSettings({ projectId }) {
         const selectedModelInfo = localStorage.getItem('selectedModelInfo');
         if (selectedModelInfo) {
           const sId = JSON.parse(selectedModelInfo).id;
-          const modelExists = models.some(m => m.id === sId);
+          const modelExists = models.some((m) => m.id === sId);
         }
       });
     }
@@ -374,7 +374,7 @@ export default function ModelSettings({ projectId }) {
   };
 
   // 获取模型状态图标和颜色
-  const getModelStatusInfo = model => {
+  const getModelStatusInfo = (model) => {
     if (model.provider === 'Ollama') {
       return {
         icon: <CheckCircleIcon fontSize="small" />,
@@ -397,7 +397,7 @@ export default function ModelSettings({ projectId }) {
   };
 
   // 获取提供商图标
-  const getProviderAvatar = providerId => {
+  const getProviderAvatar = (providerId) => {
     const providerMap = {
       openai: '🤖',
       anthropic: '🧠',
@@ -432,7 +432,7 @@ export default function ModelSettings({ projectId }) {
         </Box>
 
         <Stack spacing={2}>
-          {models.map(model => (
+          {models.map((model) => (
             <Paper
               key={model.id}
               elevation={1}
@@ -537,9 +537,9 @@ export default function ModelSettings({ projectId }) {
                 <Autocomplete
                   freeSolo
                   options={providerOptions}
-                  getOptionLabel={option => option.label}
+                  getOptionLabel={(option) => option.label}
                   value={
-                    providerOptions.find(p => p.id === modelForm.providerId) || {
+                    providerOptions.find((p) => p.id === modelForm.providerId) || {
                       id: 'custom',
                       label: modelForm.provider
                     }
@@ -547,7 +547,7 @@ export default function ModelSettings({ projectId }) {
                   onChange={(event, newValue) => {
                     if (typeof newValue === 'string') {
                       // 用户手动输入了自定义提供商
-                      setModelForm(prev => ({
+                      setModelForm((prev) => ({
                         ...prev,
                         providerId: 'custom',
                         provider: newValue,
@@ -556,9 +556,9 @@ export default function ModelSettings({ projectId }) {
                       }));
                     } else if (newValue && newValue.id) {
                       // 用户从下拉列表中选择了一个提供商
-                      const selectedProvider = MODEL_PROVIDERS.find(p => p.id === newValue.id);
+                      const selectedProvider = MODEL_PROVIDERS.find((p) => p.id === newValue.id);
                       if (selectedProvider) {
-                        setModelForm(prev => ({
+                        setModelForm((prev) => ({
                           ...prev,
                           providerId: selectedProvider.id,
                           provider: selectedProvider.name,
@@ -573,13 +573,13 @@ export default function ModelSettings({ projectId }) {
                       }
                     }
                   }}
-                  renderInput={params => (
+                  renderInput={(params) => (
                     <TextField
                       {...params}
                       label={t('models.provider')}
-                      onChange={e => {
+                      onChange={(e) => {
                         // 当用户手动输入时，更新 provider 字段
-                        setModelForm(prev => ({
+                        setModelForm((prev) => ({
                           ...prev,
                           providerId: 'custom',
                           provider: e.target.value
@@ -598,22 +598,22 @@ export default function ModelSettings({ projectId }) {
                   options={
                     modelForm.providerId === 'ollama'
                       ? ollamaModels
-                      : MODEL_PROVIDERS.find(p => p.id === modelForm.providerId)?.defaultModels ||
+                      : MODEL_PROVIDERS.find((p) => p.id === modelForm.providerId)?.defaultModels ||
                         []
                   }
                   value={modelForm.name}
                   onChange={(event, newValue) => {
-                    setModelForm(prev => ({
+                    setModelForm((prev) => ({
                       ...prev,
                       name: newValue
                     }));
                   }}
-                  renderInput={params => (
+                  renderInput={(params) => (
                     <TextField
                       {...params}
                       label={t('models.modelName')}
-                      onChange={e => {
-                        setModelForm(prev => ({
+                      onChange={(e) => {
+                        setModelForm((prev) => ({
                           ...prev,
                           name: e.target.value
                         }));
