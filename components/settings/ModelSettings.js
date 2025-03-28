@@ -22,14 +22,15 @@ import {
   Chip,
   Avatar,
   Stack,
-  Tooltip
+  Tooltip,
+  Slider
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
-import { MODEL_PROVIDERS } from '@/constant/model';
+import { DEFAULT_MODEL_SETTINGS, MODEL_PROVIDERS } from '@/constant/model';
 import { useTranslation } from 'react-i18next';
 
 const providerOptions = MODEL_PROVIDERS.map(provider => ({
@@ -103,7 +104,8 @@ export default function ModelSettings({ projectId }) {
             providerId: provider.id,
             name: provider.defaultModels[0],
             endpoint: provider.defaultEndpoint,
-            apiKey: ''
+            apiKey: '',
+            ...DEFAULT_MODEL_SETTINGS
           }));
           setModels(defaultModels);
         } else {
@@ -167,7 +169,8 @@ export default function ModelSettings({ projectId }) {
         providerId: model.providerId,
         name: model.name,
         endpoint: model.endpoint,
-        apiKey: model.apiKey
+        apiKey: model.apiKey,
+        ...model
       });
 
       // 如果是 Ollama 提供商，获取模型列表
@@ -186,7 +189,8 @@ export default function ModelSettings({ projectId }) {
           provider: defaultProvider.name,
           providerId: defaultProvider.id,
           endpoint: defaultProvider.defaultEndpoint,
-          apiKey: ''
+          apiKey: '',
+          ...DEFAULT_MODEL_SETTINGS
           // 不设置 name，等待获取模型列表后再设置
         });
 
@@ -220,7 +224,8 @@ export default function ModelSettings({ projectId }) {
           providerId: defaultProvider.id,
           name: defaultProvider.defaultModels[0],
           endpoint: defaultProvider.defaultEndpoint,
-          apiKey: ''
+          apiKey: '',
+          ...DEFAULT_MODEL_SETTINGS
         });
       }
     }
@@ -414,8 +419,7 @@ export default function ModelSettings({ projectId }) {
             color="primary"
             startIcon={<AddIcon />}
             onClick={() => handleOpenModelDialog()}
-            size="small"
-          >
+            size="small">
             {t('models.add')}
           </Button>
         </Box>
@@ -433,8 +437,7 @@ export default function ModelSettings({ projectId }) {
                   boxShadow: 3,
                   transform: 'translateY(-2px)'
                 }
-              }}
-            >
+              }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Avatar
@@ -445,8 +448,7 @@ export default function ModelSettings({ projectId }) {
                       fontSize: '1.2rem',
                       fontWeight: 'bold', // 加粗字体
                       boxShadow: 2 // 添加阴影
-                    }}
-                  >
+                    }}>
                     {getProviderAvatar(model.providerId)}
                   </Avatar>
 
@@ -464,8 +466,7 @@ export default function ModelSettings({ projectId }) {
                         py: 0.2, // 垂直内边距
                         borderRadius: 1, // 圆角
                         display: 'inline-block' // 行内块元素
-                      }}
-                    >
+                      }}>
                       {model.provider}
                     </Typography>
                   </Box>
@@ -495,8 +496,7 @@ export default function ModelSettings({ projectId }) {
                     size="small"
                     onClick={() => handleDeleteModel(model.id)}
                     disabled={models.length <= 1}
-                    color="error"
-                  >
+                    color="error">
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
@@ -628,6 +628,28 @@ export default function ModelSettings({ projectId }) {
                 placeholder="例如: sk-..."
               />
             </Grid>
+            <Grid item xs={12}>
+              <Typography id="question-generation-length-slider" gutterBottom>
+                {t('models.temperature')}
+              </Typography>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Slider
+                  min={0}
+                  max={2}
+                  name="temperature"
+                  value={modelForm.temperature}
+                  onChange={handleModelFormChange}
+                  step={0.1}
+                  valueLabelDisplay="auto"
+                  aria-label="Temperature"
+                  sx={{ flex: 1 }}
+                />
+                <Typography variant="body2" sx={{ minWidth: '40px' }}>
+                  {modelForm.temperature}
+                </Typography>
+              </Box>
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
@@ -635,8 +657,7 @@ export default function ModelSettings({ projectId }) {
           <Button
             onClick={handleSaveModel}
             variant="contained"
-            disabled={!modelForm.provider || !modelForm.name || !modelForm.endpoint}
-          >
+            disabled={!modelForm.provider || !modelForm.name || !modelForm.endpoint}>
             {t('common.save')}
           </Button>
         </DialogActions>
@@ -646,8 +667,7 @@ export default function ModelSettings({ projectId }) {
         open={success}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
           {t('settings.saveSuccess')}
         </Alert>
@@ -657,8 +677,7 @@ export default function ModelSettings({ projectId }) {
         open={!!error}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
           {error}
         </Alert>

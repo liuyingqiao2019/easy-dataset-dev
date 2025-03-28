@@ -42,7 +42,8 @@ export async function POST(request, { params }) {
       provider: model.provider,
       endpoint: model.endpoint,
       apiKey: model.apiKey,
-      model: model.name
+      model: model.name,
+      temperature: model.temperature
     });
 
     // 生成优化后的答案和思维链

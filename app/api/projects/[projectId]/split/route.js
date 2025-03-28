@@ -40,7 +40,8 @@ export async function POST(request, { params }) {
       provider: model.provider,
       endpoint: model.endpoint,
       apiKey: model.apiKey,
-      model: model.name
+      model: model.name,
+      temperature: model.temperature
     });
     // 生成领域树
     console.log(projectId, fileName, 'Text split completed, starting to build domain tree');

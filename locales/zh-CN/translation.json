@@ -408,7 +408,8 @@
     "provider": "提供商",
     "localModel": "本地模型",
     "apiKeyConfigured": "API Key 已经配置",
-    "apiKeyNotConfigured": "API Key 未配置"
+    "apiKeyNotConfigured": "API Key 未配置",
+    "temperature": "模型温度"
   },
   "stats": {
     "ongoingProjects": "正在运行的项目",

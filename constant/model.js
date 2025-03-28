@@ -75,3 +75,7 @@ export const MODEL_PROVIDERS = [
     defaultModels: ['qwen-max-latest', 'qwen-max-2025-01-25']
   }
 ];
+
+export const DEFAULT_MODEL_SETTINGS = {
+  temperature: 0.7
+};

@@ -408,7 +408,8 @@
     "provider": "Provider",
     "localModel": "Local Model",
     "apiKeyConfigured": "API Key Configured",
-    "apiKeyNotConfigured": "API Key Not Configured"
+    "apiKeyNotConfigured": "API Key Not Configured",
+    "temperature": "Temperature"
   },
   "stats": {
     "ongoingProjects": "Ongoing Projects",
