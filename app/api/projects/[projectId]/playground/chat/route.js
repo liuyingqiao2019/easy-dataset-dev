@@ -28,7 +28,8 @@ export async function POST(request, { params }) {
       endpoint: model.endpoint,
       apiKey: model.apiKey,
       model: model.name,
-      temperature: model.temperature
+      temperature: model.temperature,
+      maxTokens: model.maxTokens
     });
 
     // 格式化消息历史

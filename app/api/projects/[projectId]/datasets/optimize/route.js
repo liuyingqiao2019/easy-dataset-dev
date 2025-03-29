@@ -43,7 +43,8 @@ export async function POST(request, { params }) {
       endpoint: model.endpoint,
       apiKey: model.apiKey,
       model: model.name,
-      temperature: model.temperature
+      temperature: model.temperature,
+      maxTokens: model.maxTokens
     });
 
     // 生成优化后的答案和思维链

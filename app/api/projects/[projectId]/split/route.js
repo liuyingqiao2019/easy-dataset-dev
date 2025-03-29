@@ -41,7 +41,8 @@ export async function POST(request, { params }) {
       endpoint: model.endpoint,
       apiKey: model.apiKey,
       model: model.name,
-      temperature: model.temperature
+      temperature: model.temperature,
+      maxTokens: model.maxTokens
     });
     // 生成领域树
     console.log(projectId, fileName, 'Text split completed, starting to build domain tree');
