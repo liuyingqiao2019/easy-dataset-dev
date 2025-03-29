@@ -332,6 +332,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
         onClose={closePdfProcessConfirm}
         onRadioChange={handleRadioChange}
         value={pdfStrategy}
+        projectId={projectId}
       />
     </Paper>    
   );

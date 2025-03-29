@@ -11,8 +11,10 @@ export default function PdfProcessingDialog({
   onConfirm,
   onRadioChange,
   value,
+  projectId
 }) {
   const { t } = useTranslation();
+  const isMinerUEnabled = localStorage.getItem("isSettingMinerU"+projectId);
   return (
     <Dialog
       open={open}
@@ -34,7 +36,7 @@ export default function PdfProcessingDialog({
                 <span>默认</span>
                 <Tooltip disableFocusListener title="使用内置PDF解析策略"><HelpOutlineIcon sx={{ ml: 35 }} /></Tooltip>
               </div>} />
-            <FormControlLabel value="mineru" control={<Radio />} label={
+            <FormControlLabel value="mineru" control={<Radio />} disabled={!isMinerUEnabled} label={
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span>MinerU</span>
                 <Tooltip disableFocusListener title="使用MinerU API解析，请先配置MinerU API Token"><HelpOutlineIcon sx={{ ml: 32 }} /></Tooltip>
