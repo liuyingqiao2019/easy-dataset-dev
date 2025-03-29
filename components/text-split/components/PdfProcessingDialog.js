@@ -1,57 +1,117 @@
 'use client';
 
-import { Dialog, DialogTitle, DialogContent, DialogContentText, Tooltip, DialogActions, Button, Radio, RadioGroup, FormControlLabel, FormControl } from '@mui/material';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { Dialog, DialogTitle, DialogContent, DialogContentText, Card, CardContent, Typography, Box, Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { styled } from '@mui/material/styles';
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
+import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined';
+import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
+import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
+
+const StyledCard = styled(Card)(({ theme, disabled }) => ({
+  cursor: disabled ? 'not-allowed' : 'pointer',
+  opacity: disabled ? 0.6 : 1,
+  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+  '&:hover': disabled ? {} : {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[4],
+  },
+}));
+
+const OptionCard = ({ icon, title, description, disabled, onClick, selected }) => (
+  <StyledCard
+    disabled={disabled}
+    onClick={disabled ? undefined : onClick}
+    sx={{
+      height: '100%',
+      border: selected ? '2px solid primary.main' : '1px solid divider',
+      backgroundColor: selected ? 'action.selected' : 'background.paper',
+    }}
+  >
+    <CardContent>
+      <Stack spacing={1}>
+        <Box sx={{ color: 'primary.main', mb: 1 }}>
+          {icon}
+        </Box>
+        <Typography variant="h6" component="div">
+          {title}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {description}
+        </Typography>
+      </Stack>
+    </CardContent>
+  </StyledCard>
+);
 
 export default function PdfProcessingDialog({
   open,
-  fileName,
   onClose,
-  onConfirm,
   onRadioChange,
   value,
   projectId
 }) {
   const { t } = useTranslation();
-  const isMinerUEnabled = localStorage.getItem("isSettingMinerU"+projectId);
+  const isMinerUEnabled = localStorage.getItem("isSettingMinerU" + projectId);
+
+  const handleOptionClick = (optionValue) => {
+    if (optionValue === 'mineru-web') {
+      window.open('https://mineru.net/OpenSourceTools/Extractor', '_blank');
+      onClose();
+    } else {
+      onRadioChange({ target: { value: optionValue } });
+      onClose();
+    }
+  };
+
   return (
     <Dialog
       open={open}
       onClose={onClose}
       fullWidth
-      maxWidth="xs"
+      maxWidth="md"
     >
-      <DialogTitle id="delete-dialog-title">
+      <DialogTitle>
         {t('textSplit.pdfProcess')}
       </DialogTitle>
       <DialogContent>
-      <DialogContentText id="delete-dialog-description">
-        {t('textSplit.selectPdfProcessingStrategy')}
-        </DialogContentText>
-        <FormControl component="fieldset">
-          <RadioGroup aria-label="gender" name="gender1" value={value} onChange={onRadioChange}>
-            <FormControlLabel value="default" control={<Radio />} label={
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span>{t('textSplit.pdfProcessingStrategyDefault')}</span>
-                <Tooltip disableFocusListener title={t('textSplit.pdfProcessingStrategyDefaultHelper')}><HelpOutlineIcon sx={{ ml: 35 }} /></Tooltip>
-              </div>} />
-            <FormControlLabel value="mineru" control={<Radio />} disabled={!isMinerUEnabled} label={
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span>MinerU</span>
-                <Tooltip disableFocusListener title={t('textSplit.pdfProcessingStrategyMinerUHelper')}><HelpOutlineIcon sx={{ ml: 32 }} /></Tooltip>
-              </div>} />
-          </RadioGroup>
-        </FormControl>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: 2,
+            p: 1
+          }}
+        >
+          <OptionCard
+            icon={<ArticleOutlinedIcon fontSize="large" />}
+            title={t('textSplit.basicPdfParsing')}
+            description={t('textSplit.basicPdfParsingDesc')}
+            onClick={() => handleOptionClick('default')}
+            selected={value === 'default'}
+          />
+          <OptionCard
+            icon={<ScienceOutlinedIcon fontSize="large" />}
+            title="MinerU API"
+            description={isMinerUEnabled ? t('textSplit.mineruApiDesc') : t('textSplit.mineruApiDescDisabled')}
+            disabled={!isMinerUEnabled}
+            onClick={() => handleOptionClick('mineru')}
+            selected={value === 'mineru'}
+          />
+          <OptionCard
+            icon={<LaunchOutlinedIcon fontSize="large" />}
+            title={t('textSplit.mineruWebPlatform')}
+            description={t('textSplit.mineruWebPlatformDesc')}
+            onClick={() => handleOptionClick('mineru-web')}
+          />
+          <OptionCard
+            icon={<SmartToyOutlinedIcon fontSize="large" />}
+            title={t('textSplit.customVisionModel')}
+            description={t('textSplit.customVisionModelDesc')}
+            disabled={true}
+          />
+        </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="primary">
-          {t('common.cancel')}
-        </Button>
-        <Button onClick={onClose} color="primary" variant="contained">
-          {t('common.confirm')}
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }
