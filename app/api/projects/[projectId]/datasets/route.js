@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getTextChunk } from '@/lib/db/texts';
 import { getQuestionsForChunk } from '@/lib/db/questions';
 import { getDatasets, saveDatasets, updateDataset } from '@/lib/db/datasets';
+import { getProject } from '@/lib/db/projects';
 import getAnswerPrompt from '@/lib/llm/prompts/answer';
 import getAnswerEnPrompt from '@/lib/llm/prompts/answerEn';
 import getOptimizeCotPrompt from '@/lib/llm/prompts/optimizeCot';
@@ -13,7 +14,7 @@ const LLMClient = require('@/lib/llm/core');
 async function optimizeCot(originalQuestion, answer, originalCot, language, llmClient, id, projectId) {
   const prompt = language === 'en' ? getOptimizeCotEnPrompt(originalQuestion, answer, originalCot) : getOptimizeCotPrompt(originalQuestion, answer, originalCot);
   const { answer: optimizedAnswer } = await llmClient.getResponseWithCOT(prompt);
-  await updateDataset(projectId, id, { cot: optimizedAnswer });
+  await updateDataset(projectId, id, { cot: optimizedAnswer.replace('优化后的思维链', '') });
   console.log(originalQuestion, id, '已成功优化思维链');
 }
 
@@ -49,6 +50,10 @@ export async function POST(request, { params }) {
       }, { status: 404 });
     }
 
+    // 获取项目配置
+    const project = await getProject(projectId);
+    const { globalPrompt, answerPrompt } = project;
+
     // 创建LLM客户端
     const llmClient = new LLMClient({
       provider: model.provider,
@@ -57,8 +62,15 @@ export async function POST(request, { params }) {
       model: model.name,
     });
 
+    const promptFuc = language === 'en' ? getAnswerEnPrompt : getAnswerPrompt;
+
     // 生成答案的提示词
-    const prompt = language === 'en' ? getAnswerEnPrompt(chunk.content, question.question) : getAnswerPrompt(chunk.content, question.question);
+    const prompt = promptFuc({
+      text: chunk.content,
+      question: question.question,
+      globalPrompt,
+      answerPrompt
+    });
 
     // 调用大模型生成答案
     const { answer, cot } = await llmClient.getResponseWithCOT(prompt);

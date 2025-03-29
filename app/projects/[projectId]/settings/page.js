@@ -18,12 +18,14 @@ import { useTranslation } from 'react-i18next';
 import BasicSettings from '@/components/settings/BasicSettings';
 import ModelSettings from '@/components/settings/ModelSettings';
 import TaskSettings from '@/components/settings/TaskSettings';
+import PromptSettings from './components/PromptSettings';
 
 // 定义 TAB 枚举
 const TABS = {
   BASIC: 'basic',
   MODEL: 'model',
-  TASK: 'task'
+  TASK: 'task',
+  PROMPTS: 'prompts'
 };
 
 export default function SettingsPage({ params }) {
@@ -120,6 +122,7 @@ export default function SettingsPage({ params }) {
           <Tab value={TABS.BASIC} label={t('settings.basicInfo')} />
           <Tab value={TABS.MODEL} label={t('settings.modelConfig')} />
           <Tab value={TABS.TASK} label={t('settings.taskConfig')} />
+          <Tab value={TABS.PROMPTS} label={t('settings.promptConfig')} />
         </Tabs>
       </Paper>
       
@@ -133,6 +136,10 @@ export default function SettingsPage({ params }) {
       
       {activeTab === TABS.TASK && (
         <TaskSettings projectId={projectId} />
+      )}
+      
+      {activeTab === TABS.PROMPTS && (
+        <PromptSettings projectId={projectId} />
       )}
     </Container>
   );

@@ -10,6 +10,21 @@
         "switchToDark": "切换到暗色模式"
     },
     "settings": {
+        "promptConfig": "提示词配置",
+        "promptsDescription": "配置项目中使用的各类自定义提示词，可用于人工干预数据集的生成效果。",
+        "globalPrompt": "全局提示词",
+        "questionPrompt": "生成问题提示词",
+        "answerPrompt": "生成答案提示词",
+        "labelPrompt": "问题打标提示词",
+        "domainTreePrompt": "构建领域树提示词",
+        "globalPromptPlaceholder": "请输入全局提示词（慎用，可能影响整体生成效果）",
+        "questionPromptPlaceholder": "请输入自定义生成问题的提示词",
+        "answerPromptPlaceholder": "请输入自定义生成答案的提示词",
+        "labelPromptPlaceholder": "请输入自定义问题打标的提示词（暂不支持配置）",
+        "domainTreePromptPlaceholder": "请输入自定义构建领域树的提示词",
+        "loadPromptsFailed": "加载提示词配置失败",
+        "savePromptsSuccess": "保存提示词配置成功",
+        "savePromptsFailed": "保存提示词配置失败",
         "title": "项目设置",
         "basicInfo": "基本信息",
         "modelConfig": "模型配置",
@@ -66,7 +81,19 @@
         "generating": "正在生成数据集",
         "generatingProgress": "已完成: {{completed}}/{{total}}",
         "generatedCount": "已成功生成: {{count}} 个",
-        "pleaseWait": "请耐心等待，正在处理中..."
+        "pleaseWait": "请耐心等待，正在处理中...",
+        "createSuccess": "问题创建成功",
+        "updateSuccess": "问题更新成功",
+        "operationSuccess": "操作成功",
+        "operationFailed": "操作失败",
+        "editQuestion": "编辑问题",
+        "questionContent": "问题内容",
+        "selectChunk": "选择文本块",
+        "selectTag": "选择标签",
+        "createQuestion": "创建问题",
+        "questionPlaceholder": "请输入问题内容",
+        "noChunkSelected": "请先选择文本块",
+        "noTagSelected": "请选择标签"
     },
     "common": {
         "unknownError": "未知错误",
@@ -96,7 +123,9 @@
         "fetchError": "获取数据出错",
         "confirmDeleteQuestion": "确认删除此问题吗？此操作不可恢复。",
         "deleteSuccess": "删除成功",
-        "visitGitHub": "访问GitHub仓库"
+        "visitGitHub": "访问GitHub仓库",
+        "copy": "复制",
+        "copied": "已复制"
     },
     "home": {
         "title": "Easy Dataset",
@@ -133,6 +162,9 @@
         "deleteConfirmTitle": "确认删除项目"
     },
     "textSplit": {
+        "allChunks": "全部文本块",
+        "generatedQuestions2": "已生成问题",
+        "ungeneratedQuestions": "未生成问题",
         "noFilesUploaded": "暂未上传文件",
         "unknownFile": "未知文件",
         "fetchFilesFailed": "获取文件列表出错",
@@ -255,7 +287,16 @@
         "questionFieldName": "问题字段名",
         "answerFieldName": "答案字段名",
         "cotFieldName": "思维链字段名",
-        "includeLabels": "包含标签"
+        "includeLabels": "包含标签",
+        "localTab": "导出到本地",
+        "llamaFactoryTab": "在 LLaMA Factory 中使用",
+        "huggingFaceTab": "上传至远程仓库",
+        "configExists": "已存在配置文件",
+        "configPath": "配置文件路径",
+        "updateConfig": "更新 LLaMA Factory 配置",
+        "noConfig": "暂无配置文件，点击下方按钮生成",
+        "generateConfig": "生成 LLaMA Factory 配置",
+        "huggingFaceComingSoon": "HuggingFace 导出功能即将推出"
     },
     "datasets": {
         "generatingDataset": "正在生成数据集",

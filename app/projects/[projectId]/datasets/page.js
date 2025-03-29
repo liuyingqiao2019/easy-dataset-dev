@@ -700,7 +700,29 @@ export default function DatasetsPage({ params }) {
         // JSONL 格式：每行一个 JSON 对象
         content = formattedData.map(item => JSON.stringify(item)).join('\n');
         fileExtension = 'jsonl';
-      } else {
+      } else if (exportOptions.fileFormat === 'csv') {
+        // CSV 格式
+        const headers = Object.keys(formattedData[0] || {});
+        const csvRows = [
+            // 添加表头
+            headers.join(','),
+            // 添加数据行
+            ...formattedData.map(item =>
+                headers
+                    .map(header => {
+                        // 处理包含逗号、换行符或双引号的字段
+                        let field = item[header]?.toString() || '';
+                        if (field.includes(',') || field.includes('\n') || field.includes('"')) {
+                            field = `"${field.replace(/"/g, '""')}"`;
+                        }
+                        return field;
+                    })
+                    .join(',')
+            )
+        ];
+        content = csvRows.join('\n');
+        fileExtension = 'csv';
+    } else {
         // 默认 JSON 格式
         content = JSON.stringify(formattedData, null, 2);
         fileExtension = 'json';
@@ -924,6 +946,7 @@ export default function DatasetsPage({ params }) {
         open={exportDialog.open}
         onClose={handleCloseExportDialog}
         onExport={handleExportDatasets}
+        projectId={projectId}
       />
     </Container>
   );

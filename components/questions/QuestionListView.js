@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import EditIcon from '@mui/icons-material/Edit';
 
 
 export default function QuestionListView({
@@ -27,7 +28,8 @@ export default function QuestionListView({
   onSelectQuestion,
   onDeleteQuestion,
   onGenerateDataset,
-  projectId
+  projectId,
+  onEditQuestion
 }) {
   const { t } = useTranslation();
   // 分页状态
@@ -224,7 +226,21 @@ export default function QuestionListView({
                   </Tooltip>
                 </Box>
 
-                <Box sx={{ width: 100, display: 'flex', justifyContent: 'center' }}>
+                <Box sx={{ width: 120, display: 'flex', justifyContent: 'center' }}>
+                  <Tooltip title={t('questions.edit')}>
+                    <IconButton
+                      size="small"
+                      color="primary"
+                      onClick={() => onEditQuestion({
+                        question: question.question,
+                        chunkId: question.chunkId,
+                        label: question.label || 'other'
+                      })}
+                      disabled={processingQuestions[questionKey]}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title={t('datasets.generateDataset')}>
                     <IconButton
                       size="small"

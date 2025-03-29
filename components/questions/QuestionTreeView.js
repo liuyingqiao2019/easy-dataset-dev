@@ -21,6 +21,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import EditIcon from '@mui/icons-material/Edit';
 import FolderIcon from '@mui/icons-material/Folder';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 
@@ -42,13 +43,14 @@ export default function QuestionTreeView({
   selectedQuestions = [],
   onSelectQuestion,
   onDeleteQuestion,
-  onGenerateDataset
+  onGenerateDataset,
+  onEditQuestion
 }) {
   const { t } = useTranslation();
   const [expandedTags, setExpandedTags] = useState({});
   const [questionsByTag, setQuestionsByTag] = useState({});
   const [processingQuestions, setProcessingQuestions] = useState({});
-  
+
   // 使用 useMemo 缓存 chunks 的映射，避免在渲染时重复查找
   const chunksMap = useMemo(() => {
     const map = {};
@@ -169,27 +171,28 @@ export default function QuestionTreeView({
   }, []);
 
   // 检查问题是否被选中 - 使用 useCallback 优化
-  const isQuestionSelected = useCallback((questionId, chunkId) => {
-    return selectedQuestions.includes(`${chunkId}-${questionId}`);
+  const isQuestionSelected = useCallback((questionKey) => {
+    return selectedQuestions.includes(questionKey);
   }, [selectedQuestions]);
 
   // 处理生成数据集 - 使用 useCallback 优化
-  const handleGenerateDataset = useCallback(async (questionId, chunkId) => {
+  const handleGenerateDataset = useCallback(async (questionKey) => {
     if (!onGenerateDataset) return;
 
+    const [question, chunkId] = JSON.parse(questionKey);
     setProcessingQuestions(prev => ({
       ...prev,
-      [`${chunkId}-${questionId}`]: true
+      [questionKey]: true
     }));
 
     try {
-      await onGenerateDataset(questionId, chunkId);
+      await onGenerateDataset(question, chunkId);
     } catch (error) {
       console.error('生成数据集失败:', error);
     } finally {
       setProcessingQuestions(prev => {
         const newState = { ...prev };
-        delete newState[`${chunkId}-${questionId}`];
+        delete newState[questionKey];
         return newState;
       });
     }
@@ -197,17 +200,19 @@ export default function QuestionTreeView({
 
   // 渲染单个问题项 - 使用 useCallback 优化
   const renderQuestionItem = useCallback((question, index, total) => {
+    const questionKey = JSON.stringify({ question: question.question, chunkId: question.chunkId });
     return (
       <QuestionItem
-        key={`${question.chunkId}-${question.question}`}
+        key={questionKey}
         question={question}
         index={index}
         total={total}
-        isSelected={isQuestionSelected(question.question, question.chunkId)}
+        isSelected={isQuestionSelected(questionKey)}
         onSelect={onSelectQuestion}
         onDelete={onDeleteQuestion}
         onGenerate={handleGenerateDataset}
-        isProcessing={processingQuestions[`${question.chunkId}-${question.question}`]}
+        onEdit={onEditQuestion}
+        isProcessing={processingQuestions[questionKey]}
         chunkTitle={chunksMap[question.chunkId]}
         t={t}
       />
@@ -217,21 +222,21 @@ export default function QuestionTreeView({
   // 计算标签及其子标签下的所有问题数量 - 使用 useMemo 缓存计算结果
   const tagQuestionCounts = useMemo(() => {
     const counts = {};
-    
+
     const countQuestions = (tag) => {
       const directQuestions = questionsByTag[tag.label] || [];
       let total = directQuestions.length;
-      
+
       if (tag.child && tag.child.length > 0) {
         for (const childTag of tag.child) {
           total += countQuestions(childTag);
         }
       }
-      
+
       counts[tag.label] = total;
       return total;
     };
-    
+
     tags.forEach(countQuestions);
     return counts;
   }, [questionsByTag, tags]);
@@ -365,20 +370,22 @@ export default function QuestionTreeView({
 }
 
 // 使用 memo 优化问题项渲染
-const QuestionItem = memo(({ 
-  question, 
-  index, 
-  total, 
-  isSelected, 
-  onSelect, 
-  onDelete, 
-  onGenerate, 
-  isProcessing, 
-  chunkTitle, 
-  t 
+const QuestionItem = memo(({
+  question,
+  index,
+  total,
+  isSelected,
+  onSelect,
+  onDelete,
+  onGenerate,
+  onEdit,
+  isProcessing,
+  chunkTitle,
+  t
 }) => {
+  const questionKey = JSON.stringify({ question: question.question, chunkId: question.chunkId });
   return (
-    <Box key={`${question.chunkId}-${question.question}`}>
+    <Box key={questionKey}>
       <ListItem
         sx={{
           pl: 4,
@@ -393,11 +400,10 @@ const QuestionItem = memo(({
           }
         }}
       >
-        {/* 内部内容保持不变 */}
         <Checkbox
           checked={isSelected}
-          onChange={() => onSelect(question.question, question.chunkId)}
-          sx={{ mr: 1 }}
+          onChange={() => onSelect(questionKey)}
+          size="small"
         />
         <QuestionMarkIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }} />
         <ListItemText
@@ -422,11 +428,25 @@ const QuestionItem = memo(({
           }
         />
         <Box>
+          <Tooltip title={t('questions.edit')}>
+            <IconButton
+              size="small"
+              sx={{ mr: 1 }}
+              onClick={() => onEdit({
+                question: question.question,
+                chunkId: question.chunkId,
+                label: question.label || 'other'
+              })}
+              disabled={isProcessing}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Tooltip title={t('datasets.generateDataset')}>
             <IconButton
               size="small"
               sx={{ mr: 1 }}
-              onClick={() => onGenerate(question.question, question.chunkId)}
+              onClick={() => onGenerate(questionKey)}
               disabled={isProcessing}
             >
               {isProcessing ? (
@@ -452,13 +472,13 @@ const QuestionItem = memo(({
 });
 
 // 使用 memo 优化标签项渲染
-const TagItem = memo(({ 
-  tag, 
-  level, 
-  isExpanded, 
-  totalQuestions, 
-  onToggle, 
-  t 
+const TagItem = memo(({
+  tag,
+  level,
+  isExpanded,
+  totalQuestions,
+  onToggle,
+  t
 }) => {
   return (
     <ListItem
