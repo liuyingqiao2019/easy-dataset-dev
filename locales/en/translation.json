@@ -47,7 +47,10 @@
     "huggingfaceToken": "Hugging Face Token",
     "huggingfaceNotImplemented": "Hugging Face functionality is not yet implemented",
     "concurrencyLimit": "Concurrency Limit",
-    "saveTaskConfig": "Save Task Config"
+    "saveTaskConfig": "Save Task Config",
+    "minerUSettings": "MinerU Settings",
+    "minerUToken": "MinerU Token",
+    "minerUHelper": "MinerU Token is valid for only 14 days, please update the Token in time"
   },
   "questions": {
     "filterAll": "All Questions",
@@ -221,7 +224,17 @@
     "generatedQuestions": "{{count}} Questions",
     "viewDetails": "View Details",
     "generateQuestions": "Generate Questions",
-    "characters": "Characters"
+    "characters": "Characters",
+    "pdfProcessStatus": "Total {{total}} PDF files, {{completed}} have been converted",
+    "pdfProcessing": "Converting PDF file...",
+    "pdfProcessingFailed": "PDF file conversion failed!",   
+    "pdfProcess": "PDF file detected!",
+    "selectPdfProcessingStrategy": "Please select the PDF processing method:",
+    "pdfProcessingStrategyDefault": "Default",
+    "pdfProcessingStrategyDefaultHelper": "Use the built-in PDF parsing strategy",
+    "pdfProcessingStrategyMinerUHelper": "Use MinerU API for parsing. Please configure the MinerU API Token first",
+    "pdfProcessingStrategyVision": "Custom Vision Model",
+    "pdfProcessingStrategyVisionHelper": "Use a custom vision model for parsing"
   },
   "domain": {
     "title": "Domain Knowledge Tree",

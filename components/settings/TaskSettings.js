@@ -54,16 +54,23 @@ export default function TaskSettings({ projectId }) {
         throw new Error(t('settings.saveTasksFailed'));
       }
 
+      const minerUToken = taskSettings.minerUToken;
+      if (minerUToken !== undefined || minerUToken !== null || minerUToken !== '') {
+        localStorage.setItem("isSettingMinerU"+projectId,true);
+      }else{
+        localStorage.removeItem("isSettingMinerU"+projectId);
+      }
+
       setSuccess(true);
     } catch (error) {
       console.error('保存任务配置出错:', error);
-      setError(error.message);
+      //setError(error.message);
     }
   };
 
   const handleCloseSnackbar = () => {
     setSuccess(false);
-    setError(null);
+    //setError(null);
   };
 
   if (loading) {
@@ -171,6 +178,21 @@ export default function TaskSettings({ projectId }) {
               value={taskSettings.concurrencyLimit}
               onChange={handleSettingChange}
               type="number"
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" gutterBottom>
+              {t('settings.minerUSettings')}
+            </Typography>
+            <TextField
+              fullWidth
+              label={t('settings.minerUToken')}
+              name="minerUToken"
+              value={taskSettings.minerUToken}
+              onChange={handleSettingChange}
+              type="password"
+              helperText={t('settings.minerUHelper')}
             />
           </Grid>
 

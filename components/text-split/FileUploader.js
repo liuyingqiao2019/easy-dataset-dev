@@ -8,6 +8,7 @@ import { useTheme } from '@mui/material/styles';
 import UploadArea from './components/UploadArea';
 import FileList from './components/FileList';
 import DeleteConfirmDialog from './components/DeleteConfirmDialog';
+import PdfProcessingDialog from './components/PdfProcessingDialog';
 
 /**
  * File uploader component
@@ -16,10 +17,11 @@ import DeleteConfirmDialog from './components/DeleteConfirmDialog';
  * @param {Function} props.onUploadSuccess - Upload success callback
  * @param {Function} props.onProcessStart - Process start callback
  */
-export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted, sendToPages }) {
+export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted,sendToPages,setPdfStrategy,pdfStrategy }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [files, setFiles] = useState([]);
+  const [pdfFiles, setPdfFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,7 +29,15 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
   const [success, setSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [pdfProcessConfirmOpen, setpdfProcessConfirmOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
+
+
+  // 设置PDF文件的处理方式
+  const handleRadioChange = (event) => {
+    setPdfStrategy(event.target.value);
+  };
+
   // Load uploaded files list
   useEffect(() => {
     fetchUploadedFiles();
@@ -66,12 +76,11 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
       return;
     }
 
-    // 检查文件类型
     const validFiles = selectedFiles.filter(
-      file => file.name.endsWith('.md') || file.name.endsWith('.txt') || file.name.endsWith('.docx')
+      file => file.name.endsWith('.md') || file.name.endsWith('.txt') || file.name.endsWith('.docx') || file.name.endsWith('.pdf')
     );
     const invalidFiles = selectedFiles.filter(
-      file => !file.name.endsWith('.md') && !file.name.endsWith('.txt') && !file.name.endsWith('.docx')
+      file => !file.name.endsWith('.md') && !file.name.endsWith('.txt') && !file.name.endsWith('.docx') && !file.name.endsWith('.pdf')
     );
 
     if (invalidFiles.length > 0) {
@@ -80,6 +89,12 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
 
     if (validFiles.length > 0) {
       setFiles(prev => [...prev, ...validFiles]);
+    }
+    // If there are PDF files among the uploaded files, let the user choose the way to process the PDF files.
+    const hasPdfFiles = selectedFiles.filter(file => file.name.endsWith('.pdf'));
+    if(hasPdfFiles.length > 0){
+      setpdfProcessConfirmOpen(true);
+      setPdfFiles(hasPdfFiles);
     }
   };
 
@@ -138,6 +153,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
             reader.onerror = reject;
             reader.readAsArrayBuffer(file);
           });
+          fileName = file.name.replace('.txt', '.md');
         }
 
         // 使用自定义请求头发送文件
@@ -167,7 +183,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
 
       // 上传成功后，返回文件名列表和选中的模型信息
       if (onUploadSuccess) {
-        onUploadSuccess(uploadedFileNames, selectedModelInfo);
+        await onUploadSuccess(uploadedFileNames, selectedModelInfo,pdfFiles);
       }
     } catch (err) {
       setError(err.message || t('textSplit.uploadFailed'));
@@ -187,6 +203,11 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
     setDeleteConfirmOpen(false);
     setFileToDelete(null);
   };
+
+  // 关闭PDF处理框
+  const closePdfProcessConfirm = () =>{
+    setpdfProcessConfirmOpen(false);
+  }
 
   // 处理删除文件
   const handleDeleteFile = async () => {
@@ -292,6 +313,14 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
         onClose={closeDeleteConfirm}
         onConfirm={handleDeleteFile}
       />
-    </Paper>
+      {/* 检测到pdf的处理框 */}
+      <PdfProcessingDialog
+        open={pdfProcessConfirmOpen}
+        onClose={closePdfProcessConfirm}
+        onRadioChange={handleRadioChange}
+        value={pdfStrategy}
+        projectId={projectId}
+      />
+    </Paper>    
   );
 }
