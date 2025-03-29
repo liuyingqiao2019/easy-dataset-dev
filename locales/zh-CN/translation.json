@@ -47,7 +47,10 @@
     "huggingfaceToken": "Hugging Face Token",
     "huggingfaceNotImplemented": "Hugging Face 功能暂未实现",
     "concurrencyLimit": "并发限制数量",
-    "saveTaskConfig": "保存任务配置"
+    "saveTaskConfig": "保存任务配置",
+    "minerUSettings": "MinerU 设置",
+    "minerUToken": "MinerU Token",
+    "minerUHelper": "MinerU Token 只有14天有效期，请及时更换Token"
   },
   "questions": {
     "filterAll": "全部问题",
@@ -221,7 +224,17 @@
     "generatedQuestions": "{{count}} 个问题",
     "viewDetails": "查看详情",
     "generateQuestions": "生成问题",
-    "characters": "字符"
+    "characters": "字符",
+    "pdfProcess":"检测到PDF文件！",
+    "pdfProcessStatus": "共{{total}}个PDF文件，{{completed}}个已完成转换",
+    "pdfProcessing":"正在转换PDF文件...",
+    "pdfProcessingFailed":"PDF文件转换失败！",
+    "selectPdfProcessingStrategy":"请选择PDF文件处理方式：",
+    "pdfProcessingStrategyDefault":"默认",
+    "pdfProcessingStrategyDefaultHelper":"使用内置PDF解析策略",
+    "pdfProcessingStrategyMinerUHelper":"使用MinerU API解析，请先配置MinerU API Token",
+    "pdfProcessingStrategyVision":"自定义视觉模型",
+    "pdfProcessingStrategyVisionHelper":"使用自定义视觉模型解析"
   },
   "domain": {
     "title": "领域知识树",
