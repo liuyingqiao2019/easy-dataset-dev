@@ -68,7 +68,7 @@ export default function ModelSettings({ projectId }) {
       const data = await response.json();
       setOllamaModels(data.map(model => model.name));
     } catch (error) {
-      console.error('获取 Ollama 模型列表出错:', error);
+      // console.error('获取 Ollama 模型列表出错:', error);
       setOllamaModels([]);
     }
   };
