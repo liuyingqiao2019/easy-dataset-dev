@@ -58,13 +58,11 @@ const DatasetList = ({
   const theme = useTheme();
   const { t } = useTranslation();
 
-  const bgColor = theme.palette.mode === 'dark'
-    ? theme.palette.primary.dark
-    : theme.palette.primary.light
-  const color = theme.palette.mode === 'dark'
-    ? theme.palette.getContrastText(theme.palette.primary.main)
-    : theme.palette.getContrastText(theme.palette.primary.contrastText)
-
+  const bgColor = theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light;
+  const color =
+    theme.palette.mode === 'dark'
+      ? theme.palette.getContrastText(theme.palette.primary.main)
+      : theme.palette.getContrastText(theme.palette.primary.contrastText);
 
   return (
     <Card elevation={2}>
@@ -72,13 +70,13 @@ const DatasetList = ({
         <Table sx={{ minWidth: 750 }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox"
+              <TableCell
+                padding="checkbox"
                 sx={{
                   backgroundColor: bgColor,
                   color: color,
-                  borderBottom: `2px solid ${theme.palette.divider}`,
-                }}
-              >
+                  borderBottom: `2px solid ${theme.palette.divider}`
+                }}>
                 <Checkbox
                   color="primary"
                   indeterminate={selectedIds.length > 0 && selectedIds.length < datasets.length}
@@ -92,9 +90,8 @@ const DatasetList = ({
                   color: color,
                   fontWeight: 'bold',
                   padding: '16px 8px',
-                  borderBottom: `2px solid ${theme.palette.divider}`,
-                }}
-              >
+                  borderBottom: `2px solid ${theme.palette.divider}`
+                }}>
                 {t('datasets.question')}
               </TableCell>
               <TableCell
@@ -103,9 +100,8 @@ const DatasetList = ({
                   color: color,
                   fontWeight: 'bold',
                   padding: '16px 8px',
-                  borderBottom: `2px solid ${theme.palette.divider}`,
-                }}
-              >
+                  borderBottom: `2px solid ${theme.palette.divider}`
+                }}>
                 {t('datasets.createdAt')}
               </TableCell>
               <TableCell
@@ -114,9 +110,8 @@ const DatasetList = ({
                   color: color,
                   fontWeight: 'bold',
                   padding: '16px 8px',
-                  borderBottom: `2px solid ${theme.palette.divider}`,
-                }}
-              >
+                  borderBottom: `2px solid ${theme.palette.divider}`
+                }}>
                 {t('datasets.model')}
               </TableCell>
               <TableCell
@@ -125,9 +120,8 @@ const DatasetList = ({
                   color: color,
                   fontWeight: 'bold',
                   padding: '16px 8px',
-                  borderBottom: `2px solid ${theme.palette.divider}`,
-                }}
-              >
+                  borderBottom: `2px solid ${theme.palette.divider}`
+                }}>
                 {t('datasets.domainTag')}
               </TableCell>
               <TableCell
@@ -136,9 +130,8 @@ const DatasetList = ({
                   color: color,
                   fontWeight: 'bold',
                   padding: '16px 8px',
-                  borderBottom: `2px solid ${theme.palette.divider}`,
-                }}
-              >
+                  borderBottom: `2px solid ${theme.palette.divider}`
+                }}>
                 {t('datasets.cot')}
               </TableCell>
               <TableCell
@@ -147,9 +140,8 @@ const DatasetList = ({
                   color: color,
                   fontWeight: 'bold',
                   padding: '16px 8px',
-                  borderBottom: `2px solid ${theme.palette.divider}`,
-                }}
-              >
+                  borderBottom: `2px solid ${theme.palette.divider}`
+                }}>
                 {t('datasets.answer')}
               </TableCell>
               <TableCell
@@ -158,9 +150,8 @@ const DatasetList = ({
                   color: color,
                   fontWeight: 'bold',
                   padding: '16px 8px',
-                  borderBottom: `2px solid ${theme.palette.divider}`,
-                }}
-              >
+                  borderBottom: `2px solid ${theme.palette.divider}`
+                }}>
                 {t('common.actions')}
               </TableCell>
             </TableRow>
@@ -172,23 +163,22 @@ const DatasetList = ({
                 sx={{
                   '&:nth-of-type(odd)': { backgroundColor: alpha(theme.palette.primary.light, 0.05) },
                   '&:hover': { backgroundColor: alpha(theme.palette.primary.light, 0.1) },
-                  cursor: 'pointer',
+                  cursor: 'pointer'
                 }}
-                onClick={() => onViewDetails(dataset.id)}
-              >
-                <TableCell padding="checkbox"
+                onClick={() => onViewDetails(dataset.id)}>
+                <TableCell
+                  padding="checkbox"
                   sx={{
-                    borderLeft: `4px solid ${theme.palette.primary.main}`,
-                  }}
-                >
+                    borderLeft: `4px solid ${theme.palette.primary.main}`
+                  }}>
                   <Checkbox
                     color="primary"
                     checked={selectedIds.includes(dataset.id)}
-                    onChange={(e) => {
+                    onChange={e => {
                       e.stopPropagation();
                       onSelectItem(dataset.id);
                     }}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={e => e.stopPropagation()}
                   />
                 </TableCell>
                 <TableCell
@@ -196,11 +186,9 @@ const DatasetList = ({
                     maxWidth: 300,
                     whiteSpace: 'normal',
                     wordBreak: 'break-word',
-                    py: 2,
-                  }}
-                >
+                    py: 2
+                  }}>
                   <Typography variant="body2" fontWeight="medium">
-
                     {dataset.confirmed && (
                       <Chip
                         label={t('datasets.confirmed')}
@@ -210,7 +198,7 @@ const DatasetList = ({
                           color: theme.palette.success.dark,
                           fontWeight: 'medium',
                           verticalAlign: 'baseline',
-                          marginRight: '2px',
+                          marginRight: '2px'
                         }}
                       />
                     )}
@@ -229,7 +217,7 @@ const DatasetList = ({
                     sx={{
                       backgroundColor: alpha(theme.palette.info.main, 0.1),
                       color: theme.palette.info.dark,
-                      fontWeight: 'medium',
+                      fontWeight: 'medium'
                     }}
                   />
                 </TableCell>
@@ -241,11 +229,13 @@ const DatasetList = ({
                       sx={{
                         backgroundColor: alpha(theme.palette.primary.main, 0.1),
                         color: theme.palette.primary.dark,
-                        fontWeight: 'medium',
+                        fontWeight: 'medium'
                       }}
                     />
                   ) : (
-                    <Typography variant="body2" color="text.disabled">{t('datasets.noTag')}</Typography>
+                    <Typography variant="body2" color="text.disabled">
+                      {t('datasets.noTag')}
+                    </Typography>
                   )}
                 </TableCell>
                 <TableCell>
@@ -256,10 +246,8 @@ const DatasetList = ({
                       backgroundColor: dataset.cot
                         ? alpha(theme.palette.success.main, 0.1)
                         : alpha(theme.palette.grey[500], 0.1),
-                      color: dataset.cot
-                        ? theme.palette.success.dark
-                        : theme.palette.grey[700],
-                      fontWeight: 'medium',
+                      color: dataset.cot ? theme.palette.success.dark : theme.palette.grey[700],
+                      fontWeight: 'medium'
                     }}
                   />
                 </TableCell>
@@ -271,9 +259,8 @@ const DatasetList = ({
                       textOverflow: 'ellipsis',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                    }}
-                  >
+                      WebkitBoxOrient: 'vertical'
+                    }}>
                     {dataset.answer}
                   </Typography>
                 </TableCell>
@@ -282,30 +269,28 @@ const DatasetList = ({
                     <Tooltip title={t('datasets.viewDetails')}>
                       <IconButton
                         size="small"
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           onViewDetails(dataset.id);
                         }}
                         sx={{
                           color: theme.palette.primary.main,
-                          '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.1) },
-                        }}
-                      >
+                          '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.1) }
+                        }}>
                         <VisibilityIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('common.delete')}>
                       <IconButton
                         size="small"
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           onDelete(dataset);
                         }}
                         sx={{
                           color: theme.palette.error.main,
-                          '&:hover': { backgroundColor: alpha(theme.palette.error.main, 0.1) },
-                        }}
-                      >
+                          '&:hover': { backgroundColor: alpha(theme.palette.error.main, 0.1) }
+                        }}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -338,7 +323,7 @@ const DatasetList = ({
         sx={{
           borderTop: `1px solid ${theme.palette.divider}`,
           '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-            fontWeight: 'medium',
+            fontWeight: 'medium'
           }
         }}
       />
@@ -358,89 +343,81 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
       PaperProps={{
         elevation: 3,
         sx: { borderRadius: 2 }
-      }}
-    >
+      }}>
       <DialogTitle sx={{ pb: 1 }}>
-        <Typography variant="h6" fontWeight="bold">{t('common.confirmDelete')}</Typography>
+        <Typography variant="h6" fontWeight="bold">
+          {t('common.confirmDelete')}
+        </Typography>
       </DialogTitle>
       <DialogContent sx={{ pb: 2, pt: 1 }}>
         <Typography variant="body1" sx={{ mb: 2 }}>
-          {batch ? t(
-            'datasets.batchconfirmDeleteMessage',
-            {
-              count: datasets.length,
-            }
-          ) : t('common.confirmDeleteDataSet')}
+          {batch
+            ? t('datasets.batchconfirmDeleteMessage', {
+                count: datasets.length
+              })
+            : t('common.confirmDeleteDataSet')}
         </Typography>
-        {batch ? '' : <Paper
-          variant="outlined"
-          sx={{
-            p: 2,
-            backgroundColor: alpha(theme.palette.warning.light, 0.1),
-            borderColor: theme.palette.warning.light,
-          }}
-        >
-          <Typography variant="subtitle2" color="text.secondary" fontWeight="bold">
-            {t('datasets.question')}：
-          </Typography>
-          <Typography variant="body2">
-            {dataset?.question}
-          </Typography>
-        </Paper>}
-        {
-          deleting && progress ?
-            <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Typography variant="body1" sx={{ mr: 1 }}>
-                  {progress.percentage}%
-                </Typography>
-                <Box sx={{ width: '100%' }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress.percentage}
-                    sx={{
-                      height: 8,
-                      borderRadius: 4,
-                      '& .MuiLinearProgress-bar': {
-                        transitionDuration: '0.1s'
-                      }
-                    }}
-                    color="primary"
-                  />
-                </Box>
+        {batch ? (
+          ''
+        ) : (
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 2,
+              backgroundColor: alpha(theme.palette.warning.light, 0.1),
+              borderColor: theme.palette.warning.light
+            }}>
+            <Typography variant="subtitle2" color="text.secondary" fontWeight="bold">
+              {t('datasets.question')}：
+            </Typography>
+            <Typography variant="body2">{dataset?.question}</Typography>
+          </Paper>
+        )}
+        {deleting && progress ? (
+          <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <Typography variant="body1" sx={{ mr: 1 }}>
+                {progress.percentage}%
+              </Typography>
+              <Box sx={{ width: '100%' }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={progress.percentage}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    '& .MuiLinearProgress-bar': {
+                      transitionDuration: '0.1s'
+                    }
+                  }}
+                  color="primary"
+                />
               </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                <Typography variant="body2">
-                  {t('datasets.batchDeleteProgress', { completed: progress.completed, total: progress.total })}
-                </Typography>
-                <Typography variant="body2" color="success.main" sx={{ fontWeight: 'medium' }}>
-                  {t('datasets.batchDeleteCount', { count: progress.datasetCount })}
-                </Typography>
-              </Box>
-            </Box> : ''
-        }
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+              <Typography variant="body2">
+                {t('datasets.batchDeleteProgress', { completed: progress.completed, total: progress.total })}
+              </Typography>
+              <Typography variant="body2" color="success.main" sx={{ fontWeight: 'medium' }}>
+                {t('datasets.batchDeleteCount', { count: progress.datasetCount })}
+              </Typography>
+            </Box>
+          </Box>
+        ) : (
+          ''
+        )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button
-          onClick={onClose}
-          variant="outlined"
-          sx={{ borderRadius: 2 }}
-        >
+        <Button onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
           {t('common.cancel')}
         </Button>
-        <Button
-          onClick={onConfirm}
-          color="error"
-          variant="contained"
-          sx={{ borderRadius: 2 }}
-        >
+        <Button onClick={onConfirm} color="error" variant="contained" sx={{ borderRadius: 2 }}>
           {t('common.delete')}
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
-
 
 // 主页面组件
 export default function DatasetsPage({ params }) {
@@ -460,7 +437,7 @@ export default function DatasetsPage({ params }) {
     // 是否批量删除
     batch: false,
     // 是否正在删除
-    deleting: false,
+    deleting: false
   });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -470,12 +447,10 @@ export default function DatasetsPage({ params }) {
   const { t } = useTranslation();
   // 删除进度状态
   const [deleteProgress, setDeteleProgress] = useState({
-    total: 0,         // 总删除问题数量
-    completed: 0,     // 已删除完成的数量
-    percentage: 0,    // 进度百分比
+    total: 0, // 总删除问题数量
+    completed: 0, // 已删除完成的数量
+    percentage: 0 // 进度百分比
   });
-
-
 
   // 3. 添加打开导出对话框的处理函数
   const handleOpenExportDialog = () => {
@@ -516,16 +491,17 @@ export default function DatasetsPage({ params }) {
   };
 
   // 处理每页行数变化
-  const handleRowsPerPageChange = (event) => {
+  const handleRowsPerPageChange = event => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
   // 过滤数据
-  const filteredDatasets = datasets.filter(dataset =>
-    dataset.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (dataset.questionLabel && dataset.questionLabel.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    dataset.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredDatasets = datasets.filter(
+    dataset =>
+      dataset.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (dataset.questionLabel && dataset.questionLabel.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      dataset.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // 获取当前页的数据
@@ -536,7 +512,7 @@ export default function DatasetsPage({ params }) {
   };
 
   // 打开删除确认框
-  const handleOpenDeleteDialog = (dataset) => {
+  const handleOpenDeleteDialog = dataset => {
     setDeleteDialog({
       open: true,
       datasets: [dataset]
@@ -556,15 +532,15 @@ export default function DatasetsPage({ params }) {
       open: true,
       datasets: datasets.filter(dataset => selectedIds.includes(dataset.id)),
       batch: true,
-      count: selectedIds.length,
+      count: selectedIds.length
     });
-  }
+  };
 
   const resetProgress = () => {
     setDeteleProgress({
       total: deleteDialog.count,
       completed: 0,
-      percentage: 0,
+      percentage: 0
     });
   };
 
@@ -572,7 +548,7 @@ export default function DatasetsPage({ params }) {
     if (deleteDialog.batch) {
       setDeleteDialog({
         ...deleteDialog,
-        deleting: true,
+        deleting: true
       });
       await handleBatchDelete();
       resetProgress();
@@ -585,7 +561,7 @@ export default function DatasetsPage({ params }) {
     fetchDatasets();
     // 关闭确认框
     handleCloseDeleteDialog();
-  }
+  };
 
   // 批量删除数据集
   const handleBatchDelete = async () => {
@@ -594,13 +570,13 @@ export default function DatasetsPage({ params }) {
       setDeteleProgress({
         total: total,
         completed: cur,
-        percentage: Math.floor((cur / total) * 100),
+        percentage: Math.floor((cur / total) * 100)
       });
     });
-  }
+  };
 
   // 删除数据集
-  const handleDelete = async (dataset) => {
+  const handleDelete = async dataset => {
     try {
       const response = await fetch(`/api/projects/${projectId}/datasets?id=${dataset.id}`, {
         method: 'DELETE'
@@ -622,7 +598,7 @@ export default function DatasetsPage({ params }) {
   };
 
   // 导出数据集
-  const handleExportDatasets = (exportOptions) => {
+  const handleExportDatasets = exportOptions => {
     try {
       // 根据选项筛选数据
       let dataToExport = [...filteredDatasets];
@@ -640,9 +616,9 @@ export default function DatasetsPage({ params }) {
       if (exportOptions.formatType === 'alpaca') {
         formattedData = dataToExport.map(({ question, answer, cot }) => ({
           instruction: question,
-          input: "",
-          output: (cot && exportOptions.includeCOT) ? `<think>${cot}</think>\n${answer}` : answer,
-          system: exportOptions.systemPrompt || ""
+          input: '',
+          output: cot && exportOptions.includeCOT ? `<think>${cot}</think>\n${answer}` : answer,
+          system: exportOptions.systemPrompt || ''
         }));
       } else if (exportOptions.formatType === 'sharegpt') {
         formattedData = dataToExport.map(({ question, answer, cot }) => {
@@ -651,21 +627,21 @@ export default function DatasetsPage({ params }) {
           // 添加系统提示词（如果有）
           if (exportOptions.systemPrompt) {
             messages.push({
-              role: "system",
+              role: 'system',
               content: exportOptions.systemPrompt
             });
           }
 
           // 添加用户问题
           messages.push({
-            role: "user",
+            role: 'user',
             content: question
           });
 
           // 添加助手回答
           messages.push({
-            role: "assistant",
-            content: (cot && exportOptions.includeCOT) ? `<think>${cot}</think>\n${answer}` : answer
+            role: 'assistant',
+            content: cot && exportOptions.includeCOT ? `<think>${cot}</think>\n${answer}` : answer
           });
 
           return { messages };
@@ -706,27 +682,25 @@ export default function DatasetsPage({ params }) {
         // CSV 格式
         const headers = Object.keys(formattedData[0] || {});
         const csvRows = [
-            // 添加表头
-            headers.join(','),
-            // 添加数据行
-            ...formattedData.map(item =>
-                headers
-                    .map(header => {
-                        // 处理包含逗号、换行符或双引号的字段
-                        let field = item[header]?.toString() || '';
-                        if(exportOptions.formatType === 'sharegpt') field = JSON.stringify(item[header] )
-                        if (field.includes(',') || field.includes('\n') || field.includes('"')) {
-                            field = `"${field.replace(/"/g, '""')}"`;
-                        }
-                        return field;
-                    })
-                    .join(',')
-            )
+          // 添加表头
+          headers.join(','),
+          // 添加数据行
+          ...formattedData.map(item =>
+            headers
+              .map(header => {
+                // 处理包含逗号、换行符或双引号的字段
+                let field = item[header]?.toString() || '';
+                if (field.includes(',') || field.includes('\n') || field.includes('"')) {
+                  field = `"${field.replace(/"/g, '""')}"`;
+                }
+                return field;
+              })
+              .join(',')
+          )
         ];
         content = csvRows.join('\n');
         fileExtension = 'csv';
-        mimeType = 'text/csv;charset=utf-8';
-    } else {
+      } else {
         // 默认 JSON 格式
         content = JSON.stringify(formattedData, null, 2);
         fileExtension = 'json';
@@ -766,7 +740,7 @@ export default function DatasetsPage({ params }) {
     }
   };
   // 查看详情
-  const handleViewDetails = (id) => {
+  const handleViewDetails = id => {
     router.push(`/projects/${projectId}/datasets/${id}`);
   };
 
@@ -776,7 +750,7 @@ export default function DatasetsPage({ params }) {
   };
 
   // 处理全选/取消全选
-  const handleSelectAll = (event) => {
+  const handleSelectAll = event => {
     if (event.target.checked) {
       setselectedIds(getCurrentPageData().map(dataset => dataset.id));
     } else {
@@ -785,7 +759,7 @@ export default function DatasetsPage({ params }) {
   };
 
   // 处理单个选择
-  const handleSelectItem = (id) => {
+  const handleSelectItem = id => {
     setselectedIds(prev => {
       if (prev.includes(id)) {
         return prev.filter(item => item !== id);
@@ -798,13 +772,14 @@ export default function DatasetsPage({ params }) {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Box sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '70vh'
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '70vh'
+          }}>
           <CircularProgress size={60} thickness={4} />
           <Typography variant="h6" sx={{ mt: 2 }}>
             {t('datasets.loading')}
@@ -822,16 +797,16 @@ export default function DatasetsPage({ params }) {
           mb: 4,
           p: 3,
           backgroundColor: alpha(theme.palette.primary.light, 0.05),
-          borderRadius: 2,
-        }}
-      >
-        <Box sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 2,
+          borderRadius: 2
         }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 2
+          }}>
           <Box>
             <Typography variant="h4" fontWeight="bold" sx={{ mb: 0.5 }}>
               {t('datasets.management')}
@@ -840,9 +815,10 @@ export default function DatasetsPage({ params }) {
               {t('datasets.stats', {
                 total: datasets.length,
                 confirmed: datasets.filter(d => d.confirmed).length,
-                percentage: datasets.length > 0
-                  ? Math.round((datasets.filter(d => d.confirmed).length / datasets.length) * 100)
-                  : 0
+                percentage:
+                  datasets.length > 0
+                    ? Math.round((datasets.filter(d => d.confirmed).length / datasets.length) * 100)
+                    : 0
               })}
             </Typography>
           </Box>
@@ -854,9 +830,8 @@ export default function DatasetsPage({ params }) {
                 display: 'flex',
                 alignItems: 'center',
                 width: 300,
-                borderRadius: 2,
-              }}
-            >
+                borderRadius: 2
+              }}>
               <IconButton sx={{ p: '10px' }} aria-label="search">
                 <SearchIcon />
               </IconButton>
@@ -864,7 +839,7 @@ export default function DatasetsPage({ params }) {
                 sx={{ ml: 1, flex: 1 }}
                 placeholder={t('datasets.searchPlaceholder')}
                 value={searchQuery}
-                onChange={(e) => {
+                onChange={e => {
                   setSearchQuery(e.target.value);
                   setPage(0);
                 }}
@@ -874,36 +849,39 @@ export default function DatasetsPage({ params }) {
               variant="outlined"
               startIcon={<FileDownloadIcon />}
               sx={{ borderRadius: 2 }}
-              onClick={handleOpenExportDialog}
-            >
+              onClick={handleOpenExportDialog}>
               {t('export.title')}
             </Button>
           </Box>
-        </Box >
+        </Box>
       </Card>
-      {selectedIds.length ? <Box sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        marginTop: '10px',
-        gap: 2,
-      }}>
-        <Typography variant="body1" color="text.secondary">
-          {t('datasets.selected', {
-            count: selectedIds.length,
-          })}
-        </Typography>
-        <Button
-          variant="outlined"
-          color="error"
-          startIcon={<DeleteIcon />}
-          sx={{ borderRadius: 2 }}
-          onClick={handleBatchDeleteDataset}
-        >
-          {t('datasets.batchDelete')}
-        </Button>
-      </Box> : ''}
+      {selectedIds.length ? (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            marginTop: '10px',
+            gap: 2
+          }}>
+          <Typography variant="body1" color="text.secondary">
+            {t('datasets.selected', {
+              count: selectedIds.length
+            })}
+          </Typography>
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<DeleteIcon />}
+            sx={{ borderRadius: 2 }}
+            onClick={handleBatchDeleteDataset}>
+            {t('datasets.batchDelete')}
+          </Button>
+        </Box>
+      ) : (
+        ''
+      )}
 
       <DatasetList
         datasets={getCurrentPageData()}
@@ -933,14 +911,8 @@ export default function DatasetsPage({ params }) {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
