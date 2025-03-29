@@ -658,8 +658,8 @@ export default function ModelSettings({ projectId }) {
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Slider
-                  min={2048}
-                  max={8192}
+                  min={1024}
+                  max={16384}
                   name="maxTokens"
                   value={modelForm.maxTokens}
                   onChange={handleModelFormChange}
