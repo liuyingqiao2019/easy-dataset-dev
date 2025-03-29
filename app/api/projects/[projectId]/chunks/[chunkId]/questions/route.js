@@ -48,7 +48,8 @@ export async function POST(request, { params }) {
       endpoint: model.endpoint,
       apiKey: model.apiKey,
       model: model.name,
-      temperature: model.temperature
+      temperature: model.temperature,
+      maxTokens: model.maxTokens
     });
 
     // 生成问题的数量，如果未指定，则根据文本长度自动计算

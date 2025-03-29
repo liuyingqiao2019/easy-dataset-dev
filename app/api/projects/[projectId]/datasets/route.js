@@ -71,7 +71,8 @@ export async function POST(request, { params }) {
       endpoint: model.endpoint,
       apiKey: model.apiKey,
       model: model.name,
-      temperature: model.temperature
+      temperature: model.temperature,
+      maxTokens: model.maxTokens
     });
 
     const promptFuc = language === 'en' ? getAnswerEnPrompt : getAnswerPrompt;

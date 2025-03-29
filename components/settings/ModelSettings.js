@@ -165,6 +165,7 @@ export default function ModelSettings({ projectId }) {
     if (model) {
       setEditingModel(model);
       setModelForm({
+        ...DEFAULT_MODEL_SETTINGS,
         provider: model.provider,
         providerId: model.providerId,
         name: model.name,
@@ -647,6 +648,28 @@ export default function ModelSettings({ projectId }) {
                 />
                 <Typography variant="body2" sx={{ minWidth: '40px' }}>
                   {modelForm.temperature}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography id="question-generation-length-slider" gutterBottom>
+                {t('models.maxTokens')}
+              </Typography>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Slider
+                  min={2048}
+                  max={8192}
+                  name="maxTokens"
+                  value={modelForm.maxTokens}
+                  onChange={handleModelFormChange}
+                  step={1}
+                  valueLabelDisplay="auto"
+                  aria-label="maxTokens"
+                  sx={{ flex: 1 }}
+                />
+                <Typography variant="body2" sx={{ minWidth: '40px' }}>
+                  {modelForm.maxTokens}
                 </Typography>
               </Box>
             </Grid>
