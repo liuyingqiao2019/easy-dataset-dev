@@ -22,7 +22,7 @@ export async function GET(request) {
 
     return NextResponse.json(models);
   } catch (error) {
-    console.error('fetch Ollama models error:', error);
+    // console.error('fetch Ollama models error:', error);
     return NextResponse.json({ error: 'fetch Models failed' }, { status: 500 });
   }
 }

@@ -68,7 +68,7 @@ export default function ModelSettings({ projectId }) {
       const data = await response.json();
       setOllamaModels(data.map(model => model.name));
     } catch (error) {
-      console.error('获取 Ollama 模型列表出错:', error);
+      // console.error('获取 Ollama 模型列表出错:', error);
       setOllamaModels([]);
     }
   };
@@ -658,8 +658,8 @@ export default function ModelSettings({ projectId }) {
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Slider
-                  min={2048}
-                  max={8192}
+                  min={1024}
+                  max={16384}
                   name="maxTokens"
                   value={modelForm.maxTokens}
                   onChange={handleModelFormChange}

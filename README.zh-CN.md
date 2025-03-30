@@ -2,7 +2,7 @@
 
 ![](./public//imgs/bg2.png)
 
-<img src="https://img.shields.io/badge/版本-0.1.0-blue.svg" alt="版本 1.0.0"/>
+<img src="https://img.shields.io/badge/版本-1.2.3-blue.svg" alt="版本 1.2.3"/>
 <img src="https://img.shields.io/badge/许可证-Apache--2.0-green.svg" alt="Apache 2.0 许可证"/>
 <img src="https://img.shields.io/badge/Next.js-14.1.0-black" alt="Next.js 14.1.0"/>
 <img src="https://img.shields.io/badge/React-18.2.0-61DAFB" alt="React 18.2.0"/>
