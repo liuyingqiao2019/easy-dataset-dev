@@ -22,8 +22,9 @@ import FileUploader from '@/components/text-split/FileUploader';
 import ChunkList from '@/components/text-split/ChunkList';
 import DomainAnalysis from '@/components/text-split/DomainAnalysis';
 import request from '@/lib/util/request';
-import { processInParallel } from '@/lib/util/async'
+import { processInParallel } from '@/lib/util/async';
 import useTaskSettings from '@/hooks/useTaskSettings';
+import { finished } from 'stream';
 
 export default function TextSplitPage({ params }) {
   const { t } = useTranslation();
@@ -35,16 +36,18 @@ export default function TextSplitPage({ params }) {
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [pdfProcessing, setPdfProcessing] = useState(false);
   const [error, setError] = useState(null); // 可以是字符串或对象 { severity, message }
+  const {taskSettings } = useTaskSettings(projectId);
+  const [pdfStrategy,setPdfStrategy]= useState("default");;
   const [questionFilter, setQuestionFilter] = useState('all'); // 'all', 'generated', 'ungenerated'
-  const { taskSettings } = useTaskSettings(projectId);
 
   // 进度状态
   const [progress, setProgress] = useState({
-    total: 0,         // 总共选择的文本块数量
-    completed: 0,     // 已处理完成的数量
-    percentage: 0,    // 进度百分比
-    questionCount: 0  // 已生成的问题数量
+    total: 0, // 总共选择的文本块数量
+    completed: 0, // 已处理完成的数量
+    percentage: 0, // 进度百分比
+    questionCount: 0 // 已生成的问题数量
   });
 
   // 加载文本块数据
@@ -102,8 +105,53 @@ export default function TextSplitPage({ params }) {
   };
 
   // 处理文件上传成功
-  const handleUploadSuccess = (fileNames, model) => {
+  const handleUploadSuccess = async (fileNames, model,pdfFiles) => {
     console.log(t('textSplit.fileUploadSuccess'), fileNames);
+    //上传完处理PDF文件
+    try{
+      setPdfProcessing(true);
+      setError(null);
+      // 重置进度状态
+      setProgress({
+        total: pdfFiles.length,
+        completed: 0,
+        percentage: 0,
+        questionCount: 0
+      });
+      for(const file of pdfFiles){
+        const response = await fetch(`/api/projects/${projectId}/pdf?fileName=`+file.name+`&strategy=`+pdfStrategy);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(t('textSplit.pdfProcessingFailed') + errorData.error);
+        }
+        const data = await response.json();
+        // 更新进度状态
+        setProgress(prev => {
+          const completed = prev.completed + 1;
+          const percentage = Math.round((completed / prev.total) * 100);
+          return {
+            ...prev,
+            completed,
+            percentage
+          };
+        });
+      }
+    }catch(error){
+      console.error(t('textSplit.pdfProcessingFailed'), error);
+      setError({ severity: 'error', message: error.message });
+    }finally{
+      setPdfProcessing(false);
+      // 重置进度状态
+      setTimeout(() => {
+        setProgress({
+          total: 0,
+          completed: 0,
+          percentage: 0,
+          questionCount: 0
+        });
+      }, 1000); // 延迟重置，让用户看到完成的进度
+    }
+    
     // 如果有文件上传成功，自动处理第一个文件
     if (fileNames && fileNames.length > 0) {
       handleSplitText(fileNames[0], model);
@@ -260,20 +308,20 @@ export default function TextSplitPage({ params }) {
             // 获取当前语言环境
             const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
 
-            const response = await request(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}/questions`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ model, language: currentLanguage })
-            });
+            const response = await request(
+              `/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}/questions`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ model, language: currentLanguage })
+              }
+            );
 
             if (!response.ok) {
               const errorData = await response.json();
-              console.error(
-                t('textSplit.generateQuestionsForChunkFailed', { chunkId }),
-                errorData.error
-              );
+              console.error(t('textSplit.generateQuestionsForChunkFailed', { chunkId }), errorData.error);
               errorCount++;
               return { success: false, chunkId, error: errorData.error };
             }
@@ -381,11 +429,11 @@ export default function TextSplitPage({ params }) {
     }
     //如果多个文件的情况下，删除的不是最后一个文件，就复用handleSplitText重新构建领域树
     if (filesCount > 1) {
-      handleSplitText(["rebuildToc.md"], selectedModelInfo);
-    } else {//删除最后一个文件仅刷新界面即可
+      handleSplitText(['rebuildToc.md'], selectedModelInfo);
+    } else {
+      //删除最后一个文件仅刷新界面即可
       location.reload();
     }
-
   };
 
   // 关闭错误提示
@@ -415,7 +463,7 @@ export default function TextSplitPage({ params }) {
   };
 
   // 处理筛选器变更
-  const handleQuestionFilterChange = (value) => {
+  const handleQuestionFilterChange = value => {
     setQuestionFilter(value);
 
     // 应用筛选
@@ -430,16 +478,16 @@ export default function TextSplitPage({ params }) {
     setShowChunks(filteredChunks);
   };
 
-  const handleSelected = (array) => {
+  const handleSelected = array => {
     if (array.length > 0) {
       let selectedChunks = [];
       for (let i = 0; i < array.length; i++) {
-        const name = array[i].replace(/\.md$/, "");
+        const name = array[i].replace(/\.md$/, '');
         console.log(name);
-        const tempChunks = chunks.filter(item => item.id.includes(name))
+        const tempChunks = chunks.filter(item => item.id.includes(name));
         tempChunks.forEach(item => {
           selectedChunks.push(item);
-        })
+        });
       }
       setShowChunks(selectedChunks);
       console.log(selectedChunks);
@@ -447,7 +495,7 @@ export default function TextSplitPage({ params }) {
       const allChunks = chunks;
       setShowChunks(allChunks);
     }
-  }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8, position: 'relative' }}>
@@ -457,6 +505,8 @@ export default function TextSplitPage({ params }) {
         onUploadSuccess={handleUploadSuccess}
         onProcessStart={handleSplitText}
         onFileDeleted={handleFileDeleted}
+        setPdfStrategy={setPdfStrategy}
+        pdfStrategy={pdfStrategy}
         sendToPages={handleSelected}
       />
 
@@ -486,9 +536,7 @@ export default function TextSplitPage({ params }) {
         )}
 
         {/* 领域分析标签内容 */}
-        {activeTab === 1 && (
-          <DomainAnalysis projectId={projectId} toc={tocData} loading={loading} tags={tags} />
-        )}
+        {activeTab === 1 && <DomainAnalysis projectId={projectId} toc={tocData} loading={loading} tags={tags} />}
       </Box>
 
       {/* 加载中蒙版 */}
@@ -567,20 +615,71 @@ export default function TextSplitPage({ params }) {
                   {progress.percentage}%
                 </Typography>
               </Box>
+              <LinearProgress variant="determinate" value={progress.percentage} sx={{ height: 8, borderRadius: 4 }} />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                {t('textSplit.questionsGenerated', {
+                  total: progress.questionCount
+                })}
+              </Typography>
+            </Box>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              {t('textSplit.processingPleaseWait')}
+            </Typography>
+          )}
+        </Paper>
+      </Backdrop>
+
+      {/* PDF处理中蒙版 */}
+      <Backdrop
+        sx={{
+          color: '#fff',
+          zIndex: theme => theme.zIndex.drawer + 1,
+          position: 'fixed',
+          backdropFilter: 'blur(3px)'
+        }}
+        open={pdfProcessing}
+      >
+        <Paper
+          elevation={3}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 3,
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+            minWidth: 300
+          }}
+        >
+          <CircularProgress size={40} sx={{ mb: 2 }} />
+          <Typography variant="h6">{t('textSplit.pdfProcessing')}</Typography>
+
+          {progress.total > 1 ? (
+            <Box sx={{ width: '100%', mt: 1, mb: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  mb: 0.5
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  {t('textSplit.pdfProcessStatus', {
+                    total: progress.total,
+                    completed: progress.completed
+                  })}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {progress.percentage}%
+                </Typography>
+              </Box>
               <LinearProgress
                 variant="determinate"
                 value={progress.percentage}
                 sx={{ height: 8, borderRadius: 4 }}
               />
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mt: 1, textAlign: 'center' }}
-              >
-                {t('textSplit.questionsGenerated', {
-                  total: progress.questionCount
-                })}
-              </Typography>
             </Box>
           ) : (
             <Typography variant="body2" color="text.secondary">

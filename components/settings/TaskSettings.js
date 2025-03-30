@@ -21,8 +21,7 @@ import useTaskSettings from '@/hooks/useTaskSettings';
 
 export default function TaskSettings({ projectId }) {
   const { t } = useTranslation();
-  const { taskSettings, setTaskSettings, loading, error, success, setSuccess } =
-    useTaskSettings(projectId);
+  const { taskSettings, setTaskSettings, loading, error, success, setSuccess } = useTaskSettings(projectId);
   // 处理设置变更
   const handleSettingChange = e => {
     const { name, value } = e.target;
@@ -55,16 +54,23 @@ export default function TaskSettings({ projectId }) {
         throw new Error(t('settings.saveTasksFailed'));
       }
 
+      const minerUToken = taskSettings.minerUToken;
+      if (minerUToken !== undefined || minerUToken !== null || minerUToken !== '') {
+        localStorage.setItem("isSettingMinerU"+projectId,true);
+      }else{
+        localStorage.removeItem("isSettingMinerU"+projectId);
+      }
+
       setSuccess(true);
     } catch (error) {
       console.error('保存任务配置出错:', error);
-      setError(error.message);
+      //setError(error.message);
     }
   };
 
   const handleCloseSnackbar = () => {
     setSuccess(false);
-    setError(null);
+    //setError(null);
   };
 
   if (loading) {
@@ -131,9 +137,9 @@ export default function TaskSettings({ projectId }) {
                 onChange={handleSliderChange('questionGenerationLength')}
                 aria-labelledby="question-generation-length-slider"
                 valueLabelDisplay="auto"
-                step={20}
+                step={10}
                 marks
-                min={20}
+                min={10}
                 max={1000}
               />
 
@@ -172,6 +178,21 @@ export default function TaskSettings({ projectId }) {
               value={taskSettings.concurrencyLimit}
               onChange={handleSettingChange}
               type="number"
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" gutterBottom>
+              {t('settings.minerUSettings')}
+            </Typography>
+            <TextField
+              fullWidth
+              label={t('settings.minerUToken')}
+              name="minerUToken"
+              value={taskSettings.minerUToken}
+              onChange={handleSettingChange}
+              type="password"
+              helperText={t('settings.minerUHelper')}
             />
           </Grid>
 
