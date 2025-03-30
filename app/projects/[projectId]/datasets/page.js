@@ -690,6 +690,7 @@ export default function DatasetsPage({ params }) {
               .map(header => {
                 // 处理包含逗号、换行符或双引号的字段
                 let field = item[header]?.toString() || '';
+                if (exportOptions.formatType === 'sharegpt') field = JSON.stringify(item[header]);
                 if (field.includes(',') || field.includes('\n') || field.includes('"')) {
                   field = `"${field.replace(/"/g, '""')}"`;
                 }
