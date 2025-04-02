@@ -10,6 +10,7 @@ export default function useTaskSettings(projectId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [visionModels,setVisionModels] = useState([]);
 
   useEffect(() => {
     async function fetchTaskSettings() {
@@ -21,6 +22,20 @@ export default function useTaskSettings(projectId) {
         }
 
         const data = await response.json();
+
+        const modelResponse = await fetch(`/api/projects/${projectId}/models`);
+
+        if (!response.ok) {
+          throw new Error(t('models.fetchFailed'));
+        }
+
+        //获取所有模型
+        const model = await modelResponse.json();
+
+        //过滤出视觉模型
+        const visionItems = model.filter(item => (item.type === 'vision') &&item.apiKey);
+      
+        setVisionModels(visionItems);
 
         // 如果没有配置，使用默认值
         if (Object.keys(data).length === 0) {
@@ -50,6 +65,7 @@ export default function useTaskSettings(projectId) {
     loading,
     error,
     success,
-    setSuccess
+    setSuccess,
+    visionModels
   };
 }
