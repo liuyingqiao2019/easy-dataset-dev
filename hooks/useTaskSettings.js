@@ -23,6 +23,18 @@ export default function useTaskSettings(projectId) {
 
         const data = await response.json();
 
+        // 如果没有配置，使用默认值
+        if (Object.keys(data).length === 0) {
+          setTaskSettings({
+            ...DEFAULT_SETTINGS
+          });
+        } else {
+          setTaskSettings({
+            ...DEFAULT_SETTINGS,
+            ...data
+          });
+        }
+
         const modelResponse = await fetch(`/api/projects/${projectId}/models`);
 
         if (!response.ok) {
@@ -37,17 +49,6 @@ export default function useTaskSettings(projectId) {
       
         setVisionModels(visionItems);
 
-        // 如果没有配置，使用默认值
-        if (Object.keys(data).length === 0) {
-          setTaskSettings({
-            ...DEFAULT_SETTINGS
-          });
-        } else {
-          setTaskSettings({
-            ...DEFAULT_SETTINGS,
-            ...data
-          });
-        }
       } catch (error) {
         console.error('获取任务配置出错:', error);
         setError(error.message);

@@ -49,10 +49,12 @@ export default function PdfProcessingDialog({
   onClose,
   onRadioChange,
   value,
-  projectId
+  projectId,
+  taskSettings
 }) {
   const { t } = useTranslation();
-  const isMinerUEnabled = localStorage.getItem("isSettingMinerU" + projectId);
+  const isMinerUEnabled = (taskSettings&&taskSettings.minerUToken)?true:false;
+  const isVisionEnabled = (taskSettings&&taskSettings.vision)?true:false;
 
   const handleOptionClick = (optionValue) => {
     if (optionValue === 'mineru-web') {

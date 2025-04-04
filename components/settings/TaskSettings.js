@@ -58,13 +58,6 @@ export default function TaskSettings({ projectId }) {
         throw new Error(t('settings.saveTasksFailed'));
       }
 
-      const minerUToken = taskSettings.minerUToken;
-      if (minerUToken !== undefined || minerUToken !== null || minerUToken !== '') {
-        localStorage.setItem("isSettingMinerU"+projectId,true);
-      }else{
-        localStorage.removeItem("isSettingMinerU"+projectId);
-      }
-
       setSuccess(true);
     } catch (error) {
       console.error('保存任务配置出错:', error);
