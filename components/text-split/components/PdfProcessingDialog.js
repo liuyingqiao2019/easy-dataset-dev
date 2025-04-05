@@ -110,7 +110,9 @@ export default function PdfProcessingDialog({
             icon={<SmartToyOutlinedIcon fontSize="large" />}
             title={t('textSplit.customVisionModel')}
             description={t('textSplit.customVisionModelDesc')}
-            disabled={true}
+            disabled={!isVisionEnabled}
+            onClick={() => handleOptionClick('vision')}
+            selected={value === 'vision'}
           />
         </Box>
       </DialogContent>

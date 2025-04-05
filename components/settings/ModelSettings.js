@@ -321,8 +321,12 @@ export default function ModelSettings({ projectId }) {
         // 保存更新后的模型引用，用于更新 localStorage
         updatedModel = updatedModels.find(m => m.id === editingModel.id);
         // 如果更新的是当前选中的模型，同时更新 localStorage
-        localStorage.setItem('selectedModelInfo', JSON.stringify(updatedModel));
-        console.log('已更新 localStorage 中的模型信息:', updatedModel);
+        const modelInfo = JSON.parse(localStorage.getItem('selectedModelInfo'));
+        if(modelInfo.id === updatedModel.id){
+          localStorage.setItem('selectedModelInfo', JSON.stringify(updatedModel));
+          console.log('已更新 localStorage 中的模型信息:', updatedModel);
+        }
+        
         return updatedModels;
       });
     } else {
