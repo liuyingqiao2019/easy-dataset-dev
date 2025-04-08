@@ -17,7 +17,7 @@ import PdfProcessingDialog from './components/PdfProcessingDialog';
  * @param {Function} props.onUploadSuccess - Upload success callback
  * @param {Function} props.onProcessStart - Process start callback
  */
-export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted,sendToPages,setPdfStrategy,pdfStrategy }) {
+export default function FileUploader ({ projectId, onUploadSuccess, onProcessStart, onFileDeleted, sendToPages, setPdfStrategy, pdfStrategy }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [files, setFiles] = useState([]);
@@ -68,13 +68,13 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
   const handleFileSelect = event => {
     const selectedFiles = Array.from(event.target.files);
 
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
-    const oversizedFiles = selectedFiles.filter(file => file.size > MAX_FILE_SIZE);
+    // const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+    // const oversizedFiles = selectedFiles.filter(file => file.size > MAX_FILE_SIZE);
 
-    if (oversizedFiles.length > 0) {
-      setError(`Max 10MB: ${oversizedFiles.map(f => f.name).join(', ')}`);
-      return;
-    }
+    // if (oversizedFiles.length > 0) {
+    //   setError(`Max 10MB: ${oversizedFiles.map(f => f.name).join(', ')}`);
+    //   return;
+    // }
 
     const validFiles = selectedFiles.filter(
       file => file.name.endsWith('.md') || file.name.endsWith('.txt') || file.name.endsWith('.docx') || file.name.endsWith('.pdf')
@@ -92,7 +92,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
     }
     // If there are PDF files among the uploaded files, let the user choose the way to process the PDF files.
     const hasPdfFiles = selectedFiles.filter(file => file.name.endsWith('.pdf'));
-    if(hasPdfFiles.length > 0){
+    if (hasPdfFiles.length > 0) {
       setpdfProcessConfirmOpen(true);
       setPdfFiles(hasPdfFiles);
     }
@@ -183,7 +183,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
 
       // 上传成功后，返回文件名列表和选中的模型信息
       if (onUploadSuccess) {
-        await onUploadSuccess(uploadedFileNames, selectedModelInfo,pdfFiles);
+        await onUploadSuccess(uploadedFileNames, selectedModelInfo, pdfFiles);
       }
     } catch (err) {
       setError(err.message || t('textSplit.uploadFailed'));
@@ -205,7 +205,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
   };
 
   // 关闭PDF处理框
-  const closePdfProcessConfirm = () =>{
+  const closePdfProcessConfirm = () => {
     setpdfProcessConfirmOpen(false);
   }
 
@@ -321,6 +321,6 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
         value={pdfStrategy}
         projectId={projectId}
       />
-    </Paper>    
+    </Paper>
   );
 }
