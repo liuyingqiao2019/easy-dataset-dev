@@ -12,7 +12,7 @@ import { getTags } from '@/lib/db/tags';
 import logger from '@/lib/util/logger';
 
 // 为指定文本块生成问题
-export async function POST(request, { params }) {
+export async function POST (request, { params }) {
   try {
     const { projectId, chunkId: c } = params;
 
@@ -52,8 +52,8 @@ export async function POST(request, { params }) {
       maxTokens: model.maxTokens
     });
 
-    // 生成问题的数量，如果未指定，则根据文本长度自动计算
-    const questionNumber = number || Math.floor(chunk.content.length / questionGenerationLength);
+    // 生成问题的数量，如果未指定，则根据指定个数
+    const questionNumber = number || questionGenerationLength;
 
     // 根据语言选择相应的提示词函数
     const promptFunc = language === 'en' ? getQuestionEnPrompt : getQuestionPrompt;
@@ -97,7 +97,7 @@ export async function POST(request, { params }) {
 }
 
 // 获取指定文本块的问题
-export async function GET(request, { params }) {
+export async function GET (request, { params }) {
   try {
     const { projectId, chunkId } = params;
 
