@@ -11,6 +11,7 @@ export default function useModelPlayground(projectId) {
   const [conversations, setConversations] = useState({});
   const [error, setError] = useState(null);
   const [outputMode, setOutputMode] = useState('normal'); // 'normal' 或 'streaming'
+  const [uploadedImage, setUploadedImage] = useState(null); // 存储上传的图片Base64
 
   // 获取项目的模型配置
   useEffect(() => {
@@ -70,6 +71,23 @@ export default function useModelPlayground(projectId) {
     setUserInput(e.target.value);
   };
 
+  // 处理图片上传
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUploadedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 删除已上传的图片
+  const handleRemoveImage = () => {
+    setUploadedImage(null);
+  };
+
   // 处理输出模式切换
   const handleOutputModeChange = event => {
     setOutputMode(event.target.value);
@@ -82,6 +100,10 @@ export default function useModelPlayground(projectId) {
     // 获取用户输入
     const input = userInput.trim();
     setUserInput('');
+    
+    // 获取图片（如果有的话）
+    const image = uploadedImage;
+    setUploadedImage(null); // 清除图片
 
     // 更新所有选中模型的对话
     const updatedConversations = { ...conversations };
@@ -89,10 +111,26 @@ export default function useModelPlayground(projectId) {
       if (!updatedConversations[modelId]) {
         updatedConversations[modelId] = [];
       }
-      updatedConversations[modelId].push({
-        role: 'user',
-        content: input
-      });
+      // 检查是否有图片并且当前模型是视觉模型
+      const model = availableModels.find(m => m.id === modelId);
+      const isVisionModel = model && model.type === 'vision';
+      
+      if (isVisionModel && image) {
+        // 如果是视觉模型并且有图片，使用复合格式
+        updatedConversations[modelId].push({
+          role: 'user',
+          content: [
+            { type: 'text', text: input || '请描述这个图片' },
+            { type: 'image_url', image_url: { url: image } }
+          ]
+        });
+      } else {
+        // 其他情况使用纯文本
+        updatedConversations[modelId].push({
+          role: 'user',
+          content: input
+        });
+      }
     });
 
     setConversations(updatedConversations);
@@ -123,6 +161,26 @@ export default function useModelPlayground(projectId) {
       }
 
       try {
+        // 检查是否是视觉模型且有图片
+        const isVisionModel = model.type === 'vision';
+        
+        // 构建请求消息
+        let requestMessages = [...updatedConversations[modelId]]; // 复制当前消息历史
+        
+        // 如果是vision模型并且有图片，将最后一条用户消息替换为包含图片的消息
+        if (isVisionModel && image && requestMessages.length > 0) {
+          // 找到最后一条用户消息
+          const lastUserMsgIndex = requestMessages.length - 1;
+          // 替换为包含图片的消息
+          requestMessages[lastUserMsgIndex] = {
+            role: 'user',
+            content: [
+              { type: 'text', text: input || '请描述这个图片' },
+              { type: 'image_url', image_url: { url: image } }
+            ]
+          };
+        }
+        
         // 根据输出模式选择不同的处理方式
         if (outputMode === 'streaming') {
           // 流式输出处理
@@ -142,7 +200,7 @@ export default function useModelPlayground(projectId) {
             },
             body: JSON.stringify({
               model: model,
-              messages: updatedConversations[modelId]
+              messages: requestMessages
             })
           });
 
@@ -206,7 +264,7 @@ export default function useModelPlayground(projectId) {
             },
             body: JSON.stringify({
               model: model,
-              messages: updatedConversations[modelId]
+              messages: requestMessages
             })
           });
 
@@ -272,8 +330,11 @@ export default function useModelPlayground(projectId) {
     conversations,
     error,
     outputMode,
+    uploadedImage,
     handleModelSelection,
     handleInputChange,
+    handleImageUpload,
+    handleRemoveImage,
     handleSendMessage,
     handleClearConversations,
     handleOutputModeChange,

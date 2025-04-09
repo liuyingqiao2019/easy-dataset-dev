@@ -17,7 +17,7 @@ import PdfProcessingDialog from './components/PdfProcessingDialog';
  * @param {Function} props.onUploadSuccess - Upload success callback
  * @param {Function} props.onProcessStart - Process start callback
  */
-export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted,sendToPages,setPdfStrategy,pdfStrategy }) {
+export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted, sendToPages, setPdfStrategy, pdfStrategy }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [files, setFiles] = useState([]);
@@ -31,6 +31,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [pdfProcessConfirmOpen, setpdfProcessConfirmOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
+  const [taskSettings, setTaskSettings] = useState(null);
 
 
   // 设置PDF文件的处理方式
@@ -56,6 +57,17 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
 
       const data = await response.json();
       setUploadedFiles(data.files || []);
+
+      //获取到配置信息，用于判断用户是否启用MinerU和视觉大模型
+      const taskResponse = await fetch(`/api/projects/${projectId}/tasks`);
+      if (!taskResponse.ok) {
+        throw new Error(t('settings.fetchTasksFailed'));
+      }
+
+      const taskData = await taskResponse.json();
+
+      setTaskSettings(taskData);
+
     } catch (error) {
       console.error('获取文件列表出错:', error);
       setError(error.message);
@@ -68,11 +80,11 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
   const handleFileSelect = event => {
     const selectedFiles = Array.from(event.target.files);
 
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
     const oversizedFiles = selectedFiles.filter(file => file.size > MAX_FILE_SIZE);
 
     if (oversizedFiles.length > 0) {
-      setError(`Max 10MB: ${oversizedFiles.map(f => f.name).join(', ')}`);
+      setError(`Max 50MB: ${oversizedFiles.map(f => f.name).join(', ')}`);
       return;
     }
 
@@ -92,7 +104,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
     }
     // If there are PDF files among the uploaded files, let the user choose the way to process the PDF files.
     const hasPdfFiles = selectedFiles.filter(file => file.name.endsWith('.pdf'));
-    if(hasPdfFiles.length > 0){
+    if (hasPdfFiles.length > 0) {
       setpdfProcessConfirmOpen(true);
       setPdfFiles(hasPdfFiles);
     }
@@ -183,7 +195,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
 
       // 上传成功后，返回文件名列表和选中的模型信息
       if (onUploadSuccess) {
-        await onUploadSuccess(uploadedFileNames, selectedModelInfo,pdfFiles);
+        await onUploadSuccess(uploadedFileNames, selectedModelInfo, pdfFiles);
       }
     } catch (err) {
       setError(err.message || t('textSplit.uploadFailed'));
@@ -205,7 +217,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
   };
 
   // 关闭PDF处理框
-  const closePdfProcessConfirm = () =>{
+  const closePdfProcessConfirm = () => {
     setpdfProcessConfirmOpen(false);
   }
 
@@ -320,7 +332,8 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
         onRadioChange={handleRadioChange}
         value={pdfStrategy}
         projectId={projectId}
+        taskSettings={taskSettings}
       />
-    </Paper>    
+    </Paper>
   );
 }
