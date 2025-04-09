@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Container, Box, Typography, CircularProgress, Stack, useTheme } from '@mui/material';
+import {
+  Container, Box, Typography, CircularProgress, Stack, useTheme,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+} from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/home/HeroSection';
@@ -11,15 +19,20 @@ import CreateProjectDialog from '@/components/home/CreateProjectDialog';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
-export default function Home() {
+export default function Home () {
   const { t } = useTranslation();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
   useEffect(() => {
-    async function fetchProjects() {
+    async function fetchProjects () {
       try {
         setLoading(true);
         // 获取用户创建的项目详情
@@ -32,8 +45,13 @@ export default function Home() {
         const data = await response.json();
         setProjects(data);
       } catch (error) {
-        console.error(t('projects.fetchError'), error);
-        setError(error.message);
+        setConfirmDialog({
+          open: true,
+          title: '错误提示',
+          content: t('projects.fetchError') + error.message,
+        });
+        // console.error(t('projects.fetchError'), error);
+        // setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -59,6 +77,37 @@ export default function Home() {
           zIndex: 1
         }}
       >
+        {/* 确认对话框 */}
+        <Dialog
+          open={confirmDialog.open}
+          onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          PaperProps={{
+            elevation: 3,
+            sx: { borderRadius: 2, minWidth: 200 }
+          }}
+        >
+          <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+          <DialogContent sx={{ textAlign: 'center' }} >
+            <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={() => {
+                setConfirmDialog({ ...confirmDialog, open: false });
+                if (confirmDialog.confirmAction) {
+                  confirmDialog.confirmAction();
+                }
+              }}
+              color="primary"
+              variant="contained"
+              autoFocus
+            >
+              {t('common.confirm')}
+            </Button>
+          </DialogActions>
+        </Dialog>
         {/* <StatsCard projects={projects} /> */}
 
         {loading && (

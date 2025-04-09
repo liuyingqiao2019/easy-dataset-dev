@@ -15,13 +15,12 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  Alert,
-  Snackbar,
   Chip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  DialogContentText,
   TablePagination,
   Card,
   Divider,
@@ -353,8 +352,8 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
         <Typography variant="body1" sx={{ mb: 2 }}>
           {batch
             ? t('datasets.batchconfirmDeleteMessage', {
-                count: datasets.length
-              })
+              count: datasets.length
+            })
             : t('common.confirmDeleteDataSet')}
         </Typography>
         {batch ? (
@@ -420,16 +419,17 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
 };
 
 // 主页面组件
-export default function DatasetsPage({ params }) {
+export default function DatasetsPage ({ params }) {
   const { projectId } = params;
   const router = useRouter();
   const theme = useTheme();
   const [datasets, setDatasets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [snackbar, setSnackbar] = useState({
+  const [confirmDialog, setConfirmDialog] = useState({
     open: false,
-    message: '',
-    severity: 'success'
+    title: '',
+    content: '',
+    confirmAction: null
   });
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
@@ -471,10 +471,10 @@ export default function DatasetsPage({ params }) {
       const data = await response.json();
       setDatasets(data);
     } catch (error) {
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message,
-        severity: 'error'
+        title: '错误提示',
+        content: error.message,
       });
     } finally {
       setLoading(false);
@@ -582,17 +582,16 @@ export default function DatasetsPage({ params }) {
         method: 'DELETE'
       });
       if (!response.ok) throw new Error(t('datasets.deleteFailed'));
-
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: t('datasets.deleteSuccess'),
-        severity: 'success'
+        title: '操作提示',
+        content: t('datasets.deleteSuccess'),
       });
     } catch (error) {
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message,
-        severity: 'error'
+        title: '错误提示',
+        content: error.message,
       });
     }
   };
@@ -726,17 +725,16 @@ export default function DatasetsPage({ params }) {
 
       // 关闭导出对话框
       handleCloseExportDialog();
-
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: '数据集导出成功',
-        severity: 'success'
+        title: '操作提示',
+        content: '数据集导出成功',
       });
     } catch (error) {
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: '导出失败: ' + error.message,
-        severity: 'error'
+        title: '错误提示',
+        content: '导出失败: ' + error.message,
       });
     }
   };
@@ -745,10 +743,6 @@ export default function DatasetsPage({ params }) {
     router.push(`/projects/${projectId}/datasets/${id}`);
   };
 
-  // 关闭提示框
-  const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
-  };
 
   // 处理全选/取消全选
   const handleSelectAll = event => {
@@ -883,6 +877,37 @@ export default function DatasetsPage({ params }) {
       ) : (
         ''
       )}
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <DatasetList
         datasets={getCurrentPageData()}
@@ -907,16 +932,6 @@ export default function DatasetsPage({ params }) {
         onClose={handleCloseDeleteDialog}
         onConfirm={handleDeleteConfirm}
       />
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
 
       <ExportDatasetDialog
         open={exportDialog.open}

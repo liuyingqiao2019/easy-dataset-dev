@@ -14,13 +14,18 @@ import {
   Paper,
   Alert,
   Snackbar,
-  CircularProgress
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import EditIcon from '@mui/icons-material/Edit';
 
-export default function QuestionListView({
+export default function QuestionListView ({
   questions = [],
   chunks = [],
   selectedQuestions = [],
@@ -35,14 +40,15 @@ export default function QuestionListView({
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
 
-  // 批量操作显示提示
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-
   // 处理状态
   const [processingQuestions, setProcessingQuestions] = useState({});
-
+  // 批量操作显示提示
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
   // 获取文本块的标题
   const getChunkTitle = chunkId => {
     const chunk = chunks.find(c => c.id === chunkId);
@@ -75,9 +81,11 @@ export default function QuestionListView({
   const handleGenerateDataset = async (questionId, chunkId) => {
     // 如果没有提供回调函数，则显示提示
     if (!onGenerateDataset) {
-      setSnackbarMessage(t('datasets.generateNotImplemented'));
-      setSnackbarSeverity('warning');
-      setSnackbarOpen(true);
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: t('datasets.generateNotImplemented')
+      });
       return;
     }
     const questionKey = JSON.stringify({ question: questionId, chunkId });
@@ -92,14 +100,18 @@ export default function QuestionListView({
       // 调用回调函数生成数据集
       const result = await onGenerateDataset(questionId, chunkId);
       // 显示成功提示
-      setSnackbarMessage(t('datasets.generateSuccess', { question: result.question }));
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
+      setConfirmDialog({
+        open: true,
+        title: '操作提示',
+        content: t('datasets.generateSuccess', { question: result.question })
+      });
     } catch (error) {
       // 显示错误提示
-      setSnackbarMessage(t('datasets.generateFailed', { error: error.message || t('common.unknownError') }));
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: t('datasets.generateFailed', { error: error.message || t('common.unknownError') }),
+      });
     } finally {
       // 清除处理状态
       setProcessingQuestions(prev => {
@@ -293,17 +305,37 @@ export default function QuestionListView({
         </Box>
       )}
 
-      {/* 操作提示 */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
       >
-        <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

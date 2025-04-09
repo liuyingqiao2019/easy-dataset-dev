@@ -2,11 +2,18 @@
 
 import Navbar from '@/components/Navbar';
 import { useState, useEffect } from 'react';
-import { Box, CircularProgress, Typography, Button } from '@mui/material';
+import {
+  Box, CircularProgress, Typography, Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+} from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
-export default function ProjectLayout({ children, params }) {
+export default function ProjectLayout ({ children, params }) {
   const router = useRouter();
   const { projectId } = params;
   const [projects, setProjects] = useState([]);
@@ -15,7 +22,12 @@ export default function ProjectLayout({ children, params }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [t] = useTranslation();
-
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
   // 定义获取数据的函数
   const fetchData = async () => {
     try {
@@ -69,8 +81,13 @@ export default function ProjectLayout({ children, params }) {
         }
       }
     } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: '加载项目数据出错:' + error.message,
+      });
       console.error('加载项目数据出错:', error);
-      setError(error.message);
+      // setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -180,6 +197,37 @@ export default function ProjectLayout({ children, params }) {
 
   return (
     <>
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Navbar projects={projects} currentProject={projectId} models={models} />
       <main>{children}</main>
     </>

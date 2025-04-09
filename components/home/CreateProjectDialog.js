@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  DialogContentText,
   Button,
   TextField,
   Box,
@@ -20,7 +21,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
-export default function CreateProjectDialog({ open, onClose }) {
+export default function CreateProjectDialog ({ open, onClose }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const router = useRouter();
@@ -32,7 +33,12 @@ export default function CreateProjectDialog({ open, onClose }) {
     reuseConfigFrom: ''
   });
   const [error, setError] = useState(null);
-
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
   // 获取项目列表
   useEffect(() => {
     const fetchProjects = async () => {
@@ -81,93 +87,131 @@ export default function CreateProjectDialog({ open, onClose }) {
       router.push(`/projects/${data.id}/settings?tab=model`);
     } catch (err) {
       console.error(t('projects.createError'), err);
-      setError(err.message);
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: t('projects.createError') + err.message,
+      });
+      // setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: '16px',
-          background: theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(8px)'
-        }
-      }}
-    >
-      <DialogTitle>
-        <Typography variant="h5" fontWeight="bold">
-          {t('projects.createNew')}
-        </Typography>
-      </DialogTitle>
-      <form onSubmit={handleSubmit}>
-        <DialogContent>
-          <Box sx={{ mb: 3 }}>
-            <TextField
-              name="name"
-              label={t('projects.name')}
-              fullWidth
-              required
-              value={formData.name}
-              onChange={handleChange}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              name="description"
-              label={t('projects.description')}
-              fullWidth
-              multiline
-              rows={4}
-              value={formData.description}
-              onChange={handleChange}
-            />
-            <FormControl fullWidth sx={{ mt: 2 }}>
-              <InputLabel id="reuse-config-label">{t('projects.reuseConfig')}</InputLabel>
-              <Select
-                labelId="reuse-config-label"
-                name="reuseConfigFrom"
-                value={formData.reuseConfigFrom}
+    <Container>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            background: theme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(8px)'
+          }
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h5" fontWeight="bold">
+            {t('projects.createNew')}
+          </Typography>
+        </DialogTitle>
+        <form onSubmit={handleSubmit}>
+          <DialogContent>
+            <Box sx={{ mb: 3 }}>
+              <TextField
+                name="name"
+                label={t('projects.name')}
+                fullWidth
+                required
+                value={formData.name}
                 onChange={handleChange}
-                label={t('projects.reuseConfig')}
-              >
-                <MenuItem value="">{t('projects.noReuse')}</MenuItem>
-                {projects.map(project => (
-                  <MenuItem key={project.id} value={project.id}>
-                    {project.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-          {error && (
-            <Typography color="error" variant="body2" sx={{ mb: 2 }}>
-              {error}
-            </Typography>
-          )}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                name="description"
+                label={t('projects.description')}
+                fullWidth
+                multiline
+                rows={4}
+                value={formData.description}
+                onChange={handleChange}
+              />
+              <FormControl fullWidth sx={{ mt: 2 }}>
+                <InputLabel id="reuse-config-label">{t('projects.reuseConfig')}</InputLabel>
+                <Select
+                  labelId="reuse-config-label"
+                  name="reuseConfigFrom"
+                  value={formData.reuseConfigFrom}
+                  onChange={handleChange}
+                  label={t('projects.reuseConfig')}
+                >
+                  <MenuItem value="">{t('projects.noReuse')}</MenuItem>
+                  {projects.map(project => (
+                    <MenuItem key={project.id} value={project.id}>
+                      {project.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            {error && (
+              <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+                {error}
+              </Typography>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button onClick={onClose}>{t('common.cancel')}</Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={loading || !formData.name}
+              sx={{
+                background: theme.palette.gradient.primary,
+                '&:hover': {
+                  boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
+                }
+              }}
+            >
+              {loading ? <CircularProgress size={24} /> : t('home.createProject')}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={onClose}>{t('common.cancel')}</Button>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
-            type="submit"
-            variant="contained"
-            disabled={loading || !formData.name}
-            sx={{
-              background: theme.palette.gradient.primary,
-              '&:hover': {
-                boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
               }
             }}
+            color="primary"
+            variant="contained"
+            autoFocus
           >
-            {loading ? <CircularProgress size={24} /> : t('home.createProject')}
+            {t('common.confirm')}
           </Button>
         </DialogActions>
-      </form>
-    </Dialog>
+      </Dialog>
+    </Container>
   );
 }

@@ -47,7 +47,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
  */
 
 // 领域树节点组件
-function TreeNode({ node, level = 0, onEdit, onDelete, onAddChild }) {
+function TreeNode ({ node, level = 0, onEdit, onDelete, onAddChild }) {
   const [open, setOpen] = useState(true);
   const theme = useTheme();
   const hasChildren = node.child && node.child.length > 0;
@@ -166,7 +166,7 @@ function TreeNode({ node, level = 0, onEdit, onDelete, onAddChild }) {
 }
 
 // 领域树组件
-function DomainTree({ tags, onEdit, onDelete, onAddChild }) {
+function DomainTree ({ tags, onEdit, onDelete, onAddChild }) {
   return (
     <List component="nav" aria-label="domain tree">
       {tags.map((node, index) => (
@@ -176,7 +176,7 @@ function DomainTree({ tags, onEdit, onDelete, onAddChild }) {
   );
 }
 
-export default function DomainAnalysis({ projectId, toc = '', tags = [], loading = false, onTagsUpdate }) {
+export default function DomainAnalysis ({ projectId, toc = '', tags = [], loading = false, onTagsUpdate }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
@@ -193,7 +193,12 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
     message: '',
     severity: 'success'
   });
-
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
   const handleCloseSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
@@ -304,17 +309,17 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
       if (onTagsUpdate) {
         onTagsUpdate(data.tags);
       }
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: t('domain.messages.updateSuccess'),
-        severity: 'success'
+        title: '操作提示',
+        content: t('domain.messages.updateSuccess'),
       });
     } catch (error) {
       console.error('保存标签失败:', error);
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message || '保存标签失败',
-        severity: 'error'
+        title: '错误提示',
+        content: error.message || '保存标签失败',
       });
     } finally {
       setSaving(false);
@@ -324,10 +329,10 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
   // 提交表单
   const handleSubmit = async () => {
     if (!labelValue.trim()) {
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: '标签名称不能为空',
-        severity: 'error'
+        title: '错误提示',
+        content: '标签名称不能为空',
       });
       return;
     }
@@ -549,6 +554,37 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
           <Button onClick={handleCloseDialog}>{t('common.cancel')}</Button>
           <Button onClick={handleConfirmDelete} color="error" variant="contained">
             {saving ? t('common.deleting') : t('common.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
           </Button>
         </DialogActions>
       </Dialog>

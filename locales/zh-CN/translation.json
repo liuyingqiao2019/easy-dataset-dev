@@ -187,6 +187,7 @@
     "noChunks": "暂无文本块，请先上传并处理文献",
     "chunkDetails": "文本块详情: {{chunkId}}",
     "fetchChunksFailed": "获取文本块失败",
+    "fetchChunksSuccess": "获取文本块成功",
     "fetchChunksError": "获取文本块出错",
     "fileResultReceived": "获取到文件结果",
     "fileUploadSuccess": "文件上传成功",

@@ -19,7 +19,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  DialogContentText,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
@@ -133,7 +134,7 @@ const OptimizeDialog = ({ open, onClose, onConfirm, loading }) => {
   );
 };
 
-export default function DatasetDetailsPage({ params }) {
+export default function DatasetDetailsPage ({ params }) {
   const { projectId, datasetId } = params;
   const router = useRouter();
   const [dataset, setDataset] = useState(null);
@@ -146,6 +147,12 @@ export default function DatasetDetailsPage({ params }) {
     open: false,
     message: '',
     severity: 'success'
+  });
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
   });
   const [confirming, setConfirming] = useState(false);
   const [optimizeDialog, setOptimizeDialog] = useState({
@@ -199,10 +206,10 @@ export default function DatasetDetailsPage({ params }) {
         setCotValue(currentDataset.cot || '');
       }
     } catch (error) {
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message,
-        severity: 'error'
+        title: '错误提示',
+        content: error.message,
       });
     } finally {
       setLoading(false);
@@ -228,19 +235,18 @@ export default function DatasetDetailsPage({ params }) {
 
       setDataset(prev => ({ ...prev, confirmed: true }));
 
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: t('common.success'),
-        severity: 'success'
+        title: '操作提示',
+        content: t('common.success'),
       });
-
       // 导航到下一个数据集
       handleNavigate('next');
     } catch (error) {
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message || t('common.failed'),
-        severity: 'error'
+        title: '错误提示',
+        content: error.message || t('common.failed'),
       });
     } finally {
       setConfirming(false);
@@ -285,20 +291,19 @@ export default function DatasetDetailsPage({ params }) {
       const data = await response.json();
       setDataset(prev => ({ ...prev, [field]: value }));
 
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: t('common.success'),
-        severity: 'success'
+        title: '操作提示',
+        content: t('common.success'),
       });
-
       // 重置编辑状态
       if (field === 'answer') setEditingAnswer(false);
       if (field === 'cot') setEditingCot(false);
     } catch (error) {
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message || t('common.failed'),
-        severity: 'error'
+        title: '错误提示',
+        content: error.message || t('common.failed'),
       });
     }
   };
@@ -336,10 +341,10 @@ export default function DatasetDetailsPage({ params }) {
       // 更新本地数据集列表
       setDatasets(prev => prev.filter(d => d.id !== datasetId));
     } catch (error) {
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message || t('common.failed'),
-        severity: 'error'
+        title: '错误提示',
+        content: error.message || t('common.failed'),
       });
     }
   };
@@ -365,10 +370,10 @@ export default function DatasetDetailsPage({ params }) {
   const handleOptimize = async advice => {
     const model = getModelFromLocalStorage();
     if (!model) {
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: '请先选择模型，可以在顶部导航栏选择',
-        severity: 'error'
+        title: '错误提示',
+        content: '请先选择模型，可以在顶部导航栏选择',
       });
       setOptimizeDialog(prev => ({ ...prev, open: false }));
       return;
@@ -402,16 +407,16 @@ export default function DatasetDetailsPage({ params }) {
       setAnswerValue(data.dataset.answer);
       setCotValue(data.dataset.cot || '');
 
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: 'AI智能优化成功',
-        severity: 'success'
+        title: '操作提示',
+        content: 'AI智能优化成功',
       });
     } catch (error) {
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message || '优化失败',
-        severity: 'error'
+        title: '错误提示',
+        content: error.message || '优化失败',
       });
     } finally {
       setOptimizeDialog({
@@ -553,20 +558,37 @@ export default function DatasetDetailsPage({ params }) {
         </Box>
       </Paper>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
       >
-        <Alert
-          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* AI优化对话框 */}
       <OptimizeDialog

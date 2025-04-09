@@ -3,7 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import mammoth from 'mammoth';
-import { Paper, Alert, Snackbar, Grid } from '@mui/material';
+import {
+  Paper, Alert, Snackbar, Grid, Dialog,
+  Button,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import UploadArea from './components/UploadArea';
 import FileList from './components/FileList';
@@ -31,7 +38,12 @@ export default function FileUploader ({ projectId, onUploadSuccess, onProcessSta
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [pdfProcessConfirmOpen, setpdfProcessConfirmOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
-
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
 
   // 设置PDF文件的处理方式
   const handleRadioChange = (event) => {
@@ -57,8 +69,13 @@ export default function FileUploader ({ projectId, onUploadSuccess, onProcessSta
       const data = await response.json();
       setUploadedFiles(data.files || []);
     } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: '获取文件列表出错:' + error.message,
+      });
       console.error('获取文件列表出错:', error);
-      setError(error.message);
+      // setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -84,7 +101,12 @@ export default function FileUploader ({ projectId, onUploadSuccess, onProcessSta
     );
 
     if (invalidFiles.length > 0) {
-      setError(t('textSplit.unsupportedFormat', { files: invalidFiles.map(f => f.name).join(', ') }));
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: t('textSplit.unsupportedFormat', { files: invalidFiles.map(f => f.name).join(', ') }),
+      });
+      // setError(t('textSplit.unsupportedFormat', { files: invalidFiles.map(f => f.name).join(', ') }));
     }
 
     if (validFiles.length > 0) {
@@ -168,15 +190,24 @@ export default function FileUploader ({ projectId, onUploadSuccess, onProcessSta
 
         if (!response.ok) {
           const errorData = await response.json();
+          setConfirmDialog({
+            open: true,
+            title: '错误提示',
+            content: t('textSplit.uploadFailed') + errorData.error,
+          });
           throw new Error(t('textSplit.uploadFailed') + errorData.error);
         }
 
         const data = await response.json();
         uploadedFileNames.push(data.fileName);
       }
-
-      setSuccessMessage(t('textSplit.uploadSuccess', { count: files.length }));
-      setSuccess(true);
+      setConfirmDialog({
+        open: true,
+        title: '操作提示',
+        content: t('textSplit.uploadSuccess', { count: files.length }),
+      });
+      // setSuccessMessage(t('textSplit.uploadSuccess', { count: files.length }));
+      // setSuccess(true);
       setFiles([]);
 
       await fetchUploadedFiles();
@@ -186,7 +217,11 @@ export default function FileUploader ({ projectId, onUploadSuccess, onProcessSta
         await onUploadSuccess(uploadedFileNames, selectedModelInfo, pdfFiles);
       }
     } catch (err) {
-      setError(err.message || t('textSplit.uploadFailed'));
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: err.message || t('textSplit.uploadFailed'),
+      });
     } finally {
       setUploading(false);
     }
@@ -234,12 +269,21 @@ export default function FileUploader ({ projectId, onUploadSuccess, onProcessSta
         const filesLength = uploadedFiles.length;
         onFileDeleted(fileToDelete, filesLength);
       }
-
-      setSuccessMessage(t('textSplit.deleteSuccess', { fileName: fileToDelete }));
-      setSuccess(true);
+      setConfirmDialog({
+        open: true,
+        title: '操作提示',
+        content: t('textSplit.deleteSuccess', { fileName: fileToDelete }),
+      });
+      // setSuccessMessage(t('textSplit.deleteSuccess', { fileName: fileToDelete }));
+      // setSuccess(true);
     } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: '删除文件出错:' + error.message,
+      });
       console.error('删除文件出错:', error);
-      setError(error.message);
+      // setError(error.message);
     } finally {
       setLoading(false);
       setFileToDelete(null);
@@ -313,6 +357,37 @@ export default function FileUploader ({ projectId, onUploadSuccess, onProcessSta
         onClose={closeDeleteConfirm}
         onConfirm={handleDeleteFile}
       />
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       {/* 检测到pdf的处理框 */}
       <PdfProcessingDialog
         open={pdfProcessConfirmOpen}
@@ -322,5 +397,6 @@ export default function FileUploader ({ projectId, onUploadSuccess, onProcessSta
         projectId={projectId}
       />
     </Paper>
+
   );
 }
