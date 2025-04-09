@@ -19,6 +19,8 @@ export async function GET(request, { params }) {
 
         let strategy = request.nextUrl.searchParams.get('strategy');
 
+        const currentLanguage = request.nextUrl.searchParams.get('currentLanguage');
+
         // 验证项目ID
         if (!projectId) {
             return NextResponse.json({ error: '项目ID不能为空' }, { status: 400 });
@@ -39,7 +41,7 @@ export async function GET(request, { params }) {
         const processor = new PdfProcessor(strategy);
 
         // 使用当前策略处理
-        const result = await processor.process(projectId,fileName);
+        const result = await processor.process(projectId,fileName,{language:currentLanguage});
 
         //准换完成后删除pdf文件
         deleteFile(projectId,fileName);

@@ -118,8 +118,9 @@ export default function TextSplitPage({ params }) {
         percentage: 0,
         questionCount: 0
       });
+      const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
       for(const file of pdfFiles){
-        const response = await fetch(`/api/projects/${projectId}/pdf?fileName=`+file.name+`&strategy=`+pdfStrategy);
+        const response = await fetch(`/api/projects/${projectId}/pdf?fileName=`+file.name+`&strategy=`+pdfStrategy+`&currentLanguage=`+currentLanguage);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(t('textSplit.pdfProcessingFailed') + errorData.error);
