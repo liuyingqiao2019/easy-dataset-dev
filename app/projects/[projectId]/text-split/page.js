@@ -60,18 +60,20 @@ export default function TextSplitPage ({ params }) {
     percentage: 0, // 进度百分比
     questionCount: 0 // 已生成的问题数量
   });
+  const [controller, setController] = useState(null)
 
   // 加载文本块数据
   useEffect(() => {
     fetchChunks();
   }, []);
-
   // 获取文本块列表
   const fetchChunks = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/projects/${projectId}/split`);
-
+      let control = new AbortController()
+      let signal = control.signal
+      setController(control)
+      const response = await fetch(`/api/projects/${projectId}/split`, { signal: signal });
       if (!response.ok) {
         const errorData = await response.json();
         setConfirmDialog({
@@ -80,12 +82,6 @@ export default function TextSplitPage ({ params }) {
           content: errorData.error || t('textSplit.fetchChunksFailed'),
         });
         throw new Error(errorData.error || t('textSplit.fetchChunksFailed'));
-      } else {
-        setConfirmDialog({
-          open: true,
-          title: '操作提示',
-          content: t('textSplit.fetchChunksSuccess'),
-        });
       }
 
       const data = await response.json();
@@ -114,18 +110,32 @@ export default function TextSplitPage ({ params }) {
         setTags(data.tags);
       }
     } catch (error) {
-      setConfirmDialog({
-        open: true,
-        title: '错误提示',
-        content: t('textSplit.fetchChunksError') + error.message,
-      });
-      console.error(t('textSplit.fetchChunksError'), error);
+      if (error.name === 'AbortError') {
+        setConfirmDialog({
+          open: true,
+          title: '操作提示',
+          content: '用户取消操作',
+        });
+      } else {
+        setConfirmDialog({
+          open: true,
+          title: '错误提示',
+          content: t('textSplit.fetchChunksError') + error.message,
+        });
+        console.error(t('textSplit.fetchChunksError'), error);
+      }
       // setError(error.message);
     } finally {
       setLoading(false);
     }
   };
-
+  const abortFetchChunks = () => {
+    console.log('%c [ controller ]-124', 'font-size:13px; background:pink; color:#bf2c9f;', controller)
+    controller.abort();
+    setController(null)
+    console.log("中断请求", controller)
+    setLoading(false);
+  }
   // 处理标签切换
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -194,12 +204,16 @@ export default function TextSplitPage ({ params }) {
   const handleSplitText = async (fileName, model) => {
     try {
       setProcessing(true);
+      let control = new AbortController()
+      let signal = control.signal
+      setController(control)
       const language = i18n.language === 'zh-CN' ? '中文' : 'en';
       const response = await fetch(`/api/projects/${projectId}/split`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
+        signal: signal,
         body: JSON.stringify({ fileName, model, language })
       });
 
@@ -240,12 +254,20 @@ export default function TextSplitPage ({ params }) {
       setActiveTab(0);
       location.reload();
     } catch (error) {
-      setConfirmDialog({
-        open: true,
-        title: '错误提示',
-        content: t('textSplit.splitTextError') + error.message,
-      });
-      console.error(t('textSplit.splitTextError'), error);
+      if (error.name === 'AbortError') {
+        setConfirmDialog({
+          open: true,
+          title: '操作提示',
+          content: '用户取消操作',
+        });
+      } else {
+        setConfirmDialog({
+          open: true,
+          title: '错误提示',
+          content: t('textSplit.splitTextError') + error.message,
+        });
+        console.error(t('textSplit.splitTextError'), error);
+      }
       // setError(error.message);
     } finally {
       setProcessing(false);
@@ -331,6 +353,7 @@ export default function TextSplitPage ({ params }) {
         }
 
         const data = await response.json();
+
         console.log(t('textSplit.questionsGenerated', { chunkId, total: data.total }));
         setConfirmDialog({
           open: true,
@@ -624,7 +647,9 @@ export default function TextSplitPage ({ params }) {
           <Typography variant="body2" color="text.secondary">
             {t('textSplit.fetchingDocuments')}
           </Typography>
+
         </Paper>
+
       </Backdrop>
 
       {/* 处理中蒙版 */}
@@ -651,7 +676,7 @@ export default function TextSplitPage ({ params }) {
           }}
         >
           <CircularProgress size={40} sx={{ mb: 2 }} />
-          <Typography variant="h6">{t('textSplit.processing')}</Typography>
+          <Typography variant="h6">{t('textSplit.loading')}</Typography>
 
           {progress.total > 1 ? (
             <Box sx={{ width: '100%', mt: 1, mb: 2 }}>
@@ -684,6 +709,16 @@ export default function TextSplitPage ({ params }) {
               {t('textSplit.processingPleaseWait')}
             </Typography>
           )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+            <Button
+              onClick={abortFetchChunks}
+              color="primary"
+              variant="contained"
+              autoFocus
+            >
+              {t('common.cancel')}
+            </Button>
+          </Box>
         </Paper>
       </Backdrop>
       {/* 确认对话框 */}
@@ -773,6 +808,16 @@ export default function TextSplitPage ({ params }) {
               {t('textSplit.processingPleaseWait')}
             </Typography>
           )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+            <Button
+              onClick={abortFetchChunks}
+              color="primary"
+              variant="contained"
+              autoFocus
+            >
+              {t('common.cancel')}
+            </Button>
+          </Box>
         </Paper>
       </Backdrop>
 
