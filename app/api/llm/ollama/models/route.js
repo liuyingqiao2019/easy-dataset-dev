@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import OllamaAPI from '@/lib/llm/core/ollama';
+const OllamaClient = require('@/lib/llm/core/providers/ollama');
 
 // 设置为强制动态路由，防止静态生成
 export const dynamic = 'force-dynamic';
@@ -12,14 +12,11 @@ export async function GET(request) {
     const port = searchParams.get('port') || '11434';
 
     // 创建 Ollama API 实例
-    const ollama = new OllamaAPI({
-      host: host,
-      port: parseInt(port, 10)
+    const ollama = new OllamaClient({
+      endpoint: `http://${host}:${port}/api`
     });
-
     // 获取模型列表
-    const models = await ollama.getModels();
-
+    const models = ollama.getModels();
     return NextResponse.json(models);
   } catch (error) {
     // console.error('fetch Ollama models error:', error);

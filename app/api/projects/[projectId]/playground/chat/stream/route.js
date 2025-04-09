@@ -34,15 +34,8 @@ export async function POST(request, { params }) {
     try {
       // 调用流式 API
       const stream = await llmClient.chatStream(formattedMessages);
-
       // 返回流式响应
-      return new Response(stream, {
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Cache-Control': 'no-cache',
-          Connection: 'keep-alive'
-        }
-      });
+      return stream;
     } catch (error) {
       console.error('Failed to call LLM API:', error);
       return NextResponse.json(
