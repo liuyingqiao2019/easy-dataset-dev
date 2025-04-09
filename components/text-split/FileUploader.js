@@ -17,7 +17,7 @@ import PdfProcessingDialog from './components/PdfProcessingDialog';
  * @param {Function} props.onUploadSuccess - Upload success callback
  * @param {Function} props.onProcessStart - Process start callback
  */
-export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted,sendToPages,setPdfStrategy,pdfStrategy }) {
+export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted,sendToPages,setPdfStrategy,pdfStrategy,selectedViosnModel,setSelectedViosnModel}) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [files, setFiles] = useState([]);
@@ -32,11 +32,31 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
   const [pdfProcessConfirmOpen, setpdfProcessConfirmOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [taskSettings, setTaskSettings] = useState(null);
+  const [visionModels,setVisionModels] = useState([]);
 
 
   // 设置PDF文件的处理方式
   const handleRadioChange = (event) => {
+    // 传递这个值的原因是setSelectedViosnModel是异步的,PdfProcessingDialog检测到模型变更设置新的值
+    // 这里没法及时获取到，会导致提示选中的模型仍然是旧模型
+    const modelId = event.target.selectedVision;
+
     setPdfStrategy(event.target.value);
+
+    if(event.target.value === "mineru"){
+      setSuccessMessage( t('textSplit.mineruSelected') );
+    }else if(event.target.value === "vision"){
+      const model = visionModels.find(item => item.id === modelId);
+      setSuccessMessage(  t('textSplit.customVisionModelSelected',{
+        name: model.name,
+        provider: model.provider
+      }));
+    }else{
+      setSuccessMessage( t('textSplit.defaultSelected') );
+    }
+
+    setSuccess(true);
+
   };
 
   // Load uploaded files list
@@ -67,6 +87,26 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
       const taskData = await taskResponse.json();
 
       setTaskSettings(taskData);
+    
+      //获取配置的视觉模型
+      const modelResponse = await fetch(`/api/projects/${projectId}/models`);
+
+      if (!response.ok) {
+        throw new Error(t('models.fetchFailed'));
+      }
+
+      //获取所有模型
+      const model = await modelResponse.json();
+
+      //过滤出视觉模型
+      const visionItems = model.filter(item => (item.type === 'vision') &&item.apiKey);
+
+      //先默认选择第一个配置的视觉模型
+      if(visionItems.length > 0){
+        setSelectedViosnModel(visionItems[0].id);
+      }
+    
+      setVisionModels(visionItems);
 
     } catch (error) {
       console.error('获取文件列表出错:', error);
@@ -333,6 +373,9 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
         value={pdfStrategy}
         projectId={projectId}
         taskSettings={taskSettings}
+        visionModels={visionModels}
+        selectedViosnModel={selectedViosnModel}
+        setSelectedViosnModel={setSelectedViosnModel}
       />
     </Paper>    
   );

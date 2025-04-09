@@ -25,7 +25,7 @@ import useTaskSettings from '@/hooks/useTaskSettings';
 
 export default function TaskSettings({ projectId }) {
   const { t } = useTranslation();
-  const { taskSettings, setTaskSettings, loading, error, success, setSuccess, visionModels } = useTaskSettings(projectId);
+  const { taskSettings, setTaskSettings, loading, error, success, setSuccess } = useTaskSettings(projectId);
   // 处理设置变更
   const handleSettingChange = e => {
     const { name, value } = e.target;
@@ -191,26 +191,6 @@ export default function TaskSettings({ projectId }) {
               type="password"
               helperText={t('settings.minerUHelper')}
             />
-          </Grid>
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-                <InputLabel>{t('settings.vision')}</InputLabel>
-                <Select
-                  label={t('settings.vision')}
-                  value={taskSettings.vision}
-                  onChange={handleSettingChange}
-                  name="vision"
-                >
-                  {visionModels.map((item) => (
-                      <MenuItem 
-                          key={item.id} 
-                          value={item.id}  
-                      >
-                          {item.provider} ({item.name}) 
-                      </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
           </Grid>
 
           <Grid item xs={12}>

@@ -39,8 +39,9 @@ export default function TextSplitPage({ params }) {
   const [pdfProcessing, setPdfProcessing] = useState(false);
   const [error, setError] = useState(null); // 可以是字符串或对象 { severity, message }
   const {taskSettings } = useTaskSettings(projectId);
-  const [pdfStrategy,setPdfStrategy]= useState("default");;
+  const [pdfStrategy,setPdfStrategy]= useState("default");
   const [questionFilter, setQuestionFilter] = useState('all'); // 'all', 'generated', 'ungenerated'
+  const [selectedViosnModel,setSelectedViosnModel]= useState('');
 
   // 进度状态
   const [progress, setProgress] = useState({
@@ -120,7 +121,7 @@ export default function TextSplitPage({ params }) {
       });
       const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
       for(const file of pdfFiles){
-        const response = await fetch(`/api/projects/${projectId}/pdf?fileName=`+file.name+`&strategy=`+pdfStrategy+`&currentLanguage=`+currentLanguage);
+        const response = await fetch(`/api/projects/${projectId}/pdf?fileName=`+file.name+`&strategy=`+pdfStrategy+`&currentLanguage=`+currentLanguage+`&modelId=`+selectedViosnModel);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(t('textSplit.pdfProcessingFailed') + errorData.error);
@@ -508,6 +509,8 @@ export default function TextSplitPage({ params }) {
         onFileDeleted={handleFileDeleted}
         setPdfStrategy={setPdfStrategy}
         pdfStrategy={pdfStrategy}
+        selectedViosnModel={selectedViosnModel}
+        setSelectedViosnModel={setSelectedViosnModel}
         sendToPages={handleSelected}
       />
 
