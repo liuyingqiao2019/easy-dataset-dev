@@ -1,11 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Typography, Box, Button, TextField, Grid, Card, CardContent, Alert, Snackbar } from '@mui/material';
+import {
+  Typography, Box, Button, TextField, Grid, Card, CardContent, Alert, Snackbar, Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText
+} from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import { useTranslation } from 'react-i18next';
 
-export default function BasicSettings({ projectId }) {
+export default function BasicSettings ({ projectId }) {
   const { t } = useTranslation();
   const [projectInfo, setProjectInfo] = useState({
     id: '',
@@ -15,9 +21,14 @@ export default function BasicSettings({ projectId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
   useEffect(() => {
-    async function fetchProjectInfo() {
+    async function fetchProjectInfo () {
       try {
         setLoading(true);
         const response = await fetch(`/api/projects/${projectId}`);
@@ -29,8 +40,13 @@ export default function BasicSettings({ projectId }) {
         const data = await response.json();
         setProjectInfo(data);
       } catch (error) {
+        setConfirmDialog({
+          open: true,
+          title: '错误提示',
+          content: '获取项目信息出错:' + error.message,
+        });
         console.error('获取项目信息出错:', error);
-        setError(error.message);
+        // setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -68,8 +84,13 @@ export default function BasicSettings({ projectId }) {
 
       setSuccess(true);
     } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: '保存项目信息出错:' + error.message,
+      });
       console.error('保存项目信息出错:', error);
-      setError(error.message);
+      // setError(error.message);
     }
   };
 
@@ -137,7 +158,37 @@ export default function BasicSettings({ projectId }) {
           {t('settings.saveSuccess')}
         </Alert>
       </Snackbar>
-
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={!!error}
         autoHideDuration={6000}

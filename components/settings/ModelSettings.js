@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  DialogContentText,
   FormControl,
   Alert,
   Snackbar,
@@ -40,14 +41,19 @@ const providerOptions = MODEL_PROVIDERS.map(provider => ({
   id: provider.id,
   label: provider.name
 }));
-
-export default function ModelSettings({ projectId }) {
+export default function ModelSettings ({ projectId }) {
   const { t } = useTranslation();
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [ollamaModels, setOllamaModels] = useState([]);
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
 
   // 获取 Ollama 模型列表
   const fetchOllamaModels = async endpoint => {
@@ -89,7 +95,7 @@ export default function ModelSettings({ projectId }) {
   });
 
   useEffect(() => {
-    async function fetchModelSettings() {
+    async function fetchModelSettings () {
       try {
         setLoading(true);
         const response = await fetch(`/api/projects/${projectId}/models`);
@@ -116,8 +122,13 @@ export default function ModelSettings({ projectId }) {
           setModels(data);
         }
       } catch (error) {
+        setConfirmDialog({
+          open: true,
+          title: '错误提示',
+          content: '获取模型配置出错:' + error.message,
+        });
         console.error('获取模型配置出错:', error);
-        setError(error.message);
+        // setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -158,8 +169,13 @@ export default function ModelSettings({ projectId }) {
       setSuccess(true);
       return true; // 返回成功状态
     } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: 'Failed to save model configuration:' + error.message,
+      });
       console.error('Failed to save model configuration:', error);
-      setError(error.message);
+      // setError(error.message);
       return false; // 返回失败状态
     }
   };
@@ -729,7 +745,37 @@ export default function ModelSettings({ projectId }) {
           {t('settings.saveSuccess')}
         </Alert>
       </Snackbar>
-
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={!!error}
         autoHideDuration={6000}

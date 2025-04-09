@@ -15,8 +15,14 @@ import {
   Backdrop,
   Paper,
   LinearProgress,
+  Button,
   Select,
-  MenuItem
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
 } from '@mui/material';
 import FileUploader from '@/components/text-split/FileUploader';
 import ChunkList from '@/components/text-split/ChunkList';
@@ -26,7 +32,7 @@ import { processInParallel } from '@/lib/util/async';
 import useTaskSettings from '@/hooks/useTaskSettings';
 import { finished } from 'stream';
 
-export default function TextSplitPage({ params }) {
+export default function TextSplitPage ({ params }) {
   const { t } = useTranslation();
   const { projectId } = params;
   const [activeTab, setActiveTab] = useState(0);
@@ -38,10 +44,16 @@ export default function TextSplitPage({ params }) {
   const [processing, setProcessing] = useState(false);
   const [pdfProcessing, setPdfProcessing] = useState(false);
   const [error, setError] = useState(null); // 可以是字符串或对象 { severity, message }
-  const {taskSettings } = useTaskSettings(projectId);
-  const [pdfStrategy,setPdfStrategy]= useState("default");
+  const { taskSettings } = useTaskSettings(projectId);
+  const [pdfStrategy, setPdfStrategy] = useState("default");;
   const [questionFilter, setQuestionFilter] = useState('all'); // 'all', 'generated', 'ungenerated'
-  const [selectedViosnModel,setSelectedViosnModel]= useState('');
+  const [selectedViosnModel, setSelectedViosnModel] = useState('');
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
 
   // 进度状态
   const [progress, setProgress] = useState({
@@ -64,7 +76,18 @@ export default function TextSplitPage({ params }) {
 
       if (!response.ok) {
         const errorData = await response.json();
+        setConfirmDialog({
+          open: true,
+          title: '错误提示',
+          content: errorData.error || t('textSplit.fetchChunksFailed'),
+        });
         throw new Error(errorData.error || t('textSplit.fetchChunksFailed'));
+      } else {
+        setConfirmDialog({
+          open: true,
+          title: '操作提示',
+          content: t('textSplit.fetchChunksSuccess'),
+        });
       }
 
       const data = await response.json();
@@ -93,8 +116,13 @@ export default function TextSplitPage({ params }) {
         setTags(data.tags);
       }
     } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: t('textSplit.fetchChunksError') + error.message,
+      });
       console.error(t('textSplit.fetchChunksError'), error);
-      setError(error.message);
+      // setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -106,10 +134,10 @@ export default function TextSplitPage({ params }) {
   };
 
   // 处理文件上传成功
-  const handleUploadSuccess = async (fileNames, model,pdfFiles) => {
+  const handleUploadSuccess = async (fileNames, model, pdfFiles) => {
     console.log(t('textSplit.fileUploadSuccess'), fileNames);
     //上传完处理PDF文件
-    try{
+    try {
       setPdfProcessing(true);
       setError(null);
       // 重置进度状态
@@ -119,9 +147,8 @@ export default function TextSplitPage({ params }) {
         percentage: 0,
         questionCount: 0
       });
-      const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
-      for(const file of pdfFiles){
-        const response = await fetch(`/api/projects/${projectId}/pdf?fileName=`+file.name+`&strategy=`+pdfStrategy+`&currentLanguage=`+currentLanguage+`&modelId=`+selectedViosnModel);
+      for (const file of pdfFiles) {
+        const response = await fetch(`/api/projects/${projectId}/pdf?fileName=` + file.name + `&strategy=` + pdfStrategy);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(t('textSplit.pdfProcessingFailed') + errorData.error);
@@ -138,10 +165,15 @@ export default function TextSplitPage({ params }) {
           };
         });
       }
-    }catch(error){
+    } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: t('textSplit.pdfProcessingFailed') + error.message,
+      });
       console.error(t('textSplit.pdfProcessingFailed'), error);
-      setError({ severity: 'error', message: error.message });
-    }finally{
+      // setError({ severity: 'error', message: error.message });
+    } finally {
       setPdfProcessing(false);
       // 重置进度状态
       setTimeout(() => {
@@ -153,7 +185,7 @@ export default function TextSplitPage({ params }) {
         });
       }, 1000); // 延迟重置，让用户看到完成的进度
     }
-    
+
     // 如果有文件上传成功，自动处理第一个文件
     if (fileNames && fileNames.length > 0) {
       handleSplitText(fileNames[0], model);
@@ -210,8 +242,13 @@ export default function TextSplitPage({ params }) {
       setActiveTab(0);
       location.reload();
     } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: t('textSplit.splitTextError') + error.message,
+      });
       console.error(t('textSplit.splitTextError'), error);
-      setError(error.message);
+      // setError(error.message);
     } finally {
       setProcessing(false);
     }
@@ -233,8 +270,13 @@ export default function TextSplitPage({ params }) {
       setChunks(prev => prev.filter(chunk => chunk.id !== chunkId));
       setShowChunks(prev => prev.filter(chunk => chunk.id !== chunkId));
     } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: t('textSplit.deleteChunkError') + error.message,
+      });
       console.error(t('textSplit.deleteChunkError'), error);
-      setError(error.message);
+      // setError(error.message);
     }
   };
 
@@ -292,12 +334,19 @@ export default function TextSplitPage({ params }) {
 
         const data = await response.json();
         console.log(t('textSplit.questionsGenerated', { chunkId, total: data.total }));
-        setError({
-          severity: 'success',
-          message: t('textSplit.questionsGeneratedSuccess', {
+        setConfirmDialog({
+          open: true,
+          title: '操作提示',
+          content: t('textSplit.questionsGeneratedSuccess', {
             total: data.total
           })
         });
+        // setError({
+        //   severity: 'success',
+        //   message: t('textSplit.questionsGeneratedSuccess', {
+        //     total: data.total
+        //   })
+        // });
       } else {
         // 如果是多个文本块，循环调用单个文本块的问题生成接口，限制并行数为2
         let totalQuestions = 0;
@@ -373,18 +422,21 @@ export default function TextSplitPage({ params }) {
 
         // 处理完成后设置结果消息
         if (errorCount > 0) {
-          setError({
-            severity: 'warning',
-            message: t('textSplit.partialSuccess', {
+          setConfirmDialog({
+            open: true,
+            title: '操作提示',
+            content: t('textSplit.partialSuccess', {
               successCount,
               total: chunkIds.length,
               errorCount
             })
           });
+
         } else {
-          setError({
-            severity: 'success',
-            message: t('textSplit.allSuccess', {
+          setConfirmDialog({
+            open: true,
+            title: '操作提示',
+            content: t('textSplit.allSuccess', {
               successCount,
               totalQuestions
             })
@@ -395,8 +447,13 @@ export default function TextSplitPage({ params }) {
       // 刷新文本块列表
       fetchChunks();
     } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: t('textSplit.generateQuestionsError') + error.message,
+      });
       console.error(t('textSplit.generateQuestionsError'), error);
-      setError({ severity: 'error', message: error.message });
+      // setError({ severity: 'error', message: error.message });
     } finally {
       setProcessing(false);
       // 重置进度状态
@@ -416,7 +473,7 @@ export default function TextSplitPage({ params }) {
     try {
       setProcessing(true);
       setError(null);
-      
+
       const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`, {
         method: 'PATCH',
         headers: {
@@ -432,7 +489,7 @@ export default function TextSplitPage({ params }) {
 
       // 更新成功后刷新文本块列表
       fetchChunks();
-      
+
       setError({
         severity: 'success',
         message: t('textSplit.editChunkSuccess')
@@ -669,7 +726,37 @@ export default function TextSplitPage({ params }) {
           )}
         </Paper>
       </Backdrop>
-
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       {/* PDF处理中蒙版 */}
       <Backdrop
         sx={{

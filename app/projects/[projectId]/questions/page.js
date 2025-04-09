@@ -42,7 +42,7 @@ import QuestionEditDialog from './components/QuestionEditDialog';
 import { useQuestionEdit } from './hooks/useQuestionEdit';
 import { useSnackbar } from '@/hooks/useSnackbar';
 
-export default function QuestionsPage({ params }) {
+export default function QuestionsPage ({ params }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const { projectId } = params;
@@ -60,6 +60,12 @@ export default function QuestionsPage({ params }) {
     open: false,
     message: '',
     severity: 'success'
+  });
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
   });
   const { taskSettings } = useTaskSettings(projectId);
 
@@ -93,14 +99,6 @@ export default function QuestionsPage({ params }) {
 
     showSuccess(t('questions.operationSuccess'));
   });
-
-  const [confirmDialog, setConfirmDialog] = useState({
-    open: false,
-    title: '',
-    content: '',
-    confirmAction: null
-  });
-
   const fetchData = async currentPage => {
     if (!currentPage) {
       setLoading(true);
@@ -133,11 +131,11 @@ export default function QuestionsPage({ params }) {
       setChunks(data.chunks || []);
     } catch (error) {
       console.error(t('common.fetchError'), error);
-      setError(error.message);
-      setSnackbar({
+      // setError(error.message);
+      setConfirmDialog({
         open: true,
-        message: error.message,
-        severity: 'error'
+        title: '错误提示',
+        content: t('common.fetchError') + error.message,
       });
     } finally {
       if (!currentPage) {
@@ -282,10 +280,10 @@ export default function QuestionsPage({ params }) {
       return result.dataset;
     } catch (error) {
       console.error(t('datasets.generateError'), error);
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message || t('datasets.generateFailed'),
-        severity: 'error'
+        title: '错误提示',
+        content: error.message || t('datasets.generateFailed'),
       });
       return null;
     }
@@ -475,18 +473,18 @@ export default function QuestionsPage({ params }) {
           severity: 'warning'
         });
       } else {
-        setSnackbar({
+        setConfirmDialog({
           open: true,
-          message: t('common.success', { successCount }),
-          severity: 'success'
+          title: '操作提示',
+          content: t('common.success', { successCount }),
         });
       }
     } catch (error) {
       console.error('生成数据集出错:', error);
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message || '生成数据集失败',
-        severity: 'error'
+        title: '错误提示',
+        content: error.message || '生成数据集失败',
       });
     } finally {
       // 延迟关闭处理状态，确保用户可以看到完成的进度
@@ -557,17 +555,17 @@ export default function QuestionsPage({ params }) {
       setSelectedQuestions(prev => prev.filter(id => id !== questionKey));
 
       // 显示成功提示
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: t('common.deleteSuccess'),
-        severity: 'success'
+        title: '操作提示',
+        content: t('common.deleteSuccess'),
       });
     } catch (error) {
       console.error('删除问题失败:', error);
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message: error.message || '删除问题失败',
-        severity: 'error'
+        title: error.message || '删除问题失败',
+        content: error.message,
       });
     }
   };
@@ -646,20 +644,21 @@ export default function QuestionsPage({ params }) {
       setSelectedQuestions([]);
 
       // 显示成功提示
-      setSnackbar({
+      setConfirmDialog({
         open: true,
-        message:
-          successCount === selectedQuestions.length
-            ? `成功删除 ${successCount} 个问题`
-            : `删除完成，成功: ${successCount}, 失败: ${selectedQuestions.length - successCount}`,
+        title: '操作提示',
+        content: successCount === selectedQuestions.length
+          ? `成功删除 ${successCount} 个问题`
+          : `删除完成，成功: ${successCount}, 失败: ${selectedQuestions.length - successCount}`,
         severity: successCount === selectedQuestions.length ? 'success' : 'warning'
       });
     } catch (error) {
       console.error('批量删除问题失败:', error);
-      setSnackbar({
+
+      setConfirmDialog({
         open: true,
-        message: error.message || '批量删除问题失败',
-        severity: 'error'
+        title: '错误提示',
+        content: error.message || '批量删除问题失败'
       });
     }
   };
@@ -998,15 +997,19 @@ export default function QuestionsPage({ params }) {
         onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
       >
-        <DialogTitle id="alert-dialog-title">{confirmDialog.title}</DialogTitle>
-        <DialogContent>
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
           <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialog({ ...confirmDialog, open: false })} color="primary">
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          {/* <Button onClick={() => setConfirmDialog({ ...confirmDialog, open: false })} color="primary">
             {t('common.cancel')}
-          </Button>
+          </Button> */}
           <Button
             onClick={() => {
               setConfirmDialog({ ...confirmDialog, open: false });
@@ -1014,11 +1017,11 @@ export default function QuestionsPage({ params }) {
                 confirmDialog.confirmAction();
               }
             }}
-            color="error"
+            color="primary"
             variant="contained"
             autoFocus
           >
-            {t('common.confirmDelete')}
+            {t('common.confirm')}
           </Button>
         </DialogActions>
       </Dialog>

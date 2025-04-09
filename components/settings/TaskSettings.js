@@ -16,16 +16,28 @@ import {
   FormControl,
   Select,
   InputLabel,
-  MenuItem
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import SaveIcon from '@mui/icons-material/Save';
 import useTaskSettings from '@/hooks/useTaskSettings';
 
-export default function TaskSettings({ projectId }) {
+export default function TaskSettings ({ projectId }) {
   const { t } = useTranslation();
   const { taskSettings, setTaskSettings, loading, error, success, setSuccess } = useTaskSettings(projectId);
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
+
   // 处理设置变更
   const handleSettingChange = e => {
     const { name, value } = e.target;
@@ -58,8 +70,20 @@ export default function TaskSettings({ projectId }) {
         throw new Error(t('settings.saveTasksFailed'));
       }
 
+      const minerUToken = taskSettings.minerUToken;
+      if (minerUToken !== undefined || minerUToken !== null || minerUToken !== '') {
+        localStorage.setItem("isSettingMinerU" + projectId, true);
+      } else {
+        localStorage.removeItem("isSettingMinerU" + projectId);
+      }
+
       setSuccess(true);
     } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: '保存任务配置出错:' + error.message,
+      });
       console.error('保存任务配置出错:', error);
       //setError(error.message);
     }
@@ -222,7 +246,37 @@ export default function TaskSettings({ projectId }) {
           {t('settings.saveSuccess')}
         </Alert>
       </Snackbar>
-
+      {/* 确认对话框 */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar
         open={!!error}
         autoHideDuration={6000}
