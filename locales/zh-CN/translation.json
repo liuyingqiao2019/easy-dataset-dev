@@ -439,8 +439,8 @@
     "temperature": "模型温度",
     "maxTokens": "最大生成 Token 数",
     "type": "模型标签",
-    "text": "大语言模型",
-    "vision": "视觉大模型",
+    "text": "语言模型",
+    "vision": "视觉模型",
     "typeTips": "如果希望使用自定义视觉模型解析PDF请务必配置至少一个视觉大模型"
   },
   "stats": {
