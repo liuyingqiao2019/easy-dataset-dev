@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { deleteFile } from '@/lib/db/texts';
-import PdfProcessor from '@/lib/pdf-processing/core'
+import PdfProcessor from '@/lib/pdf-processing/core';
 import { getProject, updateProject } from '@/lib/db/index';
 
 
@@ -20,6 +20,8 @@ export async function GET(request, { params }) {
     let strategy = request.nextUrl.searchParams.get('strategy');
 
     const currentLanguage = request.nextUrl.searchParams.get('currentLanguage');
+
+    const visionModel = request.nextUrl.searchParams.get('modelId');
 
     // 验证项目ID
     if (!projectId) {
@@ -41,7 +43,7 @@ export async function GET(request, { params }) {
     const processor = new PdfProcessor(strategy);
 
     // 使用当前策略处理
-    const result = await processor.process(projectId, fileName, { language: currentLanguage });
+    const result = await processor.process(projectId, fileName, { language: currentLanguage, visionModelId: visionModel});
 
     //准换完成后删除pdf文件
     deleteFile(projectId, fileName);

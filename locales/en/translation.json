@@ -243,8 +243,12 @@
     "mineruApiDescDisabled": "Please go to Project Settings - Task Configuration to set up MinerU Token",
     "mineruWebPlatform": "MinerU Online Platform Parsing",
     "mineruWebPlatformDesc": "Capable of identifying complex PDF files, including formulas and charts (Requires redirecting to another website)",
+    "mineruSelected": "Selected to use MinerU for parsing PDFs",
     "customVisionModel": "Custom Vision Model Parsing",
-    "customVisionModelDesc": "Capable of identifying complex PDF files, including formulas and charts (Requires adding vision model configuration to the model configuration)"
+    "customVisionModelDesc": "Capable of identifying complex PDF files, including formulas and charts (Requires adding vision model configuration to the model configuration)",
+    "customVisionModelSelected": "Selected to use the visual large model {{name}} ({{provider}}) for parsing PDFs",
+    "defaultSelected": "Selected to use the default built-in strategy for parsing PDFs",
+    "download": "Download the document "
   },
   "domain": {
     "title": "Domain Knowledge Tree",
