@@ -17,7 +17,7 @@ import PdfProcessingDialog from './components/PdfProcessingDialog';
  * @param {Function} props.onUploadSuccess - Upload success callback
  * @param {Function} props.onProcessStart - Process start callback
  */
-export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted,sendToPages,setPdfStrategy,pdfStrategy,selectedViosnModel,setSelectedViosnModel}) {
+export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted, sendToPages, setPdfStrategy, pdfStrategy, selectedViosnModel, setSelectedViosnModel, setPageLoading }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [files, setFiles] = useState([]);
@@ -341,8 +341,10 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
             theme={theme}
             files={uploadedFiles}
             loading={loading}
+            setPageLoading={setPageLoading}
             sendToFileUploader={handleSelected}
             onDeleteFile={openDeleteConfirm}
+            projectId={projectId}
           />
         </Grid>
       </Grid>

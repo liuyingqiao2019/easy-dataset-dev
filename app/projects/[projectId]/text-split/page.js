@@ -508,6 +508,7 @@ export default function TextSplitPage({ params }) {
         onProcessStart={handleSplitText}
         onFileDeleted={handleFileDeleted}
         setPdfStrategy={setPdfStrategy}
+        setPageLoading={setLoading}
         pdfStrategy={pdfStrategy}
         selectedViosnModel={selectedViosnModel}
         setSelectedViosnModel={setSelectedViosnModel}
