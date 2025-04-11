@@ -54,7 +54,8 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
     questionField: 'instruction',
     answerField: 'output',
     cotField: 'complexCOT', // 添加思维链字段名
-    includeLabels: false
+    includeLabels: false,
+    includeChunk: false, // 添加是否包含chunk字段
   });
   const [copied, setCopied] = useState(false);
 
@@ -109,6 +110,13 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
     });
   };
 
+  const handleIncludeChunkChange = event => {
+    setCustomFields({
+      ...customFields,
+      includeChunk: event.target.checked
+    });
+  };
+
   const handleExport = () => {
     onExport({
       formatType,
@@ -131,7 +139,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
 
   // 自定义格式的示例
   const getCustomFormatExample = () => {
-    const { questionField, answerField, cotField, includeLabels } = customFields;
+    const { questionField, answerField, cotField, includeLabels, includeChunk } = customFields;
     const example = {
       [questionField]: '问题内容',
       [answerField]: '答案内容'
@@ -144,6 +152,10 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
 
     if (includeLabels) {
       example.labels = ['领域标签1'];
+    }
+
+    if (includeChunk) {
+      example.chunk = '文本块';
     }
 
     return fileFormat === 'json' ? JSON.stringify([example], null, 2) : JSON.stringify(example);
@@ -203,6 +215,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
       const headers = [customFields.questionField, customFields.answerField];
       if (includeCOT) headers.push(customFields.cotField);
       if (customFields.includeLabels) headers.push('labels');
+      if (customFields.includeChunk) headers.push('chunkId');
 
       const row = {
         [customFields.questionField]: '问题内容',
@@ -210,6 +223,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
       };
       if (includeCOT) row[customFields.cotField] = '思维链过程内容';
       if (customFields.includeLabels) row.labels = '领域标签';
+      if (customFields.includeChunk) row.chunkId = '文本块';
       return {
         headers,
         rows: [row]
@@ -382,6 +396,12 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                     <Checkbox checked={customFields.includeLabels} onChange={handleIncludeLabelsChange} size="small" />
                   }
                   label={t('export.includeLabels')}
+                />
+                <FormControlLabel
+                    control={
+                      <Checkbox checked={customFields.includeChunk} onChange={handleIncludeChunkChange} size="small" />
+                    }
+                    label={t('export.includeChunk')}
                 />
               </Box>
             )}
