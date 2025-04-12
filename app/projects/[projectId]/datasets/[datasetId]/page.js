@@ -499,6 +499,15 @@ export default function DatasetDetailsPage({ params }) {
           </Typography>
         </Box>
 
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1 }}>
+            {t('datasets.chunkId')}
+          </Typography>
+          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+            {dataset.chunkId}
+          </Typography>
+        </Box>
+
         <EditableField
           label={t('datasets.answer')}
           value={answerValue}
