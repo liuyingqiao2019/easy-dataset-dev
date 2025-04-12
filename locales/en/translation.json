@@ -48,9 +48,11 @@
     "huggingfaceNotImplemented": "Hugging Face functionality is not yet implemented",
     "concurrencyLimit": "Concurrency Limit",
     "saveTaskConfig": "Save Task Config",
-    "minerUSettings": "MinerU Settings",
-    "minerUToken": "MinerU Token",
-    "minerUHelper": "MinerU Token is valid for only 14 days, please update the Token in time"
+    "pdfSettings": "PDF file conversion configuration",
+    "minerUToken": "MinerU Token configuration",
+    "minerUHelper": "MinerU Token is valid for only 14 days. Please replace the Token in time",
+    "vision": "Custom large-scale vision model configuration",
+    "visionConcurrencyLimit": "Concurrency limit for custom large-scale vision models"
   },
   "questions": {
     "filterAll": "All Questions",
@@ -241,8 +243,17 @@
     "mineruApiDescDisabled": "Please go to Project Settings - Task Configuration to set up MinerU Token",
     "mineruWebPlatform": "MinerU Online Platform Parsing",
     "mineruWebPlatformDesc": "Capable of identifying complex PDF files, including formulas and charts (Requires redirecting to another website)",
+    "mineruSelected": "Selected to use MinerU for parsing PDFs",
     "customVisionModel": "Custom Vision Model Parsing",
-    "customVisionModelDesc": "Capable of identifying complex PDF files, including formulas and charts (Requires adding vision model configuration to the model configuration)"
+    "customVisionModelDesc": "Capable of identifying complex PDF files, including formulas and charts (Requires adding vision model configuration to the model configuration)",
+    "customVisionModelSelected": "Selected to use the visual large model {{name}} ({{provider}}) for parsing PDFs",
+    "defaultSelected": "Selected to use the default built-in strategy for parsing PDFs",
+    "download": "Download the document ",
+    "viewChunk": "View Text Chunk",
+    "editChunk": "Edit Text Chunk {{chunkId}}",
+    "editChunkSuccess": "Text chunk edited successfully",
+    "editChunkFailed": "Failed to edit text chunk",
+    "editChunkError": "Error occurred when editing text chunk"
   },
   "domain": {
     "title": "Domain Knowledge Tree",
@@ -296,6 +307,7 @@
     "answerFieldName": "Answer Field Name",
     "cotFieldName": "Cot Field Name",
     "includeLabels": "Include Labels",
+    "includeChunk": "Include Chunk",
     "localTab": "Local Export",
     "llamaFactoryTab": "Llama Factory",
     "huggingFaceTab": "HuggingFace",
@@ -321,6 +333,7 @@
     "domainTag": "Domain Tag",
     "cot": "COT",
     "answer": "Answer",
+    "chunkId": "Text Chunk",
     "confirmed": "Confirmed",
     "noTag": "No Tag",
     "noData": "No Data",
@@ -431,7 +444,11 @@
     "apiKeyConfigured": "API Key Configured",
     "apiKeyNotConfigured": "API Key Not Configured",
     "temperature": "Temperature",
-    "maxTokens": "Max Tokens"
+    "maxTokens": "Max Tokens",
+    "type": "Model Type",
+    "text": "Large Language Model",
+    "vision": "Vision Large Model",
+    "typeTips": "If you want to use a custom vision model to parse PDFs, please configure at least one vision large model"
   },
   "stats": {
     "ongoingProjects": "Ongoing Projects",

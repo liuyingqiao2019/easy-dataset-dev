@@ -12,7 +12,7 @@
 
 [简体中文](./README.zh-CN.md) | [English](./README.md)
 
-[Features](#features) • [Getting Started](#getting-started) • [Usage](#usage) • [Documentation](https://rncg5jvpme.feishu.cn/docx/IRuad1eUIo8qLoxxwAGcZvqJnDb?302from=wiki) • [Contributing](#contributing) • [License](#license)
+[Features](#features) • [Getting Started](#getting-started) • [Usage](#usage) • [Documentation](https://rncg5jvpme.feishu.cn/docx/IRuad1eUIo8qLoxxwAGcZvqJnDb) • [Contributing](#contributing) • [License](#license)
 
 </div>
 

@@ -22,27 +22,38 @@ export async function POST(request, { params }) {
       apiKey: model.apiKey,
       model: model.name,
       temperature: model.temperature,
-      maxTokens: model.maxTokens
+      maxTokens: model.maxTokens,
+      type: model.type // 添加模型类型，用于区分语言模型和视觉模型
     });
 
     // 格式化消息历史
-    const formattedMessages = messages.map(msg => ({
-      role: msg.role,
-      content: msg.content
-    }));
+    const formattedMessages = messages.map(msg => {
+      // 处理纯文本消息
+      if (typeof msg.content === 'string') {
+        return {
+          role: msg.role,
+          content: msg.content
+        };
+      }
+      // 处理包含图片的复合消息（用于视觉模型）
+      else if (Array.isArray(msg.content)) {
+        return {
+          role: msg.role,
+          content: msg.content
+        };
+      }
+      // 默认情况
+      return {
+        role: msg.role,
+        content: msg.content
+      };
+    });
 
     try {
       // 调用流式 API
       const stream = await llmClient.chatStream(formattedMessages);
-
       // 返回流式响应
-      return new Response(stream, {
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Cache-Control': 'no-cache',
-          Connection: 'keep-alive'
-        }
-      });
+      return stream;
     } catch (error) {
       console.error('Failed to call LLM API:', error);
       return NextResponse.json(

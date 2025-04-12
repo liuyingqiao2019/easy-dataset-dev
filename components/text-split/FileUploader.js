@@ -17,7 +17,7 @@ import PdfProcessingDialog from './components/PdfProcessingDialog';
  * @param {Function} props.onUploadSuccess - Upload success callback
  * @param {Function} props.onProcessStart - Process start callback
  */
-export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted,sendToPages,setPdfStrategy,pdfStrategy }) {
+export default function FileUploader({ projectId, onUploadSuccess, onProcessStart, onFileDeleted,  sendToPages,  setPdfStrategy,  pdfStrategy, selectedViosnModel, setSelectedViosnModel, setPageLoading }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [files, setFiles] = useState([]);
@@ -31,11 +31,32 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [pdfProcessConfirmOpen, setpdfProcessConfirmOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
+  const [taskSettings, setTaskSettings] = useState(null);
+  const [visionModels,setVisionModels] = useState([]);
 
 
   // 设置PDF文件的处理方式
   const handleRadioChange = (event) => {
+    // 传递这个值的原因是setSelectedViosnModel是异步的,PdfProcessingDialog检测到模型变更设置新的值
+    // 这里没法及时获取到，会导致提示选中的模型仍然是旧模型
+    const modelId = event.target.selectedVision;
+
     setPdfStrategy(event.target.value);
+
+    if(event.target.value === "mineru"){
+      setSuccessMessage( t('textSplit.mineruSelected') );
+    }else if(event.target.value === "vision"){
+      const model = visionModels.find(item => item.id === modelId);
+      setSuccessMessage(  t('textSplit.customVisionModelSelected',{
+        name: model.name,
+        provider: model.provider
+      }));
+    }else{
+      setSuccessMessage( t('textSplit.defaultSelected') );
+    }
+
+    setSuccess(true);
+
   };
 
   // Load uploaded files list
@@ -56,6 +77,37 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
 
       const data = await response.json();
       setUploadedFiles(data.files || []);
+
+      //获取到配置信息，用于判断用户是否启用MinerU和视觉大模型
+      const taskResponse = await fetch(`/api/projects/${projectId}/tasks`);
+      if (!taskResponse.ok) {
+        throw new Error(t('settings.fetchTasksFailed'));
+      }
+
+      const taskData = await taskResponse.json();
+
+      setTaskSettings(taskData);
+    
+      //获取配置的视觉模型
+      const modelResponse = await fetch(`/api/projects/${projectId}/models`);
+
+      if (!response.ok) {
+        throw new Error(t('models.fetchFailed'));
+      }
+
+      //获取所有模型
+      const model = await modelResponse.json();
+
+      //过滤出视觉模型
+      const visionItems = model.filter(item => (item.type === 'vision') &&item.apiKey);
+
+      //先默认选择第一个配置的视觉模型
+      if(visionItems.length > 0){
+        setSelectedViosnModel(visionItems[0].id);
+      }
+    
+      setVisionModels(visionItems);
+
     } catch (error) {
       console.error('获取文件列表出错:', error);
       setError(error.message);
@@ -68,11 +120,11 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
   const handleFileSelect = event => {
     const selectedFiles = Array.from(event.target.files);
 
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
     const oversizedFiles = selectedFiles.filter(file => file.size > MAX_FILE_SIZE);
 
     if (oversizedFiles.length > 0) {
-      setError(`Max 10MB: ${oversizedFiles.map(f => f.name).join(', ')}`);
+      setError(`Max 50MB: ${oversizedFiles.map(f => f.name).join(', ')}`);
       return;
     }
 
@@ -92,7 +144,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
     }
     // If there are PDF files among the uploaded files, let the user choose the way to process the PDF files.
     const hasPdfFiles = selectedFiles.filter(file => file.name.endsWith('.pdf'));
-    if(hasPdfFiles.length > 0){
+    if (hasPdfFiles.length > 0) {
       setpdfProcessConfirmOpen(true);
       setPdfFiles(hasPdfFiles);
     }
@@ -183,7 +235,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
 
       // 上传成功后，返回文件名列表和选中的模型信息
       if (onUploadSuccess) {
-        await onUploadSuccess(uploadedFileNames, selectedModelInfo,pdfFiles);
+        await onUploadSuccess(uploadedFileNames, selectedModelInfo, pdfFiles);
       }
     } catch (err) {
       setError(err.message || t('textSplit.uploadFailed'));
@@ -205,7 +257,7 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
   };
 
   // 关闭PDF处理框
-  const closePdfProcessConfirm = () =>{
+  const closePdfProcessConfirm = () => {
     setpdfProcessConfirmOpen(false);
   }
 
@@ -289,8 +341,10 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
             theme={theme}
             files={uploadedFiles}
             loading={loading}
+            setPageLoading={setPageLoading}
             sendToFileUploader={handleSelected}
             onDeleteFile={openDeleteConfirm}
+            projectId={projectId}
           />
         </Grid>
       </Grid>
@@ -320,7 +374,11 @@ export default function FileUploader({ projectId, onUploadSuccess, onProcessStar
         onRadioChange={handleRadioChange}
         value={pdfStrategy}
         projectId={projectId}
+        taskSettings={taskSettings}
+        visionModels={visionModels}
+        selectedViosnModel={selectedViosnModel}
+        setSelectedViosnModel={setSelectedViosnModel}
       />
-    </Paper>    
+    </Paper>
   );
 }

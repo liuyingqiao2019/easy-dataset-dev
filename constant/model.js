@@ -2,7 +2,7 @@ export const MODEL_PROVIDERS = [
   {
     id: 'ollama',
     name: 'Ollama',
-    defaultEndpoint: 'http://127.0.0.1:11434/v1/',
+    defaultEndpoint: 'http://127.0.0.1:11434/api',
     defaultModels: []
   },
   {

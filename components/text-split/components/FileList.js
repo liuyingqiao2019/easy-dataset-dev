@@ -13,13 +13,17 @@ import {
   Checkbox
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Download from '@mui/icons-material/Download';
 import FileIcon from '@mui/icons-material/InsertDriveFile';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-
-export default function FileList({ theme, files = [], loading = false, onDeleteFile, sendToFileUploader }) {
+import MarkdownViewDialog from '../MarkdownViewDialog'
+export default function FileList({ theme, files = [], loading = false, onDeleteFile, sendToFileUploader, projectId, setPageLoading }) {
   const { t } = useTranslation();
   const [array, setArray] = useState([]);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [viewContent, setViewContent] = useState(null);
 
   const handleCheckboxChange = (fileName, isChecked) => {
     if (isChecked) {
@@ -32,6 +36,50 @@ export default function FileList({ theme, files = [], loading = false, onDeleteF
       sendToFileUploader(newArray);
     }
   };
+
+  const handleCloseViewDialog = () => {
+    setViewDialogOpen(false);
+  };
+
+
+  const handleViewContent = async fileName => {
+     getFileContent(fileName);
+     setViewDialogOpen(true);
+  };
+
+  const handleDownload = async fileName => {
+    setPageLoading(true)
+    const text = await getFileContent(fileName);
+    
+    const blob = new Blob([text.content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName || 'download.txt';
+    
+    document.body.appendChild(a);
+    a.click();
+    
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    setPageLoading(false)
+  };
+
+  const getFileContent =  async (fileName) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/preview/${encodeURIComponent(fileName)}`);
+      if (!response.ok) {
+        throw new Error(t('textSplit.fetchChunksFailed'));
+      }
+      const data = await response.json();
+      setViewContent(data);
+      return data;
+    } catch (error) {
+      console.error(t('textSplit.fetchChunksError'), error);
+    }
+  }
 
   return (
     <Box
@@ -72,6 +120,22 @@ export default function FileList({ theme, files = [], loading = false, onDeleteF
                       checked={file.checked} // 假设 `file.checked` 是复选框的状态
                       onChange={e => handleCheckboxChange(file.name, e.target.checked)}
                     />
+                    <Tooltip title={t('textSplit.viewDetails')}>
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleViewContent(file.name)}
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t('textSplit.download')}>
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleDownload(file.name)}
+                      >
+                        <Download />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="删除文献">
                       <IconButton color="error" onClick={() => onDeleteFile(file.name)}>
                         <DeleteIcon />
@@ -93,6 +157,9 @@ export default function FileList({ theme, files = [], loading = false, onDeleteF
           ))}
         </List>
       )}
+      {/* 文本块详情对话框 */}
+      <MarkdownViewDialog open={viewDialogOpen} text={viewContent} onClose={handleCloseViewDialog} />
     </Box>
+
   );
 }

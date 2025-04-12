@@ -48,9 +48,11 @@
     "huggingfaceNotImplemented": "Hugging Face 功能暂未实现",
     "concurrencyLimit": "并发限制数量",
     "saveTaskConfig": "保存任务配置",
-    "minerUSettings": "MinerU 设置",
-    "minerUToken": "MinerU Token",
-    "minerUHelper": "MinerU Token 只有14天有效期，请及时更换Token"
+    "pdfSettings": "PDF文件转换配置",
+    "minerUToken": "MinerU Token 配置",
+    "minerUHelper": "MinerU Token 只有14天有效期，请及时更换Token",
+    "vision": "自定义视觉模型选择",
+    "visionConcurrencyLimit": "自定义视觉模型并发限制数量"
   },
   "questions": {
     "filterAll": "全部问题",
@@ -241,8 +243,17 @@
     "mineruApiDescDisabled": "请先到【项目配置 - 任务配置】设置 MinerU Token",
     "mineruWebPlatform": "MinerU 在线平台解析",
     "mineruWebPlatformDesc": "可识别复杂 PDF 文件，包括公式、图表（需跳转到其他网站）",
+    "mineruSelected": "已选择使用 MinerU 解析PDF",
     "customVisionModel": "自定义视觉模型解析",
-    "customVisionModelDesc": "可识别复杂 PDF 文件，包括公式、图表（需在模型配置增加视觉模型配置）"
+    "customVisionModelDesc": "可识别复杂 PDF 文件，包括公式、图表（需在模型配置增加视觉模型配置）",
+    "customVisionModelSelected": "已选择使用视觉大模型 {{name}}（{{provider}}） 解析PDF）",
+    "defaultSelected": "已选择使用默认内置策略解析PDF",
+    "download": "下载文献",
+    "viewChunk": "查看文本块",
+    "editChunk": "编辑文本块 {{chunkId}}",
+    "editChunkSuccess": "文本块编辑成功",
+    "editChunkFailed": "文本块编辑失败",
+    "editChunkError": "编辑文本块时出错"
   },
   "domain": {
     "title": "领域知识树",
@@ -296,6 +307,7 @@
     "answerFieldName": "答案字段名",
     "cotFieldName": "思维链字段名",
     "includeLabels": "包含标签",
+    "includeChunk": "包含文本块",
     "localTab": "导出到本地",
     "llamaFactoryTab": "在 LLaMA Factory 中使用",
     "huggingFaceTab": "上传至远程仓库",
@@ -321,6 +333,7 @@
     "domainTag": "领域标签",
     "cot": "思维链",
     "answer": "回答",
+    "chunkId": "文本块",
     "confirmed": "已确认",
     "noTag": "无标签",
     "noData": "暂无数据",
@@ -431,7 +444,11 @@
     "apiKeyConfigured": "API Key 已经配置",
     "apiKeyNotConfigured": "API Key 未配置",
     "temperature": "模型温度",
-    "maxTokens": "最大生成 Token 数"
+    "maxTokens": "最大生成 Token 数",
+    "type": "模型标签",
+    "text": "语言模型",
+    "vision": "视觉模型",
+    "typeTips": "如果希望使用自定义视觉模型解析PDF请务必配置至少一个视觉大模型"
   },
   "stats": {
     "ongoingProjects": "正在运行的项目",

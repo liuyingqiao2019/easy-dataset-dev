@@ -26,8 +26,11 @@ export default function ModelPlayground() {
     conversations,
     error,
     outputMode,
+    uploadedImage,
     handleModelSelection,
     handleInputChange,
+    handleImageUpload,
+    handleRemoveImage,
     handleSendMessage,
     handleClearConversations,
     handleOutputModeChange,
@@ -70,6 +73,10 @@ export default function ModelPlayground() {
           handleSendMessage={handleSendMessage}
           loading={loading}
           selectedModels={selectedModels}
+          uploadedImage={uploadedImage}
+          handleImageUpload={handleImageUpload}
+          handleRemoveImage={handleRemoveImage}
+          availableModels={availableModels}
         />
       </Paper>
     </Box>
