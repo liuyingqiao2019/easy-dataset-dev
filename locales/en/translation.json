@@ -248,7 +248,8 @@
     "customVisionModelDesc": "Capable of identifying complex PDF files, including formulas and charts (Requires adding vision model configuration to the model configuration)",
     "customVisionModelSelected": "Selected to use the visual large model {{name}} ({{provider}}) for parsing PDFs",
     "defaultSelected": "Selected to use the default built-in strategy for parsing PDFs",
-    "download": "Download the document "
+    "download": "Download the document ",
+    "viewChunk": "View Text Chunk"
   },
   "domain": {
     "title": "Domain Knowledge Tree",

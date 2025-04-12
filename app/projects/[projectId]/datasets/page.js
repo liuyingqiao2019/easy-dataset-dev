@@ -144,7 +144,7 @@ const DatasetList = ({
                 }}>
                 {t('datasets.answer')}
               </TableCell>
-              <TableCell
+              {/* <TableCell
                   sx={{
                     backgroundColor: bgColor,
                     color: color,
@@ -153,7 +153,7 @@ const DatasetList = ({
                     borderBottom: `2px solid ${theme.palette.divider}`
                   }}>
                 {t('datasets.chunkId')}
-              </TableCell>
+              </TableCell> */}
               <TableCell
                 sx={{
                   backgroundColor: bgColor,
@@ -274,19 +274,19 @@ const DatasetList = ({
                     {dataset.answer}
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ maxWidth: 200 }}>
+                {/* <TableCell sx={{ maxWidth: 200 }}>
                   <Typography
-                      variant="body2"
-                      sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical'
-                      }}>
+                    variant="body2"
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical'
+                    }}>
                     {dataset.chunkId}
                   </Typography>
-                </TableCell>
+                </TableCell> */}
                 <TableCell sx={{ width: 120 }}>
                   <Box sx={{ display: 'flex' }}>
                     <Tooltip title={t('datasets.viewDetails')}>
@@ -376,8 +376,8 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
         <Typography variant="body1" sx={{ mb: 2 }}>
           {batch
             ? t('datasets.batchconfirmDeleteMessage', {
-                count: datasets.length
-              })
+              count: datasets.length
+            })
             : t('common.confirmDeleteDataSet')}
         </Typography>
         {batch ? (
@@ -524,9 +524,9 @@ export default function DatasetsPage({ params }) {
     dataset =>
       dataset.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (dataset.questionLabel && dataset.questionLabel.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      dataset.answer  .toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dataset.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dataset.chunkId.toLowerCase().includes(searchQuery.toLowerCase())
-);
+  );
 
   // 获取当前页的数据
   const getCurrentPageData = () => {

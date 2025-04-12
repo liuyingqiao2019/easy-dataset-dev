@@ -248,7 +248,8 @@
     "customVisionModelDesc": "可识别复杂 PDF 文件，包括公式、图表（需在模型配置增加视觉模型配置）",
     "customVisionModelSelected": "已选择使用视觉大模型 {{name}}（{{provider}}） 解析PDF）",
     "defaultSelected": "已选择使用默认内置策略解析PDF",
-    "download": "下载文献"
+    "download": "下载文献",
+    "viewChunk": "查看文本块"
   },
   "domain": {
     "title": "领域知识树",

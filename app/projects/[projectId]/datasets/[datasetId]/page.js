@@ -19,16 +19,19 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  Tooltip
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/lib/i18n';
+import ChunkViewDialog from '@/components/text-split/ChunkViewDialog';
 
 // 编辑区域组件
 const EditableField = ({ label, value, multiline = true, editing, onEdit, onChange, onSave, onCancel, onOptimize }) => {
@@ -152,6 +155,8 @@ export default function DatasetDetailsPage({ params }) {
     open: false,
     loading: false
   });
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [viewChunk, setViewChunk] = useState(null);
   const theme = useTheme();
   // 获取数据集列表（用于导航）
   const [datasets, setDatasets] = useState([]);
@@ -361,6 +366,36 @@ export default function DatasetDetailsPage({ params }) {
     });
   };
 
+  // 查看文本块详情
+  const handleViewChunk = async (chunkId) => {
+    try {
+      setViewDialogOpen(true);
+      setViewChunk(null);
+
+      const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`);
+      
+      if (!response.ok) {
+        throw new Error(t('textSplit.fetchChunkFailed'));
+      }
+      
+      const data = await response.json();
+      setViewChunk(data);
+    } catch (error) {
+      console.error(t('textSplit.fetchChunkError'), error);
+      setSnackbar({
+        open: true,
+        message: error.message,
+        severity: 'error'
+      });
+      setViewDialogOpen(false);
+    }
+  };
+
+  // 关闭文本块详情对话框
+  const handleCloseViewDialog = () => {
+    setViewDialogOpen(false);
+  };
+
   // 提交优化请求
   const handleOptimize = async advice => {
     const model = getModelFromLocalStorage();
@@ -499,14 +534,7 @@ export default function DatasetDetailsPage({ params }) {
           </Typography>
         </Box>
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1 }}>
-            {t('datasets.chunkId')}
-          </Typography>
-          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-            {dataset.chunkId}
-          </Typography>
-        </Box>
+
 
         <EditableField
           label={t('datasets.answer')}
@@ -548,6 +576,15 @@ export default function DatasetDetailsPage({ params }) {
               label={`${t('datasets.createdAt')}: ${new Date(dataset.createdAt).toLocaleString('zh-CN')}`}
               variant="outlined"
             />
+            <Tooltip title={t('textSplit.viewChunk')}>
+              <Chip 
+                label={`${t('datasets.chunkId')}: ${dataset.chunkId.substring(0, 12)}...`}
+                variant="outlined"
+                color="info"
+                onClick={() => handleViewChunk(dataset.chunkId)}
+                sx={{ cursor: 'pointer' }}
+              />
+            </Tooltip>
             {dataset.confirmed && (
               <Chip
                 label={t('datasets.confirmed')}
@@ -584,6 +621,9 @@ export default function DatasetDetailsPage({ params }) {
         onConfirm={handleOptimize}
         loading={optimizeDialog.loading}
       />
+      
+      {/* 文本块详情对话框 */}
+      <ChunkViewDialog open={viewDialogOpen} chunk={viewChunk} onClose={handleCloseViewDialog} />
     </Container>
   );
 }
