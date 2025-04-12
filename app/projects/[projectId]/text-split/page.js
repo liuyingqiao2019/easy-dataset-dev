@@ -411,6 +411,40 @@ export default function TextSplitPage({ params }) {
     }
   };
 
+  // 处理文本块编辑
+  const handleEditChunk = async (chunkId, newContent) => {
+    try {
+      setProcessing(true);
+      setError(null);
+      
+      const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ content: newContent })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || t('textSplit.editChunkFailed'));
+      }
+
+      // 更新成功后刷新文本块列表
+      fetchChunks();
+      
+      setError({
+        severity: 'success',
+        message: t('textSplit.editChunkSuccess')
+      });
+    } catch (error) {
+      console.error(t('textSplit.editChunkError'), error);
+      setError({ severity: 'error', message: error.message });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   // 处理文件删除
   const handleFileDeleted = (fileName, filesCount) => {
     console.log(t('textSplit.fileDeleted', { fileName }));
@@ -533,6 +567,7 @@ export default function TextSplitPage({ params }) {
             projectId={projectId}
             chunks={showChunks}
             onDelete={handleDeleteChunk}
+            onEdit={handleEditChunk}
             onGenerateQuestions={handleGenerateQuestions}
             loading={loading}
             questionFilter={questionFilter}

@@ -249,7 +249,11 @@
     "customVisionModelSelected": "已选择使用视觉大模型 {{name}}（{{provider}}） 解析PDF）",
     "defaultSelected": "已选择使用默认内置策略解析PDF",
     "download": "下载文献",
-    "viewChunk": "查看文本块"
+    "viewChunk": "查看文本块",
+    "editChunk": "编辑文本块 {{chunkId}}",
+    "editChunkSuccess": "文本块编辑成功",
+    "editChunkFailed": "文本块编辑失败",
+    "editChunkError": "编辑文本块时出错"
   },
   "domain": {
     "title": "领域知识树",

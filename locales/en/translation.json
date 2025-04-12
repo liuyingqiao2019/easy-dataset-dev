@@ -249,7 +249,11 @@
     "customVisionModelSelected": "Selected to use the visual large model {{name}} ({{provider}}) for parsing PDFs",
     "defaultSelected": "Selected to use the default built-in strategy for parsing PDFs",
     "download": "Download the document ",
-    "viewChunk": "View Text Chunk"
+    "viewChunk": "View Text Chunk",
+    "editChunk": "Edit Text Chunk {{chunkId}}",
+    "editChunkSuccess": "Text chunk edited successfully",
+    "editChunkFailed": "Failed to edit text chunk",
+    "editChunkError": "Error occurred when editing text chunk"
   },
   "domain": {
     "title": "Domain Knowledge Tree",
