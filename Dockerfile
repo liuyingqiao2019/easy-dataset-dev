@@ -4,11 +4,17 @@ FROM docker.1ms.run/library/node:18
 # 设置工作目录
 WORKDIR /app
 
-# 安装pnpm
-RUN npm install -g pnpm
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# 复制package.json和pnpm-lock.yaml
-COPY package.json pnpm-lock.yaml* ./
+# 复制package.json和package-lock.json
+COPY package.json package-lock.json* ./
 
 # 安装依赖
 RUN npm install
@@ -17,7 +23,7 @@ RUN npm install
 COPY . .
 
 # 构建应用
-RUN npm build
+RUN npm run build
 
 # 暴露端口
 EXPOSE 1717
