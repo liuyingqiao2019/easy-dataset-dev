@@ -322,11 +322,14 @@ export default function ModelSettings({ projectId }) {
         updatedModel = updatedModels.find(m => m.id === editingModel.id);
         // 如果更新的是当前选中的模型，同时更新 localStorage
         const modelInfo = JSON.parse(localStorage.getItem('selectedModelInfo'));
-        if(modelInfo.id === updatedModel.id){
-          localStorage.setItem('selectedModelInfo', JSON.stringify(updatedModel));
-          console.log('已更新 localStorage 中的模型信息:', updatedModel);
+        if (modelInfo) {
+          if (modelInfo.id === updatedModel.id) {
+            localStorage.setItem('selectedModelInfo', JSON.stringify(updatedModel));
+            console.log('已更新 localStorage 中的模型信息:', updatedModel);
+          }
         }
-        
+
+
         return updatedModels;
       });
     } else {
@@ -498,11 +501,11 @@ export default function ModelSettings({ projectId }) {
                   </Tooltip>
                   <Tooltip title={t("models.typeTips")}>
                     <Chip sx={{ marginLeft: '5px' }}
-                        label={t(`models.${model.type || 'text'}`)}
-                        size="small"
-                        color={model.type === "vision"? "secondary" : "info"}
-                        variant="outlined"
-                      />
+                      label={t(`models.${model.type || 'text'}`)}
+                      size="small"
+                      color={model.type === "vision" ? "secondary" : "info"}
+                      variant="outlined"
+                    />
                   </Tooltip>
                   <IconButton size="small" onClick={() => handleOpenModelDialog(model)} color="primary">
                     <EditIcon fontSize="small" />
@@ -653,7 +656,7 @@ export default function ModelSettings({ projectId }) {
                   value={modelForm.type || 'text'}
                   onChange={handleModelFormChange}
                   name="type"
-                  
+
                 >
                   <MenuItem value="text">{t('models.text')}</MenuItem>
                   <MenuItem value="vision">{t('models.vision')}</MenuItem>
