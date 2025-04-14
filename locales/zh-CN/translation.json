@@ -42,6 +42,7 @@
     "textSplitDescription": "设置文本分割的最小和最大长度范围",
     "questionGenSettings": "问题生成设置",
     "questionGenLength": "{{length}} 个字符生成一个问题",
+    "questionMaskRemovingProbability": "将 {{probability}}% 问题结尾的问号去除",
     "questionGenDescription": "设置生成问题的最大长度",
     "huggingfaceSettings": "Hugging Face 设置",
     "huggingfaceToken": "Hugging Face Token",
