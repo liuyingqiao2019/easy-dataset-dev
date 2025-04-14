@@ -5,6 +5,5 @@ export const DEFAULT_SETTINGS = {
   questionGenerationLength: 240,
   huggingfaceToken: '',
   concurrencyLimit: 5,
-  vision: '',
   visionConcurrencyLimit: 5
 };

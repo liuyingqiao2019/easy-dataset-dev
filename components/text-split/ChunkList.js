@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
  * @param {string} props.projectId - Project ID
  * @param {Array} props.chunks - Chunk array
  * @param {Function} props.onDelete - Delete callback
+ * @param {Function} props.onEdit - Edit callback
  * @param {Function} props.onGenerateQuestions - Generate questions callback
  * @param {string} props.questionFilter - Question filter
  * @param {Function} props.onQuestionFilterChange - Question filter change callback
@@ -23,6 +24,7 @@ export default function ChunkList({
   projectId,
   chunks = [],
   onDelete,
+  onEdit,
   onGenerateQuestions,
   loading = false,
   questionFilter,
@@ -83,6 +85,13 @@ export default function ChunkList({
     handleCloseDeleteDialog();
   };
 
+  // 处理编辑文本块
+  const handleEditChunk = async (chunkId, newContent) => {
+    if (onEdit) {
+      onEdit(chunkId, newContent);
+    }
+  };
+
   // 处理选择文本块
   const handleSelectChunk = chunkId => {
     setSelectedChunks(prev => {
@@ -136,7 +145,9 @@ export default function ChunkList({
               onSelect={() => handleSelectChunk(chunk.id)}
               onView={() => handleViewChunk(chunk.id)}
               onDelete={() => handleOpenDeleteDialog(chunk.id)}
+              onEdit={handleEditChunk}
               onGenerateQuestions={() => onGenerateQuestions && onGenerateQuestions([chunk.id])}
+              projectId={projectId}
             />
           </Grid>
         ))}

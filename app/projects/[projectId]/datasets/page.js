@@ -144,6 +144,16 @@ const DatasetList = ({
                 }}>
                 {t('datasets.answer')}
               </TableCell>
+              {/* <TableCell
+                  sx={{
+                    backgroundColor: bgColor,
+                    color: color,
+                    fontWeight: 'bold',
+                    padding: '16px 8px',
+                    borderBottom: `2px solid ${theme.palette.divider}`
+                  }}>
+                {t('datasets.chunkId')}
+              </TableCell> */}
               <TableCell
                 sx={{
                   backgroundColor: bgColor,
@@ -264,6 +274,19 @@ const DatasetList = ({
                     {dataset.answer}
                   </Typography>
                 </TableCell>
+                {/* <TableCell sx={{ maxWidth: 200 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical'
+                    }}>
+                    {dataset.chunkId}
+                  </Typography>
+                </TableCell> */}
                 <TableCell sx={{ width: 120 }}>
                   <Box sx={{ display: 'flex' }}>
                     <Tooltip title={t('datasets.viewDetails')}>
@@ -353,8 +376,8 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
         <Typography variant="body1" sx={{ mb: 2 }}>
           {batch
             ? t('datasets.batchconfirmDeleteMessage', {
-                count: datasets.length
-              })
+              count: datasets.length
+            })
             : t('common.confirmDeleteDataSet')}
         </Typography>
         {batch ? (
@@ -501,7 +524,8 @@ export default function DatasetsPage({ params }) {
     dataset =>
       dataset.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (dataset.questionLabel && dataset.questionLabel.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      dataset.answer.toLowerCase().includes(searchQuery.toLowerCase())
+      dataset.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dataset.chunkId.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // 获取当前页的数据
@@ -648,9 +672,8 @@ export default function DatasetsPage({ params }) {
         });
       } else if (exportOptions.formatType === 'custom') {
         // 处理自定义格式
-        const { questionField, answerField, cotField, includeLabels } = exportOptions.customFields;
-
-        formattedData = dataToExport.map(({ question, answer, cot, questionLabel: labels }) => {
+        const { questionField, answerField, cotField, includeLabels, includeChunk } = exportOptions.customFields;
+        formattedData = dataToExport.map(({ question, answer, cot, questionLabel: labels, chunkId }) => {
           const item = {
             [questionField]: question,
             [answerField]: answer
@@ -664,6 +687,11 @@ export default function DatasetsPage({ params }) {
           // 如果需要包含标签
           if (includeLabels && labels && labels.length > 0) {
             item.label = labels.split(' ')[1];
+          }
+
+          // 如果需要包含文本块
+          if (includeChunk && chunkId) {
+            item.chunk = chunkId;
           }
 
           return item;

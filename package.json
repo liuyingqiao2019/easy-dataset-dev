@@ -1,6 +1,6 @@
 {
   "name": "easy-dataset",
-  "version": "1.2.3",
+  "version": "1.2.5",
   "private": true,
   "author": {
     "name": "ConardLi",
@@ -21,7 +21,8 @@
     "electron-build": "pnpm clean-dist && next build && electron-builder -mwl",
     "electron-build-mac": "pnpm clean-dist && next build && electron-builder --mac",
     "electron-build-win": "pnpm clean-dist && next build && electron-builder --win",
-    "electron-build-linux": "pnpm clean-dist && next build && electron-builder --linux"
+    "electron-build-linux": "pnpm clean-dist && next build && electron-builder --linux",
+    "docker": "docker build -t easy-dataset ."
   },
   "bin": "desktop/server.js",
   "pkg": {
@@ -52,8 +53,8 @@
     "@opendocsg/pdf2md": "^0.2.1",
     "@openrouter/ai-sdk-provider": "^0.4.5",
     "adm-zip": "^0.5.16",
-    "canvas": "^2.11.2",
     "ai": "^4.3.4",
+    "canvas": "^2.11.2",
     "electron-updater": "^6.3.9",
     "formidable": "^3.5.2",
     "framer-motion": "^12.4.10",
@@ -71,7 +72,6 @@
     "react-i18next": "^15.4.1",
     "react-markdown": "^10.0.1",
     "sharp": "^0.33.1",
-    "uuid": "^11.1.0"
     "uuid": "^11.1.0",
     "zhipu-ai-provider": "^0.1.1"
   },
