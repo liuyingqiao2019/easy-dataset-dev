@@ -22,7 +22,9 @@
     "electron-build-mac": "pnpm clean-dist && next build && electron-builder --mac",
     "electron-build-win": "pnpm clean-dist && next build && electron-builder --win",
     "electron-build-linux": "pnpm clean-dist && next build && electron-builder --linux",
-    "docker": "docker build -t easy-dataset ."
+    "docker": "docker build -t easy-dataset .",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
   },
   "bin": "desktop/server.js",
   "pkg": {
@@ -52,6 +54,7 @@
     "@mui/material": "5.16.14",
     "@opendocsg/pdf2md": "^0.2.1",
     "@openrouter/ai-sdk-provider": "^0.4.5",
+    "@prisma/client": "^6.6.0",
     "adm-zip": "^0.5.16",
     "ai": "^4.3.4",
     "canvas": "^2.11.2",
@@ -84,6 +87,7 @@
     "electron-builder": "^24.13.3",
     "husky": "^9.1.7",
     "pkg": "^5.8.1",
+    "prisma": "^6.6.0",
     "wait-on": "^7.2.0"
   },
   "main": "electron/main.js",
