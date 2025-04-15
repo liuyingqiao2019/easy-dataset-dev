@@ -83,7 +83,7 @@ export default function ModelSettings({ projectId }) {
     provider: '',
     providerId: '',
     name: '',
-    type: "text",
+    type: 'text',
     endpoint: '',
     apiKey: ''
   });
@@ -329,7 +329,6 @@ export default function ModelSettings({ projectId }) {
           }
         }
 
-
         return updatedModels;
       });
     } else {
@@ -431,7 +430,8 @@ export default function ModelSettings({ projectId }) {
             color="primary"
             startIcon={<AddIcon />}
             onClick={() => handleOpenModelDialog()}
-            size="small">
+            size="small"
+          >
             {t('models.add')}
           </Button>
         </Box>
@@ -449,7 +449,8 @@ export default function ModelSettings({ projectId }) {
                   boxShadow: 3,
                   transform: 'translateY(-2px)'
                 }
-              }}>
+              }}
+            >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Avatar
@@ -460,7 +461,8 @@ export default function ModelSettings({ projectId }) {
                       fontSize: '1.2rem',
                       fontWeight: 'bold', // 加粗字体
                       boxShadow: 2 // 添加阴影
-                    }}>
+                    }}
+                  >
                     {getProviderAvatar(model.providerId)}
                   </Avatar>
 
@@ -478,7 +480,8 @@ export default function ModelSettings({ projectId }) {
                         py: 0.2, // 垂直内边距
                         borderRadius: 1, // 圆角
                         display: 'inline-block' // 行内块元素
-                      }}>
+                      }}
+                    >
                       {model.provider}
                     </Typography>
                   </Box>
@@ -499,11 +502,12 @@ export default function ModelSettings({ projectId }) {
                       variant="outlined"
                     />
                   </Tooltip>
-                  <Tooltip title={t("models.typeTips")}>
-                    <Chip sx={{ marginLeft: '5px' }}
+                  <Tooltip title={t('models.typeTips')}>
+                    <Chip
+                      sx={{ marginLeft: '5px' }}
                       label={t(`models.${model.type || 'text'}`)}
                       size="small"
-                      color={model.type === "vision" ? "secondary" : "info"}
+                      color={model.type === 'vision' ? 'secondary' : 'info'}
                       variant="outlined"
                     />
                   </Tooltip>
@@ -515,7 +519,8 @@ export default function ModelSettings({ projectId }) {
                     size="small"
                     onClick={() => handleDeleteModel(model.id)}
                     disabled={models.length <= 1}
-                    color="error">
+                    color="error"
+                  >
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
@@ -656,7 +661,6 @@ export default function ModelSettings({ projectId }) {
                   value={modelForm.type || 'text'}
                   onChange={handleModelFormChange}
                   name="type"
-
                 >
                   <MenuItem value="text">{t('models.text')}</MenuItem>
                   <MenuItem value="vision">{t('models.vision')}</MenuItem>
@@ -714,7 +718,8 @@ export default function ModelSettings({ projectId }) {
           <Button
             onClick={handleSaveModel}
             variant="contained"
-            disabled={!modelForm.provider || !modelForm.name || !modelForm.endpoint}>
+            disabled={!modelForm.provider || !modelForm.name || !modelForm.endpoint}
+          >
             {t('common.save')}
           </Button>
         </DialogActions>
@@ -724,7 +729,8 @@ export default function ModelSettings({ projectId }) {
         open={success}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
         <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
           {t('settings.saveSuccess')}
         </Alert>
@@ -734,7 +740,8 @@ export default function ModelSettings({ projectId }) {
         open={!!error}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
         <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
           {error}
         </Alert>

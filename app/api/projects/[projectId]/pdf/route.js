@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { deleteFile } from '@/lib/db/texts';
 import PdfProcessor from '@/lib/pdf-processing/core';
 
-
-
 // Replace the deprecated config export with the new export syntax
 export const dynamic = 'force-dynamic';
 // This tells Next.js not to parse the request body automatically
@@ -42,7 +40,10 @@ export async function GET(request, { params }) {
     const processor = new PdfProcessor(strategy);
 
     // 使用当前策略处理
-    const result = await processor.process(projectId, fileName, { language: currentLanguage, visionModelId: visionModel});
+    const result = await processor.process(projectId, fileName, {
+      language: currentLanguage,
+      visionModelId: visionModel
+    });
 
     //准换完成后删除pdf文件
     deleteFile(projectId, fileName);

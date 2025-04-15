@@ -18,8 +18,16 @@ import FileIcon from '@mui/icons-material/InsertDriveFile';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import MarkdownViewDialog from '../MarkdownViewDialog'
-export default function FileList({ theme, files = [], loading = false, onDeleteFile, sendToFileUploader, projectId, setPageLoading }) {
+import MarkdownViewDialog from '../MarkdownViewDialog';
+export default function FileList({
+  theme,
+  files = [],
+  loading = false,
+  onDeleteFile,
+  sendToFileUploader,
+  projectId,
+  setPageLoading
+}) {
   const { t } = useTranslation();
   const [array, setArray] = useState([]);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -41,33 +49,32 @@ export default function FileList({ theme, files = [], loading = false, onDeleteF
     setViewDialogOpen(false);
   };
 
-
   const handleViewContent = async fileName => {
-     getFileContent(fileName);
-     setViewDialogOpen(true);
+    getFileContent(fileName);
+    setViewDialogOpen(true);
   };
 
   const handleDownload = async fileName => {
-    setPageLoading(true)
+    setPageLoading(true);
     const text = await getFileContent(fileName);
-    
+
     const blob = new Blob([text.content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    
+
     const a = document.createElement('a');
     a.href = url;
     a.download = fileName || 'download.txt';
-    
+
     document.body.appendChild(a);
     a.click();
-    
+
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
-    setPageLoading(false)
+
+    setPageLoading(false);
   };
 
-  const getFileContent =  async (fileName) => {
+  const getFileContent = async fileName => {
     try {
       const response = await fetch(`/api/projects/${projectId}/preview/${encodeURIComponent(fileName)}`);
       if (!response.ok) {
@@ -79,7 +86,7 @@ export default function FileList({ theme, files = [], loading = false, onDeleteF
     } catch (error) {
       console.error(t('textSplit.fetchChunksError'), error);
     }
-  }
+  };
 
   return (
     <Box
@@ -121,18 +128,12 @@ export default function FileList({ theme, files = [], loading = false, onDeleteF
                       onChange={e => handleCheckboxChange(file.name, e.target.checked)}
                     />
                     <Tooltip title={t('textSplit.viewDetails')}>
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleViewContent(file.name)}
-                      >
+                      <IconButton color="primary" onClick={() => handleViewContent(file.name)}>
                         <VisibilityIcon />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('textSplit.download')}>
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleDownload(file.name)}
-                      >
+                      <IconButton color="primary" onClick={() => handleDownload(file.name)}>
                         <Download />
                       </IconButton>
                     </Tooltip>
@@ -160,6 +161,5 @@ export default function FileList({ theme, files = [], loading = false, onDeleteF
       {/* 文本块详情对话框 */}
       <MarkdownViewDialog open={viewDialogOpen} text={viewContent} onClose={handleCloseViewDialog} />
     </Box>
-
   );
 }

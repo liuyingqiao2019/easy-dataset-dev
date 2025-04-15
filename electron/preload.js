@@ -35,31 +35,31 @@ contextBridge.exposeInMainWorld('electron', {
     installUpdate: () => ipcRenderer.invoke('install-update'),
 
     // 监听更新事件
-    onUpdateAvailable: (callback) => {
+    onUpdateAvailable: callback => {
       const handler = (_, info) => callback(info);
       ipcRenderer.on('update-available', handler);
       return () => ipcRenderer.removeListener('update-available', handler);
     },
 
-    onUpdateNotAvailable: (callback) => {
+    onUpdateNotAvailable: callback => {
       const handler = () => callback();
       ipcRenderer.on('update-not-available', handler);
       return () => ipcRenderer.removeListener('update-not-available', handler);
     },
 
-    onUpdateError: (callback) => {
+    onUpdateError: callback => {
       const handler = (_, error) => callback(error);
       ipcRenderer.on('update-error', handler);
       return () => ipcRenderer.removeListener('update-error', handler);
     },
 
-    onDownloadProgress: (callback) => {
+    onDownloadProgress: callback => {
       const handler = (_, progress) => callback(progress);
       ipcRenderer.on('download-progress', handler);
       return () => ipcRenderer.removeListener('download-progress', handler);
     },
 
-    onUpdateDownloaded: (callback) => {
+    onUpdateDownloaded: callback => {
       const handler = (_, info) => callback(info);
       ipcRenderer.on('update-downloaded', handler);
       return () => ipcRenderer.removeListener('update-downloaded', handler);

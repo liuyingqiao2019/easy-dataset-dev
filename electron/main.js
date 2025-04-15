@@ -21,8 +21,8 @@ const getAppVersion = () => {
 };
 
 // 检查端口是否被占用
-const checkPort = (port) => {
-  return new Promise((resolve) => {
+const checkPort = port => {
+  return new Promise(resolve => {
     const server = http.createServer();
     server.once('error', () => {
       resolve(true); // 端口被占用
@@ -76,7 +76,7 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     // 在生产环境中启动 Next.js 服务
-    startNextServer().then((url) => {
+    startNextServer().then(url => {
       mainWindow.loadURL(url);
     });
   }
@@ -89,8 +89,7 @@ function createWindow() {
     const currentPort = port.toString();
 
     // 检查是否是外部链接
-    if (parsedUrl.hostname !== currentHostname ||
-      (parsedUrl.port !== currentPort && parsedUrl.port !== '')) {
+    if (parsedUrl.hostname !== currentHostname || (parsedUrl.port !== currentPort && parsedUrl.port !== '')) {
       event.preventDefault();
       shell.openExternal(navigationUrl);
     }
@@ -104,8 +103,7 @@ function createWindow() {
     const currentPort = port.toString();
 
     // 检查是否是外部链接
-    if (parsedUrl.hostname !== currentHostname ||
-      (parsedUrl.port !== currentPort && parsedUrl.port !== '')) {
+    if (parsedUrl.hostname !== currentHostname || (parsedUrl.port !== currentPort && parsedUrl.port !== '')) {
       shell.openExternal(navigationUrl);
       return { action: 'deny' };
     }
@@ -127,9 +125,7 @@ function createMenu() {
   const template = [
     {
       label: '文件',
-      submenu: [
-        { role: 'quit', label: '退出' }
-      ]
+      submenu: [{ role: 'quit', label: '退出' }]
     },
     {
       label: '编辑',
@@ -228,8 +224,8 @@ async function startNextServer() {
       handle(req, res);
     });
 
-    return new Promise((resolve) => {
-      server.listen(port, (err) => {
+    return new Promise(resolve => {
+      server.listen(port, err => {
         if (err) throw err;
         console.log(`服务已启动，正在打开应用...`);
         resolve(`http://localhost:${port}`);
@@ -237,10 +233,7 @@ async function startNextServer() {
     });
   } catch (error) {
     console.error('启动服务失败:', error);
-    dialog.showErrorBox(
-      '启动失败',
-      `无法启动 Next.js 服务: ${error.message}`
-    );
+    dialog.showErrorBox('启动失败', `无法启动 Next.js 服务: ${error.message}`);
     app.quit();
     return '';
   }
@@ -251,9 +244,8 @@ function setupAutoUpdater() {
   autoUpdater.autoDownload = false;
   autoUpdater.allowDowngrade = false;
 
-
   // 检查更新时出错
-  autoUpdater.on('error', (error) => {
+  autoUpdater.on('error', error => {
     // dialog.showErrorBox('更新错误', `检查更新时出错: ${error.message}`);
     if (mainWindow) {
       mainWindow.webContents.send('update-error', error.message);
@@ -261,7 +253,7 @@ function setupAutoUpdater() {
   });
 
   // 检查到更新时
-  autoUpdater.on('update-available', (info) => {
+  autoUpdater.on('update-available', info => {
     if (mainWindow) {
       mainWindow.webContents.send('update-available', {
         version: info.version,
@@ -279,14 +271,14 @@ function setupAutoUpdater() {
   });
 
   // 下载进度
-  autoUpdater.on('download-progress', (progressObj) => {
+  autoUpdater.on('download-progress', progressObj => {
     if (mainWindow) {
       mainWindow.webContents.send('download-progress', progressObj);
     }
   });
 
   // 下载完成
-  autoUpdater.on('update-downloaded', (info) => {
+  autoUpdater.on('update-downloaded', info => {
     if (mainWindow) {
       mainWindow.webContents.send('update-downloaded', {
         version: info.version,
@@ -298,7 +290,7 @@ function setupAutoUpdater() {
 }
 
 // 设置 IPC 处理程序
-ipcMain.on('get-user-data-path', (event) => {
+ipcMain.on('get-user-data-path', event => {
   event.returnValue = app.getPath('userData');
 });
 

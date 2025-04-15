@@ -8,7 +8,7 @@ export default function MarkdownViewDialog({ open, text, onClose }) {
   const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{text ? text.fileName : ""}</DialogTitle>
+      <DialogTitle>{text ? text.fileName : ''}</DialogTitle>
       <DialogContent dividers>
         {text ? (
           <Box sx={{ maxHeight: '60vh', overflow: 'auto' }}>
