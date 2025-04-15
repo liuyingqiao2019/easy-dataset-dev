@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { deleteFile } from '@/lib/db/texts';
 import PdfProcessor from '@/lib/pdf-processing/core';
-import { getProject, updateProject } from '@/lib/db/index';
 
 
 
@@ -59,7 +58,7 @@ export async function GET(request, { params }) {
     if (!result.success) {
       throw new Error(result.error);
     }
-    //将转换后文件加入到配置中      
+    //将转换后文件加入到配置中
     if (!updatedFiles.includes(fileName)) {
       updatedFiles.push(fileName.replace('.pdf', '.md'));
     }
