@@ -6,6 +6,7 @@ import getLabelEnPrompt from '@/lib/llm/prompts/labelEn';
 import { deleteFile } from '@/lib/db/texts';
 import { getProject, updateProject } from '@/lib/db/projects';
 import { saveTags, getTags } from '@/lib/db/tags';
+import { deleteChunkAndFile } from '@/lib/db/chunks';
 
 const { extractJsonFromLLMOutput } = require('@/lib/llm/common/util');
 
@@ -54,7 +55,7 @@ export async function POST(request, { params }) {
 
     if (!response || !tags) {
       // 删除前面生成的文件
-      await deleteFile(projectId, fileName);
+      await deleteChunkAndFile(projectId, fileName);
       const uploadedFiles = JSON.parse(project.uploadedFiles) || [];
       const updatedFiles = uploadedFiles.filter(f => f !== fileName);
       await updateProject(projectId, {

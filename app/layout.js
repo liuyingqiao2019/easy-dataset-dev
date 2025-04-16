@@ -1,6 +1,7 @@
 import './globals.css';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import I18nProvider from '@/components/I18nProvider';
+import { Toaster } from 'sonner';
 
 export const metadata = {
   title: 'Easy Dataset',
@@ -15,7 +16,10 @@ export default function RootLayout({ children }) {
     <html lang="zh" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <ThemeRegistry>
-          <I18nProvider>{children}</I18nProvider>
+          <I18nProvider>
+            {children}
+            <Toaster richColors position="top-center" />
+          </I18nProvider>
         </ThemeRegistry>
       </body>
     </html>
