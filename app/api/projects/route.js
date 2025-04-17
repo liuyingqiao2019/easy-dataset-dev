@@ -32,29 +32,8 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     // 获取所有项目
-    const userProjects = await getProjects();
-    // 为每个项目添加问题数量和数据集数量
-    const projectsWithStats = await Promise.all(
-      userProjects.map(async project => {
-        // 获取问题数量
-        const questionsCount = await getQuestionsCount(project.id);
-
-        // 获取数据集数量
-        const datasetsCount = await getDatasetsCount(project.id);
-
-        // 添加最后更新时间
-        const lastUpdated = new Date().toLocaleDateString('zh-CN');
-
-        return {
-          ...project,
-          questionsCount,
-          datasetsCount,
-          lastUpdated
-        };
-      })
-    );
-
-    return Response.json(projectsWithStats);
+    const projects = await getProjects();
+    return Response.json(projects);
   } catch (error) {
     console.error('获取项目列表出错:', error);
     return Response.json({ error: error.message }, { status: 500 });

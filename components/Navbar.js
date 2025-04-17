@@ -34,19 +34,9 @@ import StorageIcon from '@mui/icons-material/Storage';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { toast } from 'sonner';
 
-export default function Navbar({ projects = [], currentProject, models = [] }) {
+export default function Navbar({ projects = [], currentProject }) {
   const [selectedProject, setSelectedProject] = useState(currentProject || '');
   const { t } = useTranslation();
-  const [selectedModel, setSelectedModel] = useState(() => {
-    // 从 localStorage 获取上次选择的模型
-    const savedModel = localStorage.getItem('selectedModel');
-    // 如果保存的模型在当前模型列表中存在，则使用它
-    if (savedModel && models.some(m => m.id === savedModel)) {
-      return savedModel;
-    }
-    // 否则使用第一个可用的模型
-    return models[0]?.id || '';
-  });
   const pathname = usePathname();
   const theme = useMuiTheme();
   const { resolvedTheme, setTheme } = useTheme();
@@ -80,14 +70,6 @@ export default function Navbar({ projects = [], currentProject, models = [] }) {
         toast.error('数据同步失败');
       }
     });
-  };
-
-  const handleModelChange = event => {
-    if (!event || !event.target) return;
-    const newModel = event.target.value;
-    setSelectedModel(newModel);
-    // 将选择保存到 localStorage
-    localStorage.setItem('selectedModel', newModel);
   };
 
   const toggleTheme = () => {
@@ -261,9 +243,7 @@ export default function Navbar({ projects = [], currentProject, models = [] }) {
           style={{ position: 'absolute', right: '20px' }}
         >
           {/* 模型选择 */}
-          {location.pathname.includes('/projects/') && (
-            <ModelSelect models={models} selectedModel={selectedModel} onChange={handleModelChange} />
-          )}
+          {location.pathname.includes('/projects/') && <ModelSelect />}
 
           {/* 同步文件格式数据 */}
           <Tooltip title={t('common.syncOldData')}>

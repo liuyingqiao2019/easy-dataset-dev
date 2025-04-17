@@ -34,6 +34,8 @@
     "saveBasicInfo": "Save Basic Info",
     "saveSuccess": "Save Successful",
     "saveFailed": "Save Failed",
+    "deleteSuccess": "Delete Successful",
+    "deleteFailed": "Delete Failed",
     "fetchTasksFailed": "Failed to fetch task settings",
     "saveTasksFailed": "Failed to save task settings",
     "textSplitSettings": "Text Split Settings",

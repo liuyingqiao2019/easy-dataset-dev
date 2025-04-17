@@ -8,21 +8,22 @@ datasource db {
 }
 
 model Projects {
-  id               String      @id @default(uuid())
+  id               String        @id @default(uuid())
   name             String
   description      String
   reuseConfigFrom  String
   uploadedFiles    String
-  globalPrompt     String      @default("")
-  questionPrompt   String      @default("")
-  answerPrompt     String      @default("")
-  labelPrompt      String      @default("")
-  domainTreePrompt String      @default("")
-  createAt         DateTime    @default(now())
-  updateAt         DateTime    @updatedAt
+  globalPrompt     String        @default("")
+  questionPrompt   String        @default("")
+  answerPrompt     String        @default("")
+  labelPrompt      String        @default("")
+  domainTreePrompt String        @default("")
+  createAt         DateTime      @default(now())
+  updateAt         DateTime      @updatedAt
   Questions        Questions[]
   Datasets         Datasets[]
   Chunks           Chunks[]
+  ModelConfig      ModelConfig[]
 }
 
 model Chunks {
@@ -77,24 +78,38 @@ model Datasets {
 model LlmProviders {
   id        String      @id
   name      String
-  apiKey    String
   apiUrl    String
-  status    Int
   createAt  DateTime    @default(now())
   updateAt  DateTime    @updatedAt
   LlmModels LlmModels[]
 }
 
 model LlmModels {
-  id          String       @id @default(uuid())
-  name        String
-  provider    LlmProviders @relation(fields: [providerId], references: [id])
-  providerId  String
-  temperature Float
-  maxTokens   Int
-  topP        Float
-  topK        Float
-  status      Int
-  createAt    DateTime     @default(now())
-  updateAt    DateTime     @updatedAt
+  id         String       @id @default(uuid())
+  modelId    String
+  modelName  String
+  provider   LlmProviders @relation(fields: [providerId], references: [id])
+  providerId String
+  createAt   DateTime     @default(now())
+  updateAt   DateTime     @updatedAt
+}
+
+model ModelConfig {
+  id           String   @id @default(uuid())
+  project      Projects @relation(fields: [projectId], references: [id])
+  projectId    String
+  providerId   String
+  providerName String
+  endpoint     String
+  apiKey       String
+  modelId      String
+  modelName    String
+  type         String
+  temperature  Float
+  maxTokens    Int
+  topP         Float
+  topK         Float
+  status       Int
+  createAt     DateTime @default(now())
+  updateAt     DateTime @updatedAt
 }

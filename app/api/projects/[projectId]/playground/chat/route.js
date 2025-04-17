@@ -24,10 +24,10 @@ export async function POST(request, { params }) {
 
     // 使用自定义的LLM客户端
     const llmClient = new LLMClient({
-      provider: model.provider,
+      provider: model.providerId,
       endpoint: model.endpoint,
       apiKey: model.apiKey,
-      model: model.name,
+      model: model.modelName,
       temperature: model.temperature,
       maxTokens: model.maxTokens,
       type: model.type // 添加模型类型，用于区分语言模型和视觉模型
