@@ -1,7 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Box, Typography, IconButton, Chip, Checkbox, Tooltip, Card, CardContent, CardActions, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
+import {
+  Box,
+  Typography,
+  IconButton,
+  Chip,
+  Checkbox,
+  Tooltip,
+  Card,
+  CardContent,
+  CardActions,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import QuizIcon from '@mui/icons-material/Quiz';
@@ -13,7 +29,7 @@ import { useTranslation } from 'react-i18next';
 const EditChunkDialog = ({ open, chunk, onClose, onSave }) => {
   const [content, setContent] = useState(chunk?.content || '');
   const { t } = useTranslation();
-  
+
   // 当文本块变化时更新内容
   useEffect(() => {
     if (chunk?.content) {
@@ -35,7 +51,7 @@ const EditChunkDialog = ({ open, chunk, onClose, onSave }) => {
           multiline
           rows={15}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={e => setContent(e.target.value)}
           variant="outlined"
           sx={{ mt: 1 }}
         />
@@ -50,7 +66,16 @@ const EditChunkDialog = ({ open, chunk, onClose, onSave }) => {
   );
 };
 
-export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete, onGenerateQuestions, onEdit, projectId }) {
+export default function ChunkCard({
+  chunk,
+  selected,
+  onSelect,
+  onView,
+  onDelete,
+  onGenerateQuestions,
+  onEdit,
+  projectId
+}) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -71,7 +96,7 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
       // 显示加载状态
       console.log('正在获取文本块完整内容...');
       console.log('projectId:', projectId, 'chunkId:', chunk.id);
-      
+
       // 先获取完整的文本块内容，使用从外部传入的 projectId
       const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunk.id)}`);
 
@@ -81,7 +106,7 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
 
       const data = await response.json();
       console.log('获取文本块完整内容成功:', data);
-      
+
       // 先设置完整数据，再打开对话框（与 ChunkList.js 中的实现一致）
       setChunkForEdit(data);
       setEditDialogOpen(true);
@@ -93,7 +118,7 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
   };
 
   // 处理保存编辑内容
-  const handleSaveEdit = (newContent) => {
+  const handleSaveEdit = newContent => {
     if (onEdit) {
       onEdit(chunk.id, newContent);
     }

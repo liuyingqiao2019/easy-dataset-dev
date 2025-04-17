@@ -110,7 +110,7 @@ export async function POST(request, { params }) {
     }
 
     // 检查文件类型
-    if (!fileName.endsWith('.md')&&!fileName.endsWith('.pdf')) {
+    if (!fileName.endsWith('.md') && !fileName.endsWith('.pdf')) {
       return NextResponse.json({ error: 'Only Markdown files are supported' }, { status: 400 });
     }
 

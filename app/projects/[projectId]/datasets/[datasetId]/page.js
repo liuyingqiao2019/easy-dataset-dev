@@ -367,17 +367,17 @@ export default function DatasetDetailsPage({ params }) {
   };
 
   // 查看文本块详情
-  const handleViewChunk = async (chunkId) => {
+  const handleViewChunk = async chunkId => {
     try {
       setViewDialogOpen(true);
       setViewChunk(null);
 
       const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`);
-      
+
       if (!response.ok) {
         throw new Error(t('textSplit.fetchChunkFailed'));
       }
-      
+
       const data = await response.json();
       setViewChunk(data);
     } catch (error) {
@@ -534,8 +534,6 @@ export default function DatasetDetailsPage({ params }) {
           </Typography>
         </Box>
 
-
-
         <EditableField
           label={t('datasets.answer')}
           value={answerValue}
@@ -577,7 +575,7 @@ export default function DatasetDetailsPage({ params }) {
               variant="outlined"
             />
             <Tooltip title={t('textSplit.viewChunk')}>
-              <Chip 
+              <Chip
                 label={`${t('datasets.chunkId')}: ${dataset.chunkId.substring(0, 12)}...`}
                 variant="outlined"
                 color="info"
@@ -621,7 +619,7 @@ export default function DatasetDetailsPage({ params }) {
         onConfirm={handleOptimize}
         loading={optimizeDialog.loading}
       />
-      
+
       {/* 文本块详情对话框 */}
       <ChunkViewDialog open={viewDialogOpen} chunk={viewChunk} onClose={handleCloseViewDialog} />
     </Container>

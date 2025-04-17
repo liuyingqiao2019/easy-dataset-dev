@@ -38,10 +38,10 @@ export default function TextSplitPage({ params }) {
   const [processing, setProcessing] = useState(false);
   const [pdfProcessing, setPdfProcessing] = useState(false);
   const [error, setError] = useState(null); // 可以是字符串或对象 { severity, message }
-  const {taskSettings } = useTaskSettings(projectId);
-  const [pdfStrategy,setPdfStrategy]= useState("default");
+  const { taskSettings } = useTaskSettings(projectId);
+  const [pdfStrategy, setPdfStrategy] = useState('default');
   const [questionFilter, setQuestionFilter] = useState('all'); // 'all', 'generated', 'ungenerated'
-  const [selectedViosnModel,setSelectedViosnModel]= useState('');
+  const [selectedViosnModel, setSelectedViosnModel] = useState('');
 
   // 进度状态
   const [progress, setProgress] = useState({
@@ -106,10 +106,10 @@ export default function TextSplitPage({ params }) {
   };
 
   // 处理文件上传成功
-  const handleUploadSuccess = async (fileNames, model,pdfFiles) => {
+  const handleUploadSuccess = async (fileNames, model, pdfFiles) => {
     console.log(t('textSplit.fileUploadSuccess'), fileNames);
     //上传完处理PDF文件
-    try{
+    try {
       setPdfProcessing(true);
       setError(null);
       // 重置进度状态
@@ -120,8 +120,17 @@ export default function TextSplitPage({ params }) {
         questionCount: 0
       });
       const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
-      for(const file of pdfFiles){
-        const response = await fetch(`/api/projects/${projectId}/pdf?fileName=`+file.name+`&strategy=`+pdfStrategy+`&currentLanguage=`+currentLanguage+`&modelId=`+selectedViosnModel);
+      for (const file of pdfFiles) {
+        const response = await fetch(
+          `/api/projects/${projectId}/pdf?fileName=` +
+            file.name +
+            `&strategy=` +
+            pdfStrategy +
+            `&currentLanguage=` +
+            currentLanguage +
+            `&modelId=` +
+            selectedViosnModel
+        );
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(t('textSplit.pdfProcessingFailed') + errorData.error);
@@ -138,10 +147,10 @@ export default function TextSplitPage({ params }) {
           };
         });
       }
-    }catch(error){
+    } catch (error) {
       console.error(t('textSplit.pdfProcessingFailed'), error);
       setError({ severity: 'error', message: error.message });
-    }finally{
+    } finally {
       setPdfProcessing(false);
       // 重置进度状态
       setTimeout(() => {
@@ -153,7 +162,7 @@ export default function TextSplitPage({ params }) {
         });
       }, 1000); // 延迟重置，让用户看到完成的进度
     }
-    
+
     // 如果有文件上传成功，自动处理第一个文件
     if (fileNames && fileNames.length > 0) {
       handleSplitText(fileNames[0], model);
@@ -416,7 +425,7 @@ export default function TextSplitPage({ params }) {
     try {
       setProcessing(true);
       setError(null);
-      
+
       const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`, {
         method: 'PATCH',
         headers: {
@@ -432,7 +441,7 @@ export default function TextSplitPage({ params }) {
 
       // 更新成功后刷新文本块列表
       fetchChunks();
-      
+
       setError({
         severity: 'success',
         message: t('textSplit.editChunkSuccess')
@@ -715,11 +724,7 @@ export default function TextSplitPage({ params }) {
                   {progress.percentage}%
                 </Typography>
               </Box>
-              <LinearProgress
-                variant="determinate"
-                value={progress.percentage}
-                sx={{ height: 8, borderRadius: 4 }}
-              />
+              <LinearProgress variant="determinate" value={progress.percentage} sx={{ height: 8, borderRadius: 4 }} />
             </Box>
           ) : (
             <Typography variant="body2" color="text.secondary">
