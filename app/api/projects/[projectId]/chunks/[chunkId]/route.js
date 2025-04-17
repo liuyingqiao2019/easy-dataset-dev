@@ -45,7 +45,9 @@ export async function DELETE(request, { params }) {
 // 编辑文本块内容
 export async function PATCH(request, { params }) {
   try {
+
     const { projectId, chunkId } = params;
+
     // 验证参数
     if (!projectId) {
       return NextResponse.json({ error: '项目ID不能为空' }, { status: 400 });
@@ -62,8 +64,10 @@ export async function PATCH(request, { params }) {
     if (!content) {
       return NextResponse.json({ error: '内容不能为空' }, { status: 400 });
     }
+
     let res = await updateChunkById(chunkId, { content });
     return NextResponse.json(res);
+
   } catch (error) {
     console.error('编辑文本块失败:', error);
     return NextResponse.json({ error: error.message || '编辑文本块失败' }, { status: 500 });

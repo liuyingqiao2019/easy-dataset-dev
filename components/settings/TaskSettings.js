@@ -144,7 +144,9 @@ export default function TaskSettings({ projectId }) {
               </Typography>
 
               <Typography id="question-mark-removing-probability-slider" gutterBottom sx={{ mt: 3 }}>
-                {t('settings.questionMaskRemovingProbability', { probability: taskSettings.questionMaskRemovingProbability })}
+                {t('settings.questionMaskRemovingProbability', {
+                  probability: taskSettings.questionMaskRemovingProbability
+                })}
               </Typography>
               <Slider
                 value={taskSettings.questionMaskRemovingProbability}

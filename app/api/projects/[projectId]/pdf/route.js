@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { deleteFile } from '@/lib/db/texts';
 import PdfProcessor from '@/lib/pdf-processing/core';
 import { deleteChunkAndFile } from '@/lib/db/chunks';
+import { getProject, updateProject } from '@/lib/db/index';
+
 
 // Replace the deprecated config export with the new export syntax
 export const dynamic = 'force-dynamic';
