@@ -1,10 +1,9 @@
 ---
 name: 'Feature or enhancement '
 about: Suggest an idea for this project
-title: "[Feature]"
+title: '[Feature]'
 labels: enhancement
 assignees: ''
-
 ---
 
 **你的功能请求是否与某个问题相关？请描述。**

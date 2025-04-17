@@ -1,10 +1,9 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: "[Bug]"
+title: '[Bug]'
 labels: bug
 assignees: ''
-
 ---
 
 **问题描述**
@@ -12,6 +11,7 @@ assignees: ''
 
 **复现步骤**
 重现该问题的操作步骤：
+
 1. 进入“……”页面。
 2. 点击“……”。
 3. 向下滚动到“……”。
@@ -24,6 +24,7 @@ assignees: ''
 如果有必要，请附上截图，以便更好地说明你的问题。
 
 **桌面设备（请完善以下信息）**
+
 - 操作系统：[例如：、Window、MAC]
 - 浏览器：[例如：谷歌浏览器（Chrome），苹果浏览器（Safari）]
 - Easy Dataset 版本：[例如：1.2.2]

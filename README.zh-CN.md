@@ -16,7 +16,6 @@
 
 </div>
 
-
 如果喜欢本项目，请给本项目留下 Star⭐️，或者请作者喝杯咖啡呀 => [打赏作者](./public/imgs/aw.jpg) ❤️！
 
 ## 概述
@@ -29,14 +28,14 @@ Easy Dataset 是一个专为创建大型语言模型（LLM）微调数据集而�
 
 ## 功能特点
 
-* **智能文档处理**：上传 Markdown 文件并自动将其分割为有意义的片段
-* **智能问题生成**：从每个文本片段中提取相关问题
-* **答案生成**：使用 LLM API 为每个问题生成全面的答案
-* **灵活编辑**：在流程的任何阶段编辑问题、答案和数据集
-* **多种导出格式**：以各种格式（Alpaca、ShareGPT）和文件类型（JSON、JSONL）导出数据集
-* **广泛的模型支持**：兼容所有遵循 OpenAI 格式的 LLM API
-* **用户友好界面**：为技术和非技术用户设计的直观 UI
-* **自定义系统提示**：添加自定义系统提示以引导模型响应
+- **智能文档处理**：上传 Markdown 文件并自动将其分割为有意义的片段
+- **智能问题生成**：从每个文本片段中提取相关问题
+- **答案生成**：使用 LLM API 为每个问题生成全面的答案
+- **灵活编辑**：在流程的任何阶段编辑问题、答案和数据集
+- **多种导出格式**：以各种格式（Alpaca、ShareGPT）和文件类型（JSON、JSONL）导出数据集
+- **广泛的模型支持**：兼容所有遵循 OpenAI 格式的 LLM API
+- **用户友好界面**：为技术和非技术用户设计的直观 UI
+- **自定义系统提示**：添加自定义系统提示以引导模型响应
 
 ## 本地运行
 
@@ -86,53 +85,51 @@ Easy Dataset 是一个专为创建大型语言模型（LLM）微调数据集而�
   </tr>
 </table>
 
-
 ### 使用 NPM 安装
 
 1. 克隆仓库：
-   
 
 ```bash
    git clone https://github.com/ConardLi/easy-dataset.git
    cd easy-dataset
-   ```
+```
 
 2. 安装依赖：
-   
 
 ```bash
    npm install
-   ```
+```
 
 3. 启动开发服务器：
-   
 
 ```bash
    npm run build
 
    npm run start
-   ```
+```
 
 4. 打开浏览器并访问 `http://localhost:1717`
 
-### 使用本地 Dockerfile 构建  
+### 使用本地 Dockerfile 构建
 
-如果你想自行构建镜像，可以使用项目根目录中的 Dockerfile：  
+如果你想自行构建镜像，可以使用项目根目录中的 Dockerfile：
 
-1. 克隆仓库：  
+1. 克隆仓库：
    ```bash
    git clone https://github.com/ConardLi/easy-dataset.git
    cd easy-dataset
-   ```  
-2. 构建 Docker 镜像：  
+   ```
+2. 构建 Docker 镜像：
    ```bash
    docker build -t easy-dataset .
-   ```  
-3. 运行容器：  
+   ```
+3. 运行容器：
+
    ```bash
    docker run -d -p 1717:1717 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset easy-dataset
-   ```  
-   **注意：** 请将 `{YOUR_LOCAL_DB_PATH}` 替换为你希望存储本地数据库的实际路径。  
+   ```
+
+   **注意：** 请将 `{YOUR_LOCAL_DB_PATH}` 替换为你希望存储本地数据库的实际路径。
 
 4. 打开浏览器，访问 `http://localhost:1717`
 
