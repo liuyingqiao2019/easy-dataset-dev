@@ -21,9 +21,9 @@ COPY package.json package-lock.json* ./
 
 # 安装依赖
 #使用国内源加速
-RUN pnpm config set registry https://registry.npmmirror.com && pnpm install
+#RUN pnpm config set registry https://registry.npmmirror.com && pnpm install
 #正常安装
-#RUN pnpm install
+RUN pnpm install
 
 # 复制所有文件
 COPY . .
