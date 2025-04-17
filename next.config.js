@@ -9,6 +9,8 @@ module.exports = {
           'unpdf': 'window.unpdf',
           'pdfjs-dist': 'window.pdfjsLib'
         })
+      } else {
+        config.externals.push('canvas')
       }
       return config
     }

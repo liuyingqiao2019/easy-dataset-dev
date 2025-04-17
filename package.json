@@ -54,6 +54,7 @@
     "@openrouter/ai-sdk-provider": "^0.4.5",
     "adm-zip": "^0.5.16",
     "ai": "^4.3.4",
+    "canvas": "^2.11.2",
     "electron-updater": "^6.3.9",
     "formidable": "^3.5.2",
     "framer-motion": "^12.4.10",
