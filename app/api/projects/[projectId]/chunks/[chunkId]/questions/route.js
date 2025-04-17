@@ -39,11 +39,9 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Text block does not exist' }, { status: 404 });
     }
 
-
     // 获取项目 task-config 信息
-    const taskConfig = await getTaskConfig(projectId);
     const config = await getProject(projectId);
-    const { questionGenerationLength, questionMaskRemovingProbability=60 } = taskConfig;
+    const { questionGenerationLength, questionMaskRemovingProbability = 60 } = taskConfig;
     const { globalPrompt, questionPrompt } = config;
 
     // 创建LLM客户端
@@ -64,7 +62,7 @@ export async function POST(request, { params }) {
 
     // 从LLM输出中提取JSON格式的问题列表
     const originalQuestions = extractJsonFromLLMOutput(response);
-    const questions = randomRemoveQuestionMark(originalQuestions, questionMaskRemovingProbability)
+    const questions = randomRemoveQuestionMark(originalQuestions, questionMaskRemovingProbability);
 
     console.log(projectId, chunkId, 'Questions：', questions);
     if (!questions || !Array.isArray(questions)) {
@@ -122,7 +120,7 @@ export async function GET(request, { params }) {
 function randomRemoveQuestionMark(questions, questionMaskRemovingProbability) {
   for (let i = 0; i < questions.length; i++) {
     // 去除问题结尾的空格
-    let question = questions[i].trimEnd()
+    let question = questions[i].trimEnd();
 
     if (Math.random() * 100 < questionMaskRemovingProbability && (question.endsWith('?') || question.endsWith('？'))) {
       question = question.slice(0, -1);

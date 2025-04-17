@@ -89,7 +89,7 @@ export async function POST(request, { params }) {
       question: question.question,
       answer: answer,
       chunkId: question.chunkId,
-      model: model.name,
+      model: model.modelName,
       cot: '',
       questionLabel: question.label || null
     };
@@ -198,7 +198,7 @@ export async function PATCH(request) {
       );
     }
     // 获取所有数据集
-    let dataset = await getDatasetsById(datasetId);
+    let dataset = await getDatasetsById(datasetId, true);
     if (!dataset) {
       return NextResponse.json(
         {

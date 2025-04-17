@@ -33,6 +33,9 @@ import SyncIcon from '@mui/icons-material/Sync';
 import StorageIcon from '@mui/icons-material/Storage';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { toast } from 'sonner';
+import axios from 'axios';
+import { useSetAtom } from 'jotai/index';
+import { modelConfigListAtom } from '@/lib/store';
 
 export default function Navbar({ projects = [], currentProject }) {
   const [selectedProject, setSelectedProject] = useState(currentProject || '');
@@ -40,13 +43,21 @@ export default function Navbar({ projects = [], currentProject }) {
   const pathname = usePathname();
   const theme = useMuiTheme();
   const { resolvedTheme, setTheme } = useTheme();
-
+  const setConfigList = useSetAtom(modelConfigListAtom);
   // 只在项目详情页显示模块选项卡
   const isProjectDetail = pathname.includes('/projects/') && pathname.split('/').length > 3;
 
   const handleProjectChange = event => {
     const newProjectId = event.target.value;
     setSelectedProject(newProjectId);
+    axios
+      .get(`/api/projects/${newProjectId}/model-config`)
+      .then(response => {
+        setConfigList(response.data);
+      })
+      .catch(error => {
+        toast.error('获取模型列表失败');
+      });
     // 跳转到新选择的项目页面
     window.location.href = `/projects/${newProjectId}/text-split`;
   };
