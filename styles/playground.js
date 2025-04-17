@@ -1,7 +1,7 @@
 // 模型测试页面样式
 import { alpha } from '@mui/material/styles';
 
-export const playgroundStyles = (theme) => ({
+export const playgroundStyles = theme => ({
   container: {
     p: 3,
     height: 'calc(100vh - 64px)',
