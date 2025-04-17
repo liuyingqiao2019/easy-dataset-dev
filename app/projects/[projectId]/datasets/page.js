@@ -30,7 +30,9 @@ import {
   InputBase,
   Tooltip,
   Checkbox,
-  LinearProgress
+  LinearProgress,
+  Select,
+  MenuItem
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -467,6 +469,7 @@ export default function DatasetsPage({ params }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [exportDialog, setExportDialog] = useState({ open: false });
   const [selectedIds, setselectedIds] = useState([]);
+  const [filterConfirmed, setFilterConfirmed] = useState('all');
   const { t } = useTranslation();
   // 删除进度状态
   const [deleteProgress, setDeteleProgress] = useState({
@@ -520,13 +523,19 @@ export default function DatasetsPage({ params }) {
   };
 
   // 过滤数据
-  const filteredDatasets = datasets.filter(
-    dataset =>
+  const filteredDatasets = datasets.filter(dataset => {
+    const matchesSearchQuery =
       dataset.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (dataset.questionLabel && dataset.questionLabel.toLowerCase().includes(searchQuery.toLowerCase())) ||
       dataset.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dataset.chunkId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      dataset.chunkId.toLowerCase().includes(searchQuery.toLowerCase());
+    // 过滤已确认和未确认的数据集
+    const matchesConfirmedFilter =
+      filterConfirmed === 'all' ||
+      (filterConfirmed === 'confirmed' && dataset.confirmed) ||
+      (filterConfirmed === 'unconfirmed' && !dataset.confirmed);
+    return matchesSearchQuery && matchesConfirmedFilter;
+  });
 
   // 获取当前页的数据
   const getCurrentPageData = () => {
@@ -852,6 +861,19 @@ export default function DatasetsPage({ params }) {
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 2 }}>
+            <Select
+              value={filterConfirmed}
+              onChange={e => {
+                setFilterConfirmed(e.target.value);
+                setPage(0);
+              }}
+              displayEmpty
+              sx={{ width: 150 }}
+            >
+              <MenuItem value="all">{t('datasets.filterAll')}</MenuItem>
+              <MenuItem value="confirmed">{t('datasets.filterConfirmed')}</MenuItem>
+              <MenuItem value="unconfirmed">{t('datasets.filterUnconfirmed')}</MenuItem>
+            </Select>
             <Paper
               component="form"
               sx={{
