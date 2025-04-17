@@ -39,7 +39,7 @@ export async function POST(request, { params }) {
     // 获取项目 task-config 信息
     const taskConfig = await getTaskConfig(projectId);
     const config = await getProject(projectId);
-    const { questionGenerationLength, questionMaskRemovingProbability } = taskConfig;
+    const { questionGenerationLength, questionMaskRemovingProbability=60 } = taskConfig;
     const { globalPrompt, questionPrompt } = config;
 
     // 创建LLM客户端
