@@ -43,14 +43,7 @@ export async function POST(request, { params }) {
     const { globalPrompt, questionPrompt } = project;
 
     // 创建LLM客户端
-    const llmClient = new LLMClient({
-      provider: model.providerId,
-      endpoint: model.endpoint,
-      apiKey: model.apiKey,
-      model: model.modelName,
-      temperature: model.temperature,
-      maxTokens: model.maxTokens
-    });
+    const llmClient = new LLMClient(model);
     // 生成问题的数量，如果未指定，则根据文本长度自动计算
     const questionNumber = number || Math.floor(chunk.content.length / questionGenerationLength);
 

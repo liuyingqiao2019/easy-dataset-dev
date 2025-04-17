@@ -38,14 +38,7 @@ export async function POST(request, { params }) {
     }
 
     // 创建LLM客户端
-    const llmClient = new LLMClient({
-      provider: model.providerId,
-      endpoint: model.endpoint,
-      apiKey: model.apiKey,
-      model: model.modelName,
-      temperature: model.temperature,
-      maxTokens: model.maxTokens
-    });
+    const llmClient = new LLMClient(model);
 
     // 生成优化后的答案和思维链
     const prompt =

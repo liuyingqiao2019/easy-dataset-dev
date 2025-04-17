@@ -53,14 +53,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'No valid text blocks found' }, { status: 404 });
     }
 
-    const llmClient = new LLMClient({
-      provider: model.providerId,
-      endpoint: model.endpoint,
-      apiKey: model.apiKey,
-      model: model.modelName,
-      temperature: model.temperature,
-      maxTokens: model.maxTokens
-    });
+    const llmClient = new LLMClient(model);
 
     const results = [];
     const errors = [];

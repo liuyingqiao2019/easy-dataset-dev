@@ -38,14 +38,7 @@ export async function POST(request, { params }) {
     const result = await splitProjectFile(projectId, fileName);
 
     const { toc } = result;
-    const llmClient = new LLMClient({
-      provider: model.providerId,
-      endpoint: model.endpoint,
-      apiKey: model.apiKey,
-      model: model.modelName,
-      temperature: model.temperature,
-      maxTokens: model.maxTokens
-    });
+    const llmClient = new LLMClient(model);
     // 生成领域树
     console.log(projectId, fileName, 'Text split completed, starting to build domain tree');
     const promptFunc = language === 'en' ? getLabelEnPrompt : getLabelPrompt;
