@@ -44,6 +44,7 @@
     "textSplitDescription": "Set the minimum and maximum length range for text splitting",
     "questionGenSettings": "Question Generation Settings",
     "questionGenLength": "Question Generation Length: {{length}}",
+    "questionMaskRemovingProbability": "Removing Question Marks Probability: {{probability}}%",
     "questionGenDescription": "Set the maximum length for generated questions",
     "huggingfaceSettings": "Hugging Face Settings",
     "huggingfaceToken": "Hugging Face Token",

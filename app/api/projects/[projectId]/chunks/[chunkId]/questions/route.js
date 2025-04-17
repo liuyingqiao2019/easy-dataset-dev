@@ -39,8 +39,12 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Text block does not exist' }, { status: 404 });
     }
 
-    const { questionGenerationLength } = taskConfig;
-    const { globalPrompt, questionPrompt } = project;
+
+    // 获取项目 task-config 信息
+    const taskConfig = await getTaskConfig(projectId);
+    const config = await getProject(projectId);
+    const { questionGenerationLength, questionMaskRemovingProbability=60 } = taskConfig;
+    const { globalPrompt, questionPrompt } = config;
 
     // 创建LLM客户端
     const llmClient = new LLMClient(model);
@@ -59,7 +63,10 @@ export async function POST(request, { params }) {
     const response = await llmClient.getResponse(prompt);
 
     // 从LLM输出中提取JSON格式的问题列表
-    const questions = extractJsonFromLLMOutput(response);
+    const originalQuestions = extractJsonFromLLMOutput(response);
+    const questions = randomRemoveQuestionMark(originalQuestions, questionMaskRemovingProbability)
+
+    console.log(projectId, chunkId, 'Questions：', questions);
     if (!questions || !Array.isArray(questions)) {
       return NextResponse.json({ error: 'Failed to generate questions' }, { status: 500 });
     }
@@ -109,4 +116,18 @@ export async function GET(request, { params }) {
     console.error('Error getting questions:', error);
     return NextResponse.json({ error: error.message || 'Error getting questions' }, { status: 500 });
   }
+}
+
+// 按照配置文件中 questionMaskRemovingProbability 随机去除问题结尾问号
+function randomRemoveQuestionMark(questions, questionMaskRemovingProbability) {
+  for (let i = 0; i < questions.length; i++) {
+    // 去除问题结尾的空格
+    let question = questions[i].trimEnd()
+
+    if (Math.random() * 100 < questionMaskRemovingProbability && (question.endsWith('?') || question.endsWith('？'))) {
+      question = question.slice(0, -1);
+    }
+    questions[i] = question;
+  }
+  return questions;
 }
