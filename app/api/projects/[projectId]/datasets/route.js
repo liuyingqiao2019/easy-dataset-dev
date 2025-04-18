@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getTextChunk } from '@/lib/db/texts';
+import { getTextChunk, getTextChunkIds } from '@/lib/db/texts';
 import { getQuestionsForChunk } from '@/lib/db/questions';
 import { getDatasets, saveDatasets, updateDataset } from '@/lib/db/datasets';
 import { getProject } from '@/lib/db/projects';
@@ -10,7 +10,7 @@ import getOptimizeCotEnPrompt from '@/lib/llm/prompts/optimizeCotEn';
 
 const LLMClient = require('@/lib/llm/core');
 
-async function optimizeCot(originalQuestion, answer, originalCot, language, llmClient, id, projectId) {
+async function optimizeCot (originalQuestion, answer, originalCot, language, llmClient, id, projectId) {
   const prompt =
     language === 'en'
       ? getOptimizeCotEnPrompt(originalQuestion, answer, originalCot)
@@ -23,11 +23,10 @@ async function optimizeCot(originalQuestion, answer, originalCot, language, llmC
 /**
  * 生成数据集（为单个问题生成答案）
  */
-export async function POST(request, { params }) {
+export async function POST (request, { params }) {
   try {
     const { projectId } = params;
     const { questionId, chunkId, model, language } = await request.json();
-
     // 验证参数
     if (!projectId || !questionId || !chunkId || !model) {
       return NextResponse.json(
@@ -38,17 +37,30 @@ export async function POST(request, { params }) {
       );
     }
 
-    // 获取文本块内容
-    const chunk = await getTextChunk(projectId, chunkId);
-    if (!chunk) {
-      return NextResponse.json(
-        {
-          error: 'Text block does not exist'
-        },
-        { status: 404 }
-      );
-    }
 
+    //获取文件下所有模块的内容
+    const chunkIds = await getTextChunkIds(projectId);
+    let fileContent = ''
+    for (let chunkIdItem of chunkIds) {
+      if (chunkIdItem.match(/(.+)-part-\d+/)[1] == chunkId.match(/(.+)-part-\d+/)[1]) {
+        const chunkItem = await getTextChunk(projectId, chunkId);
+        fileContent = fileContent + chunkItem.content + '\n'
+      }
+    }
+    if (fileContent == '') {
+      // 获取单个文本块内容
+      const chunk = await getTextChunk(projectId, chunkId);
+      if (!chunk) {
+        return NextResponse.json(
+          {
+            error: 'Text block does not exist'
+          },
+          { status: 404 }
+        );
+      } else {
+        fileContent = chunk.content
+      }
+    }
     // 获取问题
     const questions = await getQuestionsForChunk(projectId, chunkId);
     const question = questions.find(q => q.question === questionId);
@@ -79,7 +91,7 @@ export async function POST(request, { params }) {
 
     // 生成答案的提示词
     const prompt = promptFuc({
-      text: chunk.content,
+      text: fileContent,
       question: question.question,
       globalPrompt,
       answerPrompt
@@ -132,7 +144,7 @@ export async function POST(request, { params }) {
 /**
  * 获取项目的所有数据集
  */
-export async function GET(request, { params }) {
+export async function GET (request, { params }) {
   try {
     const { projectId } = params;
 
@@ -164,7 +176,7 @@ export async function GET(request, { params }) {
 /**
  * 删除数据集
  */
-export async function DELETE(request, { params }) {
+export async function DELETE (request, { params }) {
   try {
     const { projectId } = params;
     const { searchParams } = new URL(request.url);
@@ -228,7 +240,7 @@ export async function DELETE(request, { params }) {
 /**
  * 编辑数据集
  */
-export async function PATCH(request, { params }) {
+export async function PATCH (request, { params }) {
   try {
     const { projectId } = params;
     const { searchParams } = new URL(request.url);
