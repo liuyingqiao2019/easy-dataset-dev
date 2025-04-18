@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, DialogTitle, DialogContent, Card, CardContent, Typography, Box, Stack,FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Card, CardContent, Typography, Box, Stack, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { styled } from '@mui/material/styles';
@@ -19,8 +19,8 @@ const StyledCard = styled(Card)(({ theme, disabled }) => ({
   },
 }));
 
-const OptionCard = ({ icon, title, description, disabled, onClick, selected,isVisionEnabled,visionModels,selectorName,handleSettingChange,selectedViosnModel}) => (
-  
+const OptionCard = ({ icon, title, description, disabled, onClick, selected, isVisionEnabled, visionModels, selectorName, handleSettingChange, selectedViosnModel }) => (
+
   <StyledCard
     disabled={disabled}
     onClick={disabled ? undefined : onClick}
@@ -43,30 +43,30 @@ const OptionCard = ({ icon, title, description, disabled, onClick, selected,isVi
         </Typography>
         {isVisionEnabled && (
           <FormControl fullWidth>
-          <InputLabel>{selectorName}</InputLabel>
-          <Select
-            label={selectorName}
-            value={selectedViosnModel}
-            onChange={e =>handleSettingChange(e)}
-            name="vision"
-          >
-            {visionModels.map((item) => (
-                <MenuItem 
-                    key={item.id} 
-                    value={item.id}  
+            <InputLabel>{selectorName}</InputLabel>
+            <Select
+              label={selectorName}
+              value={selectedViosnModel}
+              onChange={e => handleSettingChange(e)}
+              name="vision"
+            >
+              {visionModels.map((item) => (
+                <MenuItem
+                  key={item.id}
+                  value={item.id}
                 >
-                    {item.name} ({item.provider}) 
+                  {item.name} ({item.provider})
                 </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+              ))}
+            </Select>
+          </FormControl>
         )}
       </Stack>
     </CardContent>
   </StyledCard>
 );
 
-export default function PdfProcessingDialog({
+export default function PdfProcessingDialog ({
   open,
   onClose,
   onRadioChange,
@@ -79,26 +79,26 @@ export default function PdfProcessingDialog({
   const { t } = useTranslation();
 
   //检查配置中是否启用MinerU
-  const isMinerUEnabled = (taskSettings&&taskSettings.minerUToken)?true:false;
+  const isMinerUEnabled = (taskSettings && taskSettings.minerUToken) ? true : false;
 
   //检查配置中是否启用Vision策略
-  const isVisionEnabled = (visionModels.length > 0)?true:false;
+  const isVisionEnabled = (visionModels && visionModels.length > 0) ? true : false;
 
   //用于传递到父组件，显示当前选中的模型
   let selectedModel = selectedViosnModel;
-  
+
   const handleOptionClick = (optionValue) => {
     if (optionValue === 'mineru-web') {
       window.open('https://mineru.net/OpenSourceTools/Extractor', '_blank');
       onClose();
-    }else {
-      onRadioChange({ target: { value: optionValue ,selectedVision:selectedModel } });
+    } else {
+      onRadioChange({ target: { value: optionValue, selectedVision: selectedModel } });
       onClose();
     }
   };
 
-   // 处理设置变更
-   const handleSettingChange = (e) => {
+  // 处理设置变更
+  const handleSettingChange = (e) => {
     const { value } = e.target;
     selectedModel = value;
     setSelectedViosnModel(value);
@@ -153,7 +153,7 @@ export default function PdfProcessingDialog({
             selected={value === 'vision'}
             isVisionEnabled={isVisionEnabled}
             visionModels={visionModels}
-            selectorName = {t('settings.vision')}
+            selectorName={t('settings.vision')}
             selectedViosnModel={selectedViosnModel}
             handleSettingChange={handleSettingChange}
           />

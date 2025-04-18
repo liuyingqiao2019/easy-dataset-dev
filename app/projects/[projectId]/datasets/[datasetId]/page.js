@@ -138,134 +138,118 @@ const OptimizeDialog = ({ open, onClose, onConfirm, loading }) => {
 };
 
 export default function DatasetDetailsPage ({ params }) {
-  export default function DatasetDetailsPage ({ params }) {
-    const { projectId, datasetId } = params;
-    const router = useRouter();
-    const [dataset, setDataset] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [editingAnswer, setEditingAnswer] = useState(false);
-    const [editingCot, setEditingCot] = useState(false);
-    const [answerValue, setAnswerValue] = useState('');
-    const [cotValue, setCotValue] = useState('');
-    const [snackbar, setSnackbar] = useState({
-      open: false,
-      message: '',
-      severity: 'success'
-    });
-    const [confirmDialog, setConfirmDialog] = useState({
-      open: false,
-      title: '',
-      content: '',
-      confirmAction: null
-    });
-    const [confirmDialog, setConfirmDialog] = useState({
-      open: false,
-      title: '',
-      content: '',
-      confirmAction: null
-    });
-    const [confirming, setConfirming] = useState(false);
-    const [optimizeDialog, setOptimizeDialog] = useState({
-      open: false,
-      loading: false
-    });
-    const [viewDialogOpen, setViewDialogOpen] = useState(false);
-    const [viewChunk, setViewChunk] = useState(null);
-    const theme = useTheme();
-    // 获取数据集列表（用于导航）
-    const [datasets, setDatasets] = useState([]);
-    const { t } = useTranslation();
+  const { projectId, datasetId } = params;
+  const router = useRouter();
+  const [dataset, setDataset] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [editingAnswer, setEditingAnswer] = useState(false);
+  const [editingCot, setEditingCot] = useState(false);
+  const [answerValue, setAnswerValue] = useState('');
+  const [cotValue, setCotValue] = useState('');
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    content: '',
+    confirmAction: null
+  });
+  const [confirming, setConfirming] = useState(false);
+  const [optimizeDialog, setOptimizeDialog] = useState({
+    open: false,
+    loading: false
+  });
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [viewChunk, setViewChunk] = useState(null);
+  const theme = useTheme();
+  // 获取数据集列表（用于导航）
+  const [datasets, setDatasets] = useState([]);
+  const { t } = useTranslation();
 
-    // 从本地存储获取模型参数
-    const getModelFromLocalStorage = () => {
-      if (typeof window === 'undefined') return null;
+  // 从本地存储获取模型参数
+  const getModelFromLocalStorage = () => {
+    if (typeof window === 'undefined') return null;
 
-      try {
-        let model = null;
+    try {
+      let model = null;
 
-        // 尝试从 localStorage 获取完整的模型信息
-        const modelInfoStr = localStorage.getItem('selectedModelInfo');
+      // 尝试从 localStorage 获取完整的模型信息
+      const modelInfoStr = localStorage.getItem('selectedModelInfo');
 
-        if (modelInfoStr) {
-          try {
-            model = JSON.parse(modelInfoStr);
-          } catch (e) {
-            console.error('解析模型信息失败', e);
-            return null;
-          }
+      if (modelInfoStr) {
+        try {
+          model = JSON.parse(modelInfoStr);
+        } catch (e) {
+          console.error('解析模型信息失败', e);
+          return null;
         }
-
-        return model;
-      } catch (error) {
-        console.error('获取模型配置失败', error);
-        return null;
       }
-    };
 
-    // 获取所有数据集
-    const fetchDatasets = async () => {
-      try {
-        const response = await fetch(`/api/projects/${projectId}/datasets`);
-        if (!response.ok) throw new Error(t('datasets.fetchFailed'));
-        const data = await response.json();
-        setDatasets(data);
+      return model;
+    } catch (error) {
+      console.error('获取模型配置失败', error);
+      return null;
+    }
+  };
 
-        // 找到当前数据集
-        const currentDataset = data.find(d => d.id === datasetId);
-        if (currentDataset) {
-          setDataset(currentDataset);
-          setAnswerValue(currentDataset.answer);
-          setCotValue(currentDataset.cot || '');
-        }
-      } catch (error) {
-        setConfirmDialog({
-          setConfirmDialog ({
-            open: true,
-            title: '错误提示',
-            content: error.message,
-          title: '错误提示',
-          content: error.message,
-        });
-      } finally {
-        setLoading(false);
+  // 获取所有数据集
+  const fetchDatasets = async () => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/datasets`);
+      if (!response.ok) throw new Error(t('datasets.fetchFailed'));
+      const data = await response.json();
+      setDatasets(data);
+
+      // 找到当前数据集
+      const currentDataset = data.find(d => d.id === datasetId);
+      if (currentDataset) {
+        setDataset(currentDataset);
+        setAnswerValue(currentDataset.answer);
+        setCotValue(currentDataset.cot || '');
       }
-    };
+    } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleConfirm = async () => {
-      try {
-        setConfirming(true);
-        const response = await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            confirmed: true
-          })
-        });
+  const handleConfirm = async () => {
+    try {
+      setConfirming(true);
+      const response = await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          confirmed: true
+        })
+      });
 
-        if (!response.ok) {
-          throw new Error(t('common.failed'));
-        }
+      if (!response.ok) {
+        throw new Error(t('common.failed'));
+      }
 
-        setDataset(prev => ({ ...prev, confirmed: true }));
+      setDataset(prev => ({ ...prev, confirmed: true }));
 
-        setConfirmDialog({
-          setConfirmDialog ({
-            open: true,
-            title: '操作提示',
-            content: t('common.success'),
-          title: '操作提示',
-          content: t('common.success'),
+      setConfirmDialog({
+        open: true,
+        title: '操作提示',
+        content: t('common.success'),
       });
       // 导航到下一个数据集
       handleNavigate('next');
     } catch (error) {
       setConfirmDialog({
-        setConfirmDialog ({
-          open: true,
-          title: '错误提示',
-          content: error.message || t('common.failed'),
+        open: true,
         title: '错误提示',
         content: error.message || t('common.failed'),
       });
@@ -313,383 +297,354 @@ export default function DatasetDetailsPage ({ params }) {
       setDataset(prev => ({ ...prev, [field]: value }));
 
       setConfirmDialog({
-        setConfirmDialog ({
-          open: true,
-          title: '操作提示',
-          content: t('common.success'),
+        open: true,
         title: '操作提示',
         content: t('common.success'),
       });
-    // 重置编辑状态
-    if (field === 'answer') setEditingAnswer(false);
-    if (field === 'cot') setEditingCot(false);
-  } catch (error) {
-    setConfirmDialog({
-      setConfirmDialog ({
+      // 重置编辑状态
+      if (field === 'answer') setEditingAnswer(false);
+      if (field === 'cot') setEditingCot(false);
+    } catch (error) {
+      setConfirmDialog({
         open: true,
         title: '错误提示',
         content: error.message || t('common.failed'),
-      title: '错误提示',
-      content: error.message || t('common.failed'),
-    });
-  }
-};
-
-// 删除数据集
-const handleDelete = async () => {
-  if (!confirm(t('datasets.confirmDeleteMessage'))) return;
-
-  try {
-    const response = await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
-      method: 'DELETE'
-    });
-
-    if (!response.ok) {
-      throw new Error(t('common.failed'));
-    }
-
-    // 找到当前数据集的索引
-    const currentIndex = datasets.findIndex(d => d.id === datasetId);
-
-    // 如果这是最后一个数据集，返回列表页
-    if (datasets.length === 1) {
-      router.push(`/projects/${projectId}/datasets`);
-      return;
-    }
-
-    // 计算下一个数据集的索引
-    const nextIndex = (currentIndex + 1) % datasets.length;
-    // 如果是最后一个，就去第一个
-    const nextDataset = datasets[nextIndex] || datasets[0];
-
-    // 导航到下一个数据集
-    router.push(`/projects/${projectId}/datasets/${nextDataset.id}`);
-
-    // 更新本地数据集列表
-    setDatasets(prev => prev.filter(d => d.id !== datasetId));
-  } catch (error) {
-    setConfirmDialog({
-      setConfirmDialog ({
-        open: true,
-        title: '错误提示',
-        content: error.message || t('common.failed'),
-      title: '错误提示',
-      content: error.message || t('common.failed'),
-    });
-  }
-};
-
-// 打开优化对话框
-const handleOpenOptimizeDialog = () => {
-  setOptimizeDialog({
-    open: true,
-    loading: false
-  });
-};
-
-// 关闭优化对话框
-const handleCloseOptimizeDialog = () => {
-  if (optimizeDialog.loading) return;
-  setOptimizeDialog({
-    open: false,
-    loading: false
-  });
-};
-
-// 查看文本块详情
-const handleViewChunk = async (chunkId) => {
-  try {
-    setViewDialogOpen(true);
-    setViewChunk(null);
-
-    const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`);
-
-    if (!response.ok) {
-      throw new Error(t('textSplit.fetchChunkFailed'));
-    }
-
-    const data = await response.json();
-    setViewChunk(data);
-  } catch (error) {
-    console.error(t('textSplit.fetchChunkError'), error);
-    setSnackbar({
-      open: true,
-      message: error.message,
-      severity: 'error'
-    });
-    setViewDialogOpen(false);
-  }
-};
-
-// 关闭文本块详情对话框
-const handleCloseViewDialog = () => {
-  setViewDialogOpen(false);
-};
-
-// 提交优化请求
-const handleOptimize = async advice => {
-  const model = getModelFromLocalStorage();
-  if (!model) {
-    setConfirmDialog({
-      setConfirmDialog ({
-        open: true,
-        title: '错误提示',
-        content: '请先选择模型，可以在顶部导航栏选择',
-        title: '错误提示',
-        content: '请先选择模型，可以在顶部导航栏选择',
       });
-      setOptimizeDialog (prev => ({ ...prev, open: false }));
-return;
     }
+  };
 
-try {
-  setOptimizeDialog(prev => ({ ...prev, loading: true }));
-  const language = i18n.language === 'zh-CN' ? '中文' : 'en';
-  const response = await fetch(`/api/projects/${projectId}/datasets/optimize`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      datasetId,
-      model,
-      advice,
-      language
-    })
-  });
+  // 删除数据集
+  const handleDelete = async () => {
+    if (!confirm(t('datasets.confirmDeleteMessage'))) return;
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || '优化失败');
-  }
+    try {
+      const response = await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
+        method: 'DELETE'
+      });
 
-  const data = await response.json();
+      if (!response.ok) {
+        throw new Error(t('common.failed'));
+      }
 
-  // 更新数据集
-  setDataset(data.dataset);
-  setAnswerValue(data.dataset.answer);
-  setCotValue(data.dataset.cot || '');
+      // 找到当前数据集的索引
+      const currentIndex = datasets.findIndex(d => d.id === datasetId);
 
-  setConfirmDialog({
-    setConfirmDialog ({
-      open: true,
-      title: '操作提示',
-      content: 'AI智能优化成功',
-      title: '操作提示',
-      content: 'AI智能优化成功',
-    });
-  } catch (error) {
-    setConfirmDialog({
-      setConfirmDialog ({
+      // 如果这是最后一个数据集，返回列表页
+      if (datasets.length === 1) {
+        router.push(`/projects/${projectId}/datasets`);
+        return;
+      }
+
+      // 计算下一个数据集的索引
+      const nextIndex = (currentIndex + 1) % datasets.length;
+      // 如果是最后一个，就去第一个
+      const nextDataset = datasets[nextIndex] || datasets[0];
+
+      // 导航到下一个数据集
+      router.push(`/projects/${projectId}/datasets/${nextDataset.id}`);
+
+      // 更新本地数据集列表
+      setDatasets(prev => prev.filter(d => d.id !== datasetId));
+    } catch (error) {
+      setConfirmDialog({
         open: true,
         title: '错误提示',
-        content: error.message || '优化失败',
-      title: '错误提示',
-      content: error.message || '优化失败',
+        content: error.message || t('common.failed'),
+      });
+    }
+  };
+
+  // 打开优化对话框
+  const handleOpenOptimizeDialog = () => {
+    setOptimizeDialog({
+      open: true,
+      loading: false
     });
-  } finally {
+  };
+
+  // 关闭优化对话框
+  const handleCloseOptimizeDialog = () => {
+    if (optimizeDialog.loading) return;
     setOptimizeDialog({
       open: false,
       loading: false
     });
+  };
+
+  // 查看文本块详情
+  const handleViewChunk = async (chunkId) => {
+    try {
+      setViewDialogOpen(true);
+      setViewChunk(null);
+
+      const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`);
+
+      if (!response.ok) {
+        throw new Error(t('textSplit.fetchChunkFailed'));
+      }
+
+      const data = await response.json();
+      setViewChunk(data);
+    } catch (error) {
+      console.error(t('textSplit.fetchChunkError'), error);
+      setSnackbar({
+        open: true,
+        message: error.message,
+        severity: 'error'
+      });
+      setViewDialogOpen(false);
+    }
+  };
+
+  // 关闭文本块详情对话框
+  const handleCloseViewDialog = () => {
+    setViewDialogOpen(false);
+  };
+
+  // 提交优化请求
+  const handleOptimize = async advice => {
+    const model = getModelFromLocalStorage();
+    if (!model) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: '请先选择模型，可以在顶部导航栏选择',
+      });
+      setOptimizeDialog(prev => ({ ...prev, open: false }));
+      return;
+    }
+
+    try {
+      setOptimizeDialog(prev => ({ ...prev, loading: true }));
+      const language = i18n.language === 'zh-CN' ? '中文' : 'en';
+      const response = await fetch(`/api/projects/${projectId}/datasets/optimize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          datasetId,
+          model,
+          advice,
+          language
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '优化失败');
+      }
+
+      const data = await response.json();
+
+      // 更新数据集
+      setDataset(data.dataset);
+      setAnswerValue(data.dataset.answer);
+      setCotValue(data.dataset.cot || '');
+      setConfirmDialog({
+        open: true,
+        title: '操作提示',
+        content: 'AI智能优化成功',
+      });
+    } catch (error) {
+      setConfirmDialog({
+        open: true,
+        title: '错误提示',
+        content: error.message || '优化失败',
+      });
+    } finally {
+      setOptimizeDialog({
+        open: false,
+        loading: false
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
   }
-};
 
-if (loading) {
+  if (!dataset) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Alert severity="error">{t('datasets.noData')}</Alert>
+      </Container>
+    );
+  }
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
-        <CircularProgress />
-      </Box>
-    </Container>
-  );
-}
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* 顶部导航栏 */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button startIcon={<NavigateBeforeIcon />} onClick={() => router.push(`/projects/${projectId}/datasets`)}>
+              {t('common.backToList')}
+            </Button>
+            <Divider orientation="vertical" flexItem />
+            <Typography variant="h6">{t('datasets.datasetDetail')}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('datasets.stats', {
+                total: datasets.length,
+                confirmed: datasets.filter(d => d.confirmed).length,
+                percentage: Math.round((datasets.filter(d => d.confirmed).length / datasets.length) * 100)
+              })}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <IconButton onClick={() => handleNavigate('prev')}>
+              <NavigateBeforeIcon />
+            </IconButton>
+            <IconButton onClick={() => handleNavigate('next')}>
+              <NavigateNextIcon />
+            </IconButton>
+            <Divider orientation="vertical" flexItem />
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={confirming || dataset.confirmed}
+              onClick={handleConfirm}
+              sx={{ mr: 1 }}
+            >
+              {confirming ? (
+                <CircularProgress size={24} />
+              ) : dataset.confirmed ? (
+                t('datasets.confirmed')
+              ) : (
+                t('datasets.confirmSave')
+              )}
+            </Button>
+            <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={handleDelete}>
+              {t('common.delete')}
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
 
-if (!dataset) {
-  return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Alert severity="error">{t('datasets.noData')}</Alert>
-    </Container>
-  );
-}
-
-return (
-  <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-    {/* 顶部导航栏 */}
-    <Paper sx={{ p: 2, mb: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button startIcon={<NavigateBeforeIcon />} onClick={() => router.push(`/projects/${projectId}/datasets`)}>
-            {t('common.backToList')}
-          </Button>
-          <Divider orientation="vertical" flexItem />
-          <Typography variant="h6">{t('datasets.datasetDetail')}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {t('datasets.stats', {
-              total: datasets.length,
-              confirmed: datasets.filter(d => d.confirmed).length,
-              percentage: Math.round((datasets.filter(d => d.confirmed).length / datasets.length) * 100)
-            })}
+      {/* 主要内容 */}
+      <Paper sx={{ p: 3 }}>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1 }}>
+            {t('datasets.question')}
+          </Typography>
+          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+            {dataset.question}
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <IconButton onClick={() => handleNavigate('prev')}>
-            <NavigateBeforeIcon />
-          </IconButton>
-          <IconButton onClick={() => handleNavigate('next')}>
-            <NavigateNextIcon />
-          </IconButton>
-          <Divider orientation="vertical" flexItem />
-          <Button
-            variant="contained"
-            color="primary"
-            disabled={confirming || dataset.confirmed}
-            onClick={handleConfirm}
-            sx={{ mr: 1 }}
-          >
-            {confirming ? (
-              <CircularProgress size={24} />
-            ) : dataset.confirmed ? (
-              t('datasets.confirmed')
-            ) : (
-              t('datasets.confirmSave')
+
+
+
+        <EditableField
+          label={t('datasets.answer')}
+          value={answerValue}
+          editing={editingAnswer}
+          onEdit={() => setEditingAnswer(true)}
+          onChange={e => setAnswerValue(e.target.value)}
+          onSave={() => handleSave('answer', answerValue)}
+          onCancel={() => {
+            setEditingAnswer(false);
+            setAnswerValue(dataset.answer);
+          }}
+          onOptimize={handleOpenOptimizeDialog}
+        />
+
+        <EditableField
+          label={t('datasets.cot')}
+          value={cotValue}
+          editing={editingCot}
+          onEdit={() => setEditingCot(true)}
+          onChange={e => setCotValue(e.target.value)}
+          onSave={() => handleSave('cot', cotValue)}
+          onCancel={() => {
+            setEditingCot(false);
+            setCotValue(dataset.cot || '');
+          }}
+        />
+
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1 }}>
+            {t('datasets.metadata')}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <Chip label={`${t('datasets.model')}: ${dataset.model}`} variant="outlined" />
+            {dataset.questionLabel && (
+              <Chip label={`${t('common.label')}: ${dataset.questionLabel}`} color="primary" variant="outlined" />
             )}
-          </Button>
-          <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={handleDelete}>
-            {t('common.delete')}
-          </Button>
-        </Box>
-      </Box>
-    </Paper>
-
-    {/* 主要内容 */}
-    <Paper sx={{ p: 3 }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1 }}>
-          {t('datasets.question')}
-        </Typography>
-        <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-          {dataset.question}
-        </Typography>
-      </Box>
-
-
-
-      <EditableField
-        label={t('datasets.answer')}
-        value={answerValue}
-        editing={editingAnswer}
-        onEdit={() => setEditingAnswer(true)}
-        onChange={e => setAnswerValue(e.target.value)}
-        onSave={() => handleSave('answer', answerValue)}
-        onCancel={() => {
-          setEditingAnswer(false);
-          setAnswerValue(dataset.answer);
-        }}
-        onOptimize={handleOpenOptimizeDialog}
-      />
-
-      <EditableField
-        label={t('datasets.cot')}
-        value={cotValue}
-        editing={editingCot}
-        onEdit={() => setEditingCot(true)}
-        onChange={e => setCotValue(e.target.value)}
-        onSave={() => handleSave('cot', cotValue)}
-        onCancel={() => {
-          setEditingCot(false);
-          setCotValue(dataset.cot || '');
-        }}
-      />
-
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1 }}>
-          {t('datasets.metadata')}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Chip label={`${t('datasets.model')}: ${dataset.model}`} variant="outlined" />
-          {dataset.questionLabel && (
-            <Chip label={`${t('common.label')}: ${dataset.questionLabel}`} color="primary" variant="outlined" />
-          )}
-          <Chip
-            label={`${t('datasets.createdAt')}: ${new Date(dataset.createdAt).toLocaleString('zh-CN')}`}
-            variant="outlined"
-          />
-          <Tooltip title={t('textSplit.viewChunk')}>
             <Chip
-              label={`${t('datasets.chunkId')}: ${dataset.chunkId.substring(0, 12)}...`}
+              label={`${t('datasets.createdAt')}: ${new Date(dataset.createdAt).toLocaleString('zh-CN')}`}
               variant="outlined"
-              color="info"
-              onClick={() => handleViewChunk(dataset.chunkId)}
-              sx={{ cursor: 'pointer' }}
             />
-          </Tooltip>
-          {dataset.confirmed && (
-            <Chip
-              label={t('datasets.confirmed')}
-              sx={{
-                backgroundColor: alpha(theme.palette.success.main, 0.1),
-                color: theme.palette.success.dark,
-                fontWeight: 'medium'
-              }}
-            />
-          )}
+            <Tooltip title={t('textSplit.viewChunk')}>
+              <Chip
+                label={`${t('datasets.chunkId')}: ${dataset.chunkId.substring(0, 12)}...`}
+                variant="outlined"
+                color="info"
+                onClick={() => handleViewChunk(dataset.chunkId)}
+                sx={{ cursor: 'pointer' }}
+              />
+            </Tooltip>
+            {dataset.confirmed && (
+              <Chip
+                label={t('datasets.confirmed')}
+                sx={{
+                  backgroundColor: alpha(theme.palette.success.main, 0.1),
+                  color: theme.palette.success.dark,
+                  fontWeight: 'medium'
+                }}
+              />
+            )}
+          </Box>
         </Box>
-      </Box>
-    </Paper>
+      </Paper>
 
-    {/* 确认对话框 */}
-    <Dialog
-      open={confirmDialog.open}
-      onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-      PaperProps={{
-        elevation: 3,
-        sx: { borderRadius: 2, minWidth: 200 }
-      }}
       {/* 确认对话框 */}
       <Dialog
-      open={confirmDialog.open}
-      onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-      PaperProps={{
-        elevation: 3,
-        sx: { borderRadius: 2, minWidth: 200 }
-      }}
-    >
-      <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
-      <DialogContent sx={{ textAlign: 'center' }} >
-        <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button
-          onClick={() => {
-            setConfirmDialog({ ...confirmDialog, open: false });
-            if (confirmDialog.confirmAction) {
-              confirmDialog.confirmAction();
-            }
-          }}
-          color="primary"
-          variant="contained"
-          autoFocus
-        >
-          {t('common.confirm')}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }} >
+          <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setConfirmDialog({ ...confirmDialog, open: false });
+              if (confirmDialog.confirmAction) {
+                confirmDialog.confirmAction();
+              }
+            }}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            {t('common.confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-    {/* AI优化对话框 */}
-    <OptimizeDialog
-      open={optimizeDialog.open}
-      onClose={handleCloseOptimizeDialog}
-      onConfirm={handleOptimize}
-      loading={optimizeDialog.loading}
-    />
+      {/* AI优化对话框 */}
+      <OptimizeDialog
+        open={optimizeDialog.open}
+        onClose={handleCloseOptimizeDialog}
+        onConfirm={handleOptimize}
+        loading={optimizeDialog.loading}
+      />
 
-    {/* 文本块详情对话框 */}
-    <ChunkViewDialog open={viewDialogOpen} chunk={viewChunk} onClose={handleCloseViewDialog} />
-  </Container>
-);
+      {/* 文本块详情对话框 */}
+      <ChunkViewDialog open={viewDialogOpen} chunk={viewChunk} onClose={handleCloseViewDialog} />
+    </Container>
+  );
 }
