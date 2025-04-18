@@ -13,18 +13,19 @@ import {
   Autocomplete,
   TextField as MuiTextField
 } from '@mui/material';
+import axios from 'axios';
 
 export default function QuestionEditDialog({
   open,
   onClose,
   onSubmit,
   initialData,
-  chunks,
+  projectId,
   tags,
   mode = 'create' // 'create' or 'edit'
 }) {
+  const [chunks, setChunks] = useState([]);
   const { t } = useTranslation();
-
   // 获取文本块的标题
   const getChunkTitle = chunkId => {
     const chunk = chunks.find(c => c.id === chunkId);
@@ -38,7 +39,17 @@ export default function QuestionEditDialog({
     label: '' // 默认不选中任何标签
   });
 
+  const getChunks = async projectId => {
+    // 获取文本块列表
+    const response = await axios.get(`/api/projects/${projectId}/split`);
+    if (response.status !== 200) {
+      throw new Error(t('common.fetchError'));
+    }
+    setChunks(response.data.chunks || []);
+  };
+
   useEffect(() => {
+    getChunks(projectId);
     if (initialData) {
       console.log('初始数据:', initialData); // 查看传入的初始数据
       setFormData({

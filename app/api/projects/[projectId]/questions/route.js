@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getQuestions, isExistByName, isExistByQuestion, saveQuestions, updateQuestion } from '@/lib/db/questions';
+import { getQuestions, isExistByQuestion, saveQuestions, updateQuestion } from '@/lib/db/questions';
 
 // 获取项目的所有问题
 export async function GET(request, { params }) {
@@ -9,8 +9,19 @@ export async function GET(request, { params }) {
     if (!projectId) {
       return NextResponse.json({ error: 'Missing project ID' }, { status: 400 });
     }
+    const { searchParams } = new URL(request.url);
+    let status = searchParams.get('status');
+    let answered = undefined;
+    if (status === 'answered') answered = true;
+    if (status === 'unanswered') answered = false;
     // 获取问题列表
-    const questions = await getQuestions(projectId);
+    const questions = await getQuestions(
+      projectId,
+      parseInt(searchParams.get('page')),
+      parseInt(searchParams.get('size')),
+      answered,
+      searchParams.get('input')
+    );
     return NextResponse.json(questions);
   } catch (error) {
     console.error('Failed to get questions:', error);
@@ -29,9 +40,6 @@ export async function POST(request, { params }) {
     if (!projectId || !question || !chunkId) {
       return NextResponse.json({ error: 'Missing necessary parameters' }, { status: 400 });
     }
-
-    // 获取所有问题
-    const questionsData = await getQuestions(projectId);
 
     // 检查问题是否已存在
     const existingQuestion = await isExistByQuestion(question);

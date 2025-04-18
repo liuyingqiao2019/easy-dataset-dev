@@ -51,6 +51,7 @@ model Questions {
   chunkId   String
   question  String
   label     String
+  answered  Boolean  @default(false)
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
 
@@ -96,7 +97,7 @@ model LlmModels {
 
 model ModelConfig {
   id           String   @id @default(uuid())
-  project      Projects @relation(fields: [projectId], references: [id],onDelete: Cascade)
+  project      Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId    String
   providerId   String
   providerName String

@@ -36,7 +36,7 @@ export async function POST(request, { params }) {
     modelConfig.projectId = projectId;
     const res = await saveModelConfig(modelConfig);
 
-    return NextResponse.json({ message: 'Model configuration updated successfully' });
+    return NextResponse.json(res);
   } catch (error) {
     console.error('Error updating model configuration:', error);
     return NextResponse.json({ error: 'Failed to update model configuration' }, { status: 500 });

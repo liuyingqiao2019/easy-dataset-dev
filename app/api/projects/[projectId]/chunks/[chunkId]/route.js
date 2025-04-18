@@ -45,7 +45,6 @@ export async function DELETE(request, { params }) {
 // 编辑文本块内容
 export async function PATCH(request, { params }) {
   try {
-
     const { projectId, chunkId } = params;
 
     // 验证参数
@@ -67,7 +66,6 @@ export async function PATCH(request, { params }) {
 
     let res = await updateChunkById(chunkId, { content });
     return NextResponse.json(res);
-
   } catch (error) {
     console.error('编辑文本块失败:', error);
     return NextResponse.json({ error: error.message || '编辑文本块失败' }, { status: 500 });

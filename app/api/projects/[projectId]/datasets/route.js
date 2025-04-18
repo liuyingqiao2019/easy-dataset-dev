@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getQuestionById } from '@/lib/db/questions';
+import { getQuestionById, updateQuestion } from '@/lib/db/questions';
 import { createDataset, deleteDataset, getDatasets, getDatasetsById, updateDataset } from '@/lib/db/datasets';
 import { getProject } from '@/lib/db/projects';
 import getAnswerPrompt from '@/lib/llm/prompts/answer';
@@ -98,6 +98,9 @@ export async function POST(request, { params }) {
     if (cot) {
       // 为了性能考虑，这里异步优化
       optimizeCot(question.question, answer, cot, language, llmClient, datasetId, projectId);
+    }
+    if (dataset) {
+      await updateQuestion({ id: questionId, answered: true });
     }
     console.log(datasets.length, 'Successfully generated dataset', question.question);
 

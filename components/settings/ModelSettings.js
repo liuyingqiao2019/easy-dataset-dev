@@ -37,7 +37,7 @@ import { toast } from 'sonner';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useAtom } from 'jotai';
-import { modelConfigListAtom } from '@/lib/store';
+import { modelConfigListAtom, selectedModelInfoAtom } from '@/lib/store';
 
 export default function ModelSettings({ projectId }) {
   const { t } = useTranslation();
@@ -50,6 +50,7 @@ export default function ModelSettings({ projectId }) {
   const [selectedProvider, setSelectedProvider] = useState({});
   const [models, setModels] = useState([]);
   const [modelConfigList, setModelConfigList] = useAtom(modelConfigListAtom);
+  const [selectedModelInfo, setSelectedModelInfo] = useAtom(selectedModelInfoAtom);
   const [modelConfigForm, setModelConfigForm] = useState({
     id: '',
     providerId: '',
@@ -227,10 +228,12 @@ export default function ModelSettings({ projectId }) {
 
   // 保存模型
   const handleSaveModel = () => {
-    console.log('handleSaveModel', modelConfigForm);
     axios
       .post(`/api/projects/${projectId}/model-config`, modelConfigForm)
       .then(response => {
+        if (selectedModelInfo.id === response.data.id) {
+          setSelectedModelInfo(response.data);
+        }
         toast.success(t('settings.saveSuccess'));
         getModelConfigList();
         handleCloseModelDialog();
