@@ -166,7 +166,8 @@ export default function ModelSettings({ projectId }) {
         return null;
       }
       let url = modelConfigForm.endpoint.replace(/\/$/, ''); // 去除末尾的斜杠
-      const providerId = selectedProvider.id;
+      const providerId = modelConfigForm.providerId;
+      console.log(providerId, 'getNewModels providerId');
       url += providerId === 'ollama' ? '/tags' : '/models';
       const res = await axios.get(url, {
         headers: {
@@ -190,7 +191,7 @@ export default function ModelSettings({ projectId }) {
       if (err.response && err.response.status === 401) {
         toast.error('API Key 错误，请检查后重试');
       } else {
-        toast.error('获取模型列表失败');
+        toast.error('刷新模型列表失败');
       }
       return null;
     }
@@ -199,7 +200,9 @@ export default function ModelSettings({ projectId }) {
   // 打开模型对话框
   const handleOpenModelDialog = (model = null) => {
     if (model) {
+      console.log('handleOpenModelDialog', model);
       setModelConfigForm(model);
+      getProviderModels(model.providerId);
     } else {
       setModelConfigForm({
         ...modelConfigForm,

@@ -88,11 +88,15 @@ export async function POST(request, { params }) {
       projectId: projectId,
       question: question.question,
       answer: answer,
-      chunkId: question.chunkId,
       model: model.modelName,
       cot: '',
       questionLabel: question.label || null
     };
+
+    let chunkData = await getChunkById(question.chunkId);
+    datasets.chunkName = chunkData.name;
+    datasets.chunkContent = chunkData.content;
+    datasets.questionId = question.id;
 
     let dataset = await createDataset(datasets);
     if (cot) {
@@ -201,7 +205,7 @@ export async function PATCH(request) {
       );
     }
     // 获取所有数据集
-    let dataset = await getDatasetsById(datasetId, true);
+    let dataset = await getDatasetsById(datasetId);
     if (!dataset) {
       return NextResponse.json(
         {

@@ -74,6 +74,7 @@ export default function Navbar({ projects = [], currentProject }) {
     toast.promise(fetchData(), {
       loading: '数据同步中',
       success: data => {
+        window.location.href = '/';
         if (data === 0) return '暂无数据需要同步';
         if (data > 0) return `${data}条数据同步成功`;
       },

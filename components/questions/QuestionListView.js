@@ -129,9 +129,9 @@ export default function QuestionListView({
                 <Box sx={{ ml: 1, flex: 1, mr: 2 }}>
                   <Typography variant="body2">
                     {question.question}
-                    {question.dataSites && question.dataSites.length > 0 ? (
+                    {question.datasetCount > 0 ? (
                       <Chip
-                        label={t('datasets.answerCount', { count: question.dataSites.length })}
+                        label={t('datasets.answerCount', { count: question.datasetCount })}
                         size="small"
                         color="primary"
                         variant="outlined"

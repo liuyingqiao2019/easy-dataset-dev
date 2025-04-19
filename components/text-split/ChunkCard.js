@@ -197,11 +197,11 @@ export default function ChunkCard({
                       '& .MuiChip-label': { px: 1 }
                     }}
                   />
-                  {hasQuestions && (
+                  {chunk.Questions.length > 0 && (
                     <Tooltip
                       title={
-                        <Box sx={{ p: 1 }}>
-                          {chunk.questions.map((q, index) => (
+                        <Box sx={{ p: 1 }} style={{ maxHeight: '200px', overflow: 'auto' }}>
+                          {chunk.Questions.map((q, index) => (
                             <Typography key={index} variant="body2" sx={{ mb: 0.5 }}>
                               {index + 1}. {q.question}
                             </Typography>
@@ -212,7 +212,7 @@ export default function ChunkCard({
                       placement="top"
                     >
                       <Chip
-                        label={`${t('textSplit.generatedQuestions', { count: chunk.questions.length })}`}
+                        label={`${t('textSplit.generatedQuestions', { count: chunk.Questions.length })}`}
                         size="small"
                         color="success"
                         variant="outlined"

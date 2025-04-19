@@ -44,34 +44,39 @@ model Chunks {
 }
 
 model Questions {
-  id        String   @id @default(uuid())
-  project   Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id        String     @id @default(uuid())
+  project   Projects   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
-  chunk     Chunks   @relation(fields: [chunkId], references: [id])
+  chunk     Chunks     @relation(fields: [chunkId], references: [id])
   chunkId   String
   question  String
   label     String
-  answered  Boolean  @default(false)
-  createAt  DateTime @default(now())
-  updateAt  DateTime @updatedAt
+  answered  Boolean    @default(false)
+  createAt  DateTime   @default(now())
+  updateAt  DateTime   @updatedAt
+  Datasets  Datasets[]
 
   @@index([projectId])
 }
 
 model Datasets {
-  id            String   @id @default(uuid())
-  project       Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id            String    @id @default(uuid())
+  project       Projects  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId     String
+  questions     Questions @relation(fields: [questionId], references: [id])
+  questionId    String
   question      String
   answer        String
-  chunk         Chunks   @relation(fields: [chunkId], references: [id])
-  chunkId       String
+  chunkName     String
+  chunkContent  String
   model         String
   questionLabel String
   cot           String
-  confirmed     Boolean  @default(false)
-  createAt      DateTime @default(now())
-  updateAt      DateTime @updatedAt
+  confirmed     Boolean   @default(false)
+  createAt      DateTime  @default(now())
+  updateAt      DateTime  @updatedAt
+  Chunks        Chunks?   @relation(fields: [chunksId], references: [id])
+  chunksId      String?
 
   @@index([projectId])
 }

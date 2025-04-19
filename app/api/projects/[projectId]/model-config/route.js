@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getModelConfigByProjectId, saveModelConfig } from '@/lib/db/model-config';
+import { createInitModelConfig, getModelConfigByProjectId, saveModelConfig } from '@/lib/db/model-config';
+import { DEFAULT_MODEL_SETTINGS, MODEL_PROVIDERS } from '@/constant/model';
 
 // 获取模型配置列表
 export async function GET(request, { params }) {
@@ -10,6 +11,28 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'The project ID cannot be empty' }, { status: 400 });
     }
     let modelConfigList = await getModelConfigByProjectId(projectId);
+    if (!modelConfigList || modelConfigList.length === 0) {
+      let insertModelConfigList = [];
+      MODEL_PROVIDERS.forEach(item => {
+        let data = {
+          projectId: projectId,
+          providerId: item.id,
+          providerName: item.name,
+          endpoint: item.defaultEndpoint,
+          apiKey: '',
+          modelId: item.defaultModels.length > 0 ? item.defaultModels[0] : '',
+          modelName: item.defaultModels.length > 0 ? item.defaultModels[0] : '',
+          type: 'text',
+          temperature: DEFAULT_MODEL_SETTINGS.temperature,
+          maxTokens: DEFAULT_MODEL_SETTINGS.maxTokens,
+          topK: 0,
+          topP: 0,
+          status: 1
+        };
+        insertModelConfigList.push(data);
+      });
+      modelConfigList = await createInitModelConfig(insertModelConfigList);
+    }
     return NextResponse.json(modelConfigList);
   } catch (error) {
     console.error('Error obtaining model configuration:', error);

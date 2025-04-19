@@ -365,19 +365,10 @@ export default function DatasetDetailsPage({ params }) {
   };
 
   // 查看文本块详情
-  const handleViewChunk = async chunkId => {
+  const handleViewChunk = async chunkContent => {
     try {
+      setViewChunk(chunkContent);
       setViewDialogOpen(true);
-      setViewChunk(null);
-
-      const response = await fetch(`/api/projects/${projectId}/chunks/${chunkId}`);
-
-      if (!response.ok) {
-        throw new Error(t('textSplit.fetchChunkFailed'));
-      }
-
-      const data = await response.json();
-      setViewChunk(data);
     } catch (error) {
       console.error(t('textSplit.fetchChunkError'), error);
       setSnackbar({
@@ -576,10 +567,10 @@ export default function DatasetDetailsPage({ params }) {
             />
             <Tooltip title={t('textSplit.viewChunk')}>
               <Chip
-                label={`${t('datasets.chunkId')}: ${currentDataset.chunk.name}`}
+                label={`${t('datasets.chunkId')}: ${currentDataset.chunkName}`}
                 variant="outlined"
                 color="info"
-                onClick={() => handleViewChunk(currentDataset.chunkId)}
+                onClick={() => handleViewChunk(currentDataset.chunkContent)}
                 sx={{ cursor: 'pointer' }}
               />
             </Tooltip>

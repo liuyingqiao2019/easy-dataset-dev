@@ -32,7 +32,7 @@ export async function POST(request, { params }) {
     }
 
     // 获取数据集内容
-    const dataset = await getDatasetsById(datasetId, false);
+    const dataset = await getDatasetsById(datasetId);
     if (!dataset) {
       return NextResponse.json({ error: 'Dataset does not exist' }, { status: 404 });
     }
