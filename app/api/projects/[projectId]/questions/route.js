@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getQuestions, isExistByQuestion, saveQuestions, updateQuestion } from '@/lib/db/questions';
+import { getQuestions, getQuestionsIds, isExistByQuestion, saveQuestions, updateQuestion } from '@/lib/db/questions';
 import { getDatasetsCountByQuestionId } from '@/lib/db/datasets';
 
 // 获取项目的所有问题
@@ -15,6 +15,11 @@ export async function GET(request, { params }) {
     let answered = undefined;
     if (status === 'answered') answered = true;
     if (status === 'unanswered') answered = false;
+    let selectedAll = searchParams.get('selectedAll');
+    if (selectedAll) {
+      let data = await getQuestionsIds(projectId, answered, searchParams.get('input'));
+      return NextResponse.json(data);
+    }
     // 获取问题列表
     const questions = await getQuestions(
       projectId,
@@ -23,6 +28,7 @@ export async function GET(request, { params }) {
       answered,
       searchParams.get('input')
     );
+
     return NextResponse.json(questions);
   } catch (error) {
     console.error('Failed to get questions:', error);

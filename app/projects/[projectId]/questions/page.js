@@ -43,6 +43,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useAtomValue } from 'jotai/index';
 import { selectedModelInfoAtom } from '@/lib/store';
 import { useGenerateDataset } from '@/hooks/useGenerateDataset';
+import request from '@/lib/util/request';
 
 export default function QuestionsPage({ params }) {
   const { t } = useTranslation();
@@ -152,31 +153,18 @@ export default function QuestionsPage({ params }) {
   };
 
   // 全选/取消全选
-  const handleSelectAll = () => {
+  const handleSelectAll = async () => {
     if (selectedQuestions.length > 0) {
       setSelectedQuestions([]);
     } else {
-      const filteredQuestions = questions.data.filter(question => {
-        const matchesSearch =
-          searchTerm === '' ||
-          question.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (question.label && question.label.toLowerCase().includes(searchTerm.toLowerCase()));
-
-        let matchesAnswerFilter = true;
-        if (answerFilter === 'answered') {
-          matchesAnswerFilter = question.dataSites && question.dataSites.length > 0;
-        } else if (answerFilter === 'unanswered') {
-          matchesAnswerFilter = !question.dataSites || question.dataSites.length === 0;
-        }
-        return matchesSearch && matchesAnswerFilter;
-      });
-
-      const filteredQuestionKeys = filteredQuestions.map(question => question.id);
-      setSelectedQuestions(filteredQuestionKeys);
+      const response = await axios.get(
+        `/api/projects/${projectId}/questions?status=${answerFilter}&input=${searchTerm}&selectedAll=1`
+      );
+      setSelectedQuestions(response.data.map(dataset => dataset.id));
     }
   };
 
-  const handleBatchGenerateAnswers = async () => {
+  const handleBatchGenerateAnswers_backup = async () => {
     if (selectedQuestions.length === 0) {
       toast.warning(t('questions.noQuestionsSelected'));
       return;
@@ -184,6 +172,172 @@ export default function QuestionsPage({ params }) {
     let data = questions.data.filter(question => selectedQuestions.includes(question.id));
     await generateMultipleDataset(projectId, data);
     await getQuestionList();
+  };
+
+  // 并行处理数组的辅助函数，限制并发数
+  const processInParallel = async (items, processFunction, concurrencyLimit) => {
+    const results = [];
+    const inProgress = new Set();
+    const queue = [...items];
+
+    while (queue.length > 0 || inProgress.size > 0) {
+      // 如果有空闲槽位且队列中还有任务，启动新任务
+      while (inProgress.size < concurrencyLimit && queue.length > 0) {
+        const item = queue.shift();
+        const promise = processFunction(item).then(result => {
+          inProgress.delete(promise);
+          return result;
+        });
+        inProgress.add(promise);
+        results.push(promise);
+      }
+
+      // 等待其中一个任务完成
+      if (inProgress.size > 0) {
+        await Promise.race(inProgress);
+      }
+    }
+
+    return Promise.all(results);
+  };
+
+  const handleBatchGenerateAnswers = async () => {
+    if (selectedQuestions.length === 0) {
+      toast.warning(t('questions.noQuestionsSelected'));
+      return;
+    }
+
+    if (!model) {
+      toast.warning(t('models.configNotFound'));
+      return;
+    }
+
+    try {
+      setProgress({
+        total: selectedQuestions.length,
+        completed: 0,
+        percentage: 0,
+        datasetCount: 0
+      });
+
+      // 然后设置处理状态为真，确保进度条显示
+      setProcessing(true);
+
+      toast.info(t('questions.batchGenerateStart', { count: selectedQuestions.length }));
+
+      // 单个问题处理函数
+      const processQuestion = async questionId => {
+        try {
+          console.log('开始生成数据集:', { questionId });
+          const language = i18n.language === 'zh-CN' ? '中文' : 'en';
+          // 调用API生成数据集
+          const response = await request(`/api/projects/${projectId}/datasets`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              questionId,
+              model,
+              language
+            })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error(t('datasets.generateError'), errorData.error || t('datasets.generateFailed'));
+
+            // 更新进度状态（即使失败也计入已处理）
+            setProgress(prev => {
+              const completed = prev.completed + 1;
+              const percentage = Math.round((completed / prev.total) * 100);
+
+              return {
+                ...prev,
+                completed,
+                percentage
+              };
+            });
+
+            return { success: false, questionId, error: errorData.error || t('datasets.generateFailed') };
+          }
+
+          const data = await response.json();
+
+          // 更新进度状态
+          setProgress(prev => {
+            const completed = prev.completed + 1;
+            const percentage = Math.round((completed / prev.total) * 100);
+            const datasetCount = prev.datasetCount + 1;
+
+            return {
+              ...prev,
+              completed,
+              percentage,
+              datasetCount
+            };
+          });
+
+          console.log(`数据集生成成功: ${questionId}`);
+          return { success: true, questionId, data: data.dataset };
+        } catch (error) {
+          console.error('生成数据集失败:', error);
+
+          // 更新进度状态（即使失败也计入已处理）
+          setProgress(prev => {
+            const completed = prev.completed + 1;
+            const percentage = Math.round((completed / prev.total) * 100);
+
+            return {
+              ...prev,
+              completed,
+              percentage
+            };
+          });
+
+          return { success: false, questionId, error: error.message };
+        }
+      };
+
+      // 并行处理所有问题，最多同时处理2个
+      const results = await processInParallel(selectedQuestions, processQuestion, taskSettings.concurrencyLimit);
+
+      // 刷新数据
+      getQuestionList();
+
+      // 处理完成后设置结果消息
+      const successCount = results.filter(r => r.success).length;
+      const failCount = results.filter(r => !r.success).length;
+
+      if (failCount > 0) {
+        toast.warning(
+          t('datasets.partialSuccess', {
+            successCount,
+            total: selectedQuestions.length,
+            failCount
+          })
+        );
+      } else {
+        toast.success(t('common.success', { successCount }));
+      }
+    } catch (error) {
+      console.error('生成数据集出错:', error);
+      toast.error(error.message || '生成数据集失败');
+    } finally {
+      // 延迟关闭处理状态，确保用户可以看到完成的进度
+      setTimeout(() => {
+        setProcessing(false);
+        // 再次延迟重置进度状态
+        setTimeout(() => {
+          setProgress({
+            total: 0,
+            completed: 0,
+            percentage: 0,
+            datasetCount: 0
+          });
+        }, 500);
+      }, 2000); // 延迟关闭处理状态，让用户看到完成的进度
+    }
   };
 
   // 处理删除问题

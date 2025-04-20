@@ -32,6 +32,10 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/lib/i18n';
 import ChunkViewDialog from '@/components/text-split/ChunkViewDialog';
+import { useAtomValue } from 'jotai/index';
+import { selectedModelInfoAtom } from '@/lib/store';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 // 编辑区域组件
 const EditableField = ({ label, value, multiline = true, editing, onEdit, onChange, onSave, onCancel, onOptimize }) => {
@@ -159,48 +163,23 @@ export default function DatasetDetailsPage({ params }) {
   });
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewChunk, setViewChunk] = useState(null);
+  const [datasetsAllCount, setDatasetsAllCount] = useState(0);
+  const [datasetsConfirmCount, setDatasetsConfirmCount] = useState(0);
   const theme = useTheme();
-
+  const model = useAtomValue(selectedModelInfoAtom);
   const { t } = useTranslation();
 
-  // 从本地存储获取模型参数
-  const getModelFromLocalStorage = () => {
-    if (typeof window === 'undefined') return null;
-
-    try {
-      let model = null;
-
-      // 尝试从 localStorage 获取完整的模型信息
-      const modelInfoStr = localStorage.getItem('selectedModelInfo');
-
-      if (modelInfoStr) {
-        try {
-          model = JSON.parse(modelInfoStr);
-        } catch (e) {
-          console.error('解析模型信息失败', e);
-          return null;
-        }
-      }
-
-      return model;
-    } catch (error) {
-      console.error('获取模型配置失败', error);
-      return null;
-    }
-  };
-
-  // 获取所有数据集
+  // 获取数据集详情
   const fetchDatasets = async () => {
     try {
-      const response = await fetch(`/api/projects/${projectId}/datasets`);
+      const response = await fetch(`/api/projects/${projectId}/datasets/${datasetId}`);
       if (!response.ok) throw new Error(t('datasets.fetchFailed'));
       const data = await response.json();
-      setDatasets(data);
-      // 找到当前数据集
-      const currentDataset = data.find(d => d.id === datasetId);
-      setCurrentDataset(currentDataset);
-      setCotValue(currentDataset.cot);
-      setAnswerValue(currentDataset.answer);
+      setCurrentDataset(data.datasets);
+      setCotValue(data.datasets?.cot);
+      setAnswerValue(data.datasets?.answer);
+      setDatasetsAllCount(data.total);
+      setDatasetsConfirmCount(data.confirmedCount);
     } catch (error) {
       setSnackbar({
         open: true,
@@ -255,17 +234,13 @@ export default function DatasetDetailsPage({ params }) {
   }, [projectId, datasetId]);
 
   // 导航到其他数据集
-  const handleNavigate = direction => {
-    const currentIndex = datasets.findIndex(d => d.id === datasetId);
-    if (currentIndex === -1) return;
-
-    const newIndex =
-      direction === 'prev'
-        ? (currentIndex - 1 + datasets.length) % datasets.length
-        : (currentIndex + 1) % datasets.length;
-
-    const newDataset = datasets[newIndex];
-    router.push(`/projects/${projectId}/datasets/${newDataset.id}`);
+  const handleNavigate = async direction => {
+    const response = await axios.get(`/api/projects/${projectId}/datasets/${datasetId}?operateType=${direction}`);
+    if (response.data) {
+      router.push(`/projects/${projectId}/datasets/${response.data.id}`);
+    } else {
+      toast.warning(`已经是${direction === 'next' ? '最后' : '第'}一条数据了`);
+    }
   };
 
   // 保存编辑
@@ -387,7 +362,6 @@ export default function DatasetDetailsPage({ params }) {
 
   // 提交优化请求
   const handleOptimize = async advice => {
-    const model = getModelFromLocalStorage();
     if (!model) {
       setSnackbar({
         open: true,
@@ -474,9 +448,9 @@ export default function DatasetDetailsPage({ params }) {
             <Typography variant="h6">{t('datasets.datasetDetail')}</Typography>
             <Typography variant="body2" color="text.secondary">
               {t('datasets.stats', {
-                total: datasets.length,
-                confirmed: datasets.filter(d => d.confirmed).length,
-                percentage: Math.round((datasets.filter(d => d.confirmed).length / datasets.length) * 100)
+                total: datasetsAllCount,
+                confirmed: datasetsConfirmCount,
+                percentage: ((datasetsConfirmCount / datasetsAllCount) * 100).toFixed(2)
               })}
             </Typography>
           </Box>

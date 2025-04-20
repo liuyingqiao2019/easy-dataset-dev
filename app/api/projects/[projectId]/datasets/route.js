@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getQuestionById, updateQuestion } from '@/lib/db/questions';
-import { createDataset, deleteDataset, getDatasets, getDatasetsById, updateDataset } from '@/lib/db/datasets';
+import {
+  createDataset,
+  deleteDataset,
+  getDatasets,
+  getDatasetsById,
+  getDatasetsIds,
+  updateDataset
+} from '@/lib/db/datasets';
 import { getProject } from '@/lib/db/projects';
 import getAnswerPrompt from '@/lib/llm/prompts/answer';
 import getAnswerEnPrompt from '@/lib/llm/prompts/answerEn';
@@ -129,19 +136,30 @@ export async function POST(request, { params }) {
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
-
+    const { searchParams } = new URL(request.url);
     // 验证项目ID
     if (!projectId) {
-      return NextResponse.json(
-        {
-          error: '项目ID不能为空'
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '项目ID不能为空' }, { status: 400 });
+    }
+    let status = searchParams.get('status');
+    let confirmed = undefined;
+    if (status === 'confirmed') confirmed = true;
+    if (status === 'unconfirmed') confirmed = false;
+
+    let selectedAll = searchParams.get('selectedAll');
+    if (selectedAll) {
+      let data = await getDatasetsIds(projectId, confirmed, searchParams.get('input'));
+      return NextResponse.json(data);
     }
 
     // 获取数据集
-    const datasets = await getDatasets(projectId);
+    const datasets = await getDatasets(
+      projectId,
+      parseInt(searchParams.get('page')),
+      parseInt(searchParams.get('size')),
+      confirmed,
+      searchParams.get('input')
+    );
 
     return NextResponse.json(datasets);
   } catch (error) {

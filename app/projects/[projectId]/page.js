@@ -5,15 +5,17 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useSetAtom } from 'jotai/index';
-import { modelConfigListAtom } from '@/lib/store';
+import { modelConfigListAtom, selectedModelInfoAtom } from '@/lib/store';
 
 export default function ProjectPage({ params }) {
   const router = useRouter();
   const setConfigList = useSetAtom(modelConfigListAtom);
+  const setSelectedModelInfo = useSetAtom(selectedModelInfoAtom);
   const { projectId } = params;
 
   // 默认重定向到文本分割页面
   useEffect(() => {
+    setSelectedModelInfo(null);
     getModelConfigList(projectId);
     router.push(`/projects/${projectId}/text-split`);
   }, [projectId, router]);

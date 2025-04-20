@@ -234,7 +234,7 @@ export default function ModelSettings({ projectId }) {
     axios
       .post(`/api/projects/${projectId}/model-config`, modelConfigForm)
       .then(response => {
-        if (selectedModelInfo.id === response.data.id) {
+        if (selectedModelInfo && selectedModelInfo.id === response.data.id) {
           setSelectedModelInfo(response.data);
         }
         toast.success(t('settings.saveSuccess'));

@@ -3,15 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import { FormControl, Select, MenuItem, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useAtomValue } from 'jotai/index';
-import { modelConfigListAtom } from '@/lib/store';
+import { useAtom, useAtomValue } from 'jotai/index';
+import { modelConfigListAtom, selectedModelInfoAtom } from '@/lib/store';
 
 export default function ModelSelect({ size = 'small', minWidth = 180 }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const models = useAtomValue(modelConfigListAtom);
-  let selectedModelId = localStorage.getItem('selectedModelId');
-  const [selectedModel, setSelectedModel] = useState(selectedModelId ? selectedModelId : models[0]?.id || '');
+  const [selectedModelInfo, setSelectedModelInfo] = useAtom(selectedModelInfoAtom);
+  const [selectedModel, setSelectedModel] = useState(selectedModelInfo ? selectedModelInfo : models[0]?.id || '');
   const handleModelChange = event => {
     if (!event || !event.target) return;
     const newModelId = event.target.value;
@@ -21,11 +21,11 @@ export default function ModelSelect({ size = 'small', minWidth = 180 }) {
     if (selectedModelObj) {
       setSelectedModel(newModelId);
       // 将完整的模型信息存储到 localStorage
-      localStorage.setItem('selectedModelId', newModelId);
-      localStorage.setItem('selectedModelInfo', JSON.stringify(selectedModelObj));
+      setSelectedModelInfo(selectedModelObj);
     } else {
-      // 如果没有找到对应模型，则只存储ID
-      localStorage.removeItem('selectedModelInfo');
+      setSelectedModelInfo({
+        id: newModelId
+      });
     }
   };
 

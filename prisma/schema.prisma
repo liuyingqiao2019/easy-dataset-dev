@@ -38,7 +38,6 @@ model Chunks {
   createAt  DateTime    @default(now())
   updateAt  DateTime    @updatedAt
   Questions Questions[]
-  Datasets  Datasets[]
 
   @@index([projectId])
 }
@@ -54,7 +53,6 @@ model Questions {
   answered  Boolean    @default(false)
   createAt  DateTime   @default(now())
   updateAt  DateTime   @updatedAt
-  Datasets  Datasets[]
 
   @@index([projectId])
 }
@@ -63,7 +61,6 @@ model Datasets {
   id            String    @id @default(uuid())
   project       Projects  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId     String
-  questions     Questions @relation(fields: [questionId], references: [id])
   questionId    String
   question      String
   answer        String
@@ -75,8 +72,6 @@ model Datasets {
   confirmed     Boolean   @default(false)
   createAt      DateTime  @default(now())
   updateAt      DateTime  @updatedAt
-  Chunks        Chunks?   @relation(fields: [chunksId], references: [id])
-  chunksId      String?
 
   @@index([projectId])
 }
