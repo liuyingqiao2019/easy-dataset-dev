@@ -23,8 +23,8 @@
     "electron-build-win": "pnpm clean-dist && next build && electron-builder --win",
     "electron-build-linux": "pnpm clean-dist && next build && electron-builder --linux",
     "docker": "docker build -t easy-dataset .",
-    "db:push": "prisma db push",
     "db:studio": "prisma studio"
+    "prettier": "npx prettier --write ."
   },
   "bin": "desktop/server.js",
   "pkg": {
