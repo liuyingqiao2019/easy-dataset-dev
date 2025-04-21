@@ -19,9 +19,10 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import MarkdownViewDialog from '../MarkdownViewDialog';
+
 export default function FileList({
   theme,
-  files = [],
+  files = {},
   loading = false,
   onDeleteFile,
   sendToFileUploader,
@@ -32,14 +33,13 @@ export default function FileList({
   const [array, setArray] = useState([]);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewContent, setViewContent] = useState(null);
-
-  const handleCheckboxChange = (fileName, isChecked) => {
+  const handleCheckboxChange = (fileId, isChecked) => {
     if (isChecked) {
-      array.push(fileName);
+      array.push(fileId);
       setArray(array);
       sendToFileUploader(array);
     } else {
-      const newArray = array.filter(item => item !== fileName);
+      const newArray = array.filter(item => item !== fileId);
       setArray(newArray);
       sendToFileUploader(newArray);
     }
@@ -49,14 +49,14 @@ export default function FileList({
     setViewDialogOpen(false);
   };
 
-  const handleViewContent = async fileName => {
-    getFileContent(fileName);
+  const handleViewContent = async fileId => {
+    getFileContent(fileId);
     setViewDialogOpen(true);
   };
 
-  const handleDownload = async fileName => {
+  const handleDownload = async (fileId, fileName) => {
     setPageLoading(true);
-    const text = await getFileContent(fileName);
+    const text = await getFileContent(fileId);
 
     const blob = new Blob([text.content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -74,9 +74,9 @@ export default function FileList({
     setPageLoading(false);
   };
 
-  const getFileContent = async fileName => {
+  const getFileContent = async fileId => {
     try {
-      const response = await fetch(`/api/projects/${projectId}/preview/${encodeURIComponent(fileName)}`);
+      const response = await fetch(`/api/projects/${projectId}/preview/${fileId}`);
       if (!response.ok) {
         throw new Error(t('textSplit.fetchChunksFailed'));
       }
@@ -85,6 +85,18 @@ export default function FileList({
       return data;
     } catch (error) {
       console.error(t('textSplit.fetchChunksError'), error);
+    }
+  };
+
+  const formatFileSize = size => {
+    if (size < 1024) {
+      return size + 'B';
+    } else if (size < 1024 * 1024) {
+      return (size / 1024).toFixed(2) + 'KB';
+    } else if (size < 1024 * 1024 * 1024) {
+      return (size / 1024 / 1024).toFixed(2) + 'MB';
+    } else {
+      return (size / 1024 / 1024 / 1024).toFixed(2) + 'GB';
     }
   };
 
@@ -102,14 +114,14 @@ export default function FileList({
       }}
     >
       <Typography variant="subtitle1" gutterBottom>
-        {t('textSplit.uploadedDocuments', { count: files.length })}
+        {t('textSplit.uploadedDocuments', { count: files.total })}
       </Typography>
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress size={24} />
         </Box>
-      ) : files.length === 0 ? (
+      ) : files.total === 0 ? (
         <Box sx={{ p: 4, textAlign: 'center' }}>
           <Typography variant="body2" color="textSecondary">
             {t('textSplit.noFilesUploaded')}
@@ -117,7 +129,7 @@ export default function FileList({
         </Box>
       ) : (
         <List sx={{ maxHeight: '220px', overflow: 'auto', width: '100%' }}>
-          {files.map((file, index) => (
+          {files?.data?.map((file, index) => (
             <Box key={index}>
               <ListItem
                 secondaryAction={
@@ -125,20 +137,20 @@ export default function FileList({
                     <Checkbox
                       sx={{ mr: 1 }} // 添加一些右边距，使复选框和按钮之间有间隔
                       checked={file.checked} // 假设 `file.checked` 是复选框的状态
-                      onChange={e => handleCheckboxChange(file.name, e.target.checked)}
+                      onChange={e => handleCheckboxChange(file.id, e.target.checked)}
                     />
                     <Tooltip title={t('textSplit.viewDetails')}>
-                      <IconButton color="primary" onClick={() => handleViewContent(file.name)}>
+                      <IconButton color="primary" onClick={() => handleViewContent(file.id)}>
                         <VisibilityIcon />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('textSplit.download')}>
-                      <IconButton color="primary" onClick={() => handleDownload(file.name)}>
+                      <IconButton color="primary" onClick={() => handleDownload(file.id, file.fileName)}>
                         <Download />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="删除文献">
-                      <IconButton color="error" onClick={() => onDeleteFile(file.name)}>
+                      <IconButton color="error" onClick={() => onDeleteFile(file.id, file.fileName)}>
                         <DeleteIcon />
                       </IconButton>
                     </Tooltip>
@@ -148,8 +160,8 @@ export default function FileList({
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <FileIcon color="primary" sx={{ mr: 1 }} />
                   <ListItemText
-                    primary={file.name}
-                    secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB · ${new Date(file.createdAt).toLocaleString()}`}
+                    primary={file.fileName}
+                    secondary={`${formatFileSize(file.size)} · ${new Date(file.createAt).toLocaleString()}`}
                   />
                 </Box>
               </ListItem>

@@ -24,6 +24,9 @@ import DomainAnalysis from '@/components/text-split/DomainAnalysis';
 import request from '@/lib/util/request';
 import { processInParallel } from '@/lib/util/async';
 import useTaskSettings from '@/hooks/useTaskSettings';
+import { useAtomValue, useSetAtom } from 'jotai/index';
+import { selectedModelInfoAtom } from '@/lib/store';
+import axios from 'axios';
 
 export default function TextSplitPage({ params }) {
   const { t } = useTranslation();
@@ -41,7 +44,7 @@ export default function TextSplitPage({ params }) {
   const [pdfStrategy, setPdfStrategy] = useState('default');
   const [questionFilter, setQuestionFilter] = useState('all'); // 'all', 'generated', 'ungenerated'
   const [selectedViosnModel, setSelectedViosnModel] = useState('');
-
+  let selectedModelInfo = useAtomValue(selectedModelInfoAtom);
   // 进度状态
   const [progress, setProgress] = useState({
     total: 0, // 总共选择的文本块数量
@@ -94,7 +97,7 @@ export default function TextSplitPage({ params }) {
   };
 
   // 处理文件上传成功
-  const handleUploadSuccess = async (fileNames, model, pdfFiles) => {
+  const handleUploadSuccess = async (fileNames, pdfFiles) => {
     console.log(t('textSplit.fileUploadSuccess'), fileNames);
     //上传完处理PDF文件
     try {
@@ -153,12 +156,12 @@ export default function TextSplitPage({ params }) {
 
     // 如果有文件上传成功，自动处理第一个文件
     if (fileNames && fileNames.length > 0) {
-      handleSplitText(fileNames[0], model);
+      handleSplitText(fileNames[0], selectedModelInfo);
     }
   };
 
   // 处理文本分割
-  const handleSplitText = async (fileName, model) => {
+  const handleSplitText = async fileName => {
     try {
       setProcessing(true);
       const language = i18n.language === 'zh-CN' ? '中文' : 'en';
@@ -167,7 +170,7 @@ export default function TextSplitPage({ params }) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ fileName, model, language })
+        body: JSON.stringify({ fileName, selectedModelInfo, language })
       });
 
       if (!response.ok) {
@@ -249,19 +252,7 @@ export default function TextSplitPage({ params }) {
         questionCount: 0
       });
 
-      let model = null;
-
-      // 尝试从 localStorage 获取完整的模型信息
-      const modelInfoStr = localStorage.getItem('selectedModelInfo');
-
-      if (modelInfoStr) {
-        try {
-          model = JSON.parse(modelInfoStr);
-        } catch (e) {
-          console.error('解析模型信息出错:', e);
-          // 继续执行，将在下面尝试获取模型信息
-        }
-      }
+      let model = selectedModelInfo;
 
       // 如果仍然没有模型信息，抛出错误
       if (!model) {
@@ -411,7 +402,7 @@ export default function TextSplitPage({ params }) {
       setProcessing(true);
       setError(null);
 
-      const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`, {
+      const response = await fetch(`/api/projects/${projectId}/chunks/${chunkId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -442,21 +433,7 @@ export default function TextSplitPage({ params }) {
   // 处理文件删除
   const handleFileDeleted = (fileName, filesCount) => {
     console.log(t('textSplit.fileDeleted', { fileName }));
-    // 从 localStorage 获取当前选择的模型信息
-    let selectedModelInfo = null;
 
-    // 尝试从 localStorage 获取完整的模型信息
-    const modelInfoStr = localStorage.getItem('selectedModelInfo');
-
-    if (modelInfoStr) {
-      try {
-        selectedModelInfo = JSON.parse(modelInfoStr);
-      } catch (e) {
-        throw new Error(t('textSplit.modelInfoParseError'));
-      }
-    } else {
-      throw new Error(t('textSplit.selectModelFirst'));
-    }
     //如果多个文件的情况下，删除的不是最后一个文件，就复用handleSplitText重新构建领域树
     if (filesCount > 1) {
       handleSplitText(['rebuildToc.md'], selectedModelInfo);
@@ -499,20 +476,11 @@ export default function TextSplitPage({ params }) {
 
   const handleSelected = array => {
     if (array.length > 0) {
-      let selectedChunks = [];
-      for (let i = 0; i < array.length; i++) {
-        const name = array[i].replace(/\.md$/, '');
-        console.log(name);
-        const tempChunks = chunks.filter(item => item.id.includes(name));
-        tempChunks.forEach(item => {
-          selectedChunks.push(item);
-        });
-      }
-      setShowChunks(selectedChunks);
-      console.log(selectedChunks);
+      axios.post(`/api/projects/${projectId}/chunks`, { array }).then(response => {
+        setChunks(response.data);
+      });
     } else {
-      const allChunks = chunks;
-      setShowChunks(allChunks);
+      fetchChunks();
     }
   };
 

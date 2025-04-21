@@ -3,8 +3,8 @@ import { getQuestionById, updateQuestion } from '@/lib/db/questions';
 import {
   createDataset,
   deleteDataset,
-  getDatasets,
   getDatasetsById,
+  getDatasetsByPagination,
   getDatasetsIds,
   updateDataset
 } from '@/lib/db/datasets';
@@ -153,7 +153,7 @@ export async function GET(request, { params }) {
     }
 
     // 获取数据集
-    const datasets = await getDatasets(
+    const datasets = await getDatasetsByPagination(
       projectId,
       parseInt(searchParams.get('page')),
       parseInt(searchParams.get('size')),

@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getFiles, deleteFile } from '@/lib/db/texts';
 import { getProject, updateProject } from '@/lib/db/projects';
 import path from 'path';
 import { getProjectRoot, ensureDir } from '@/lib/db/base';
 import { promises as fs } from 'fs';
-import { deleteChunkAndFile } from '@/lib/db/chunks';
+import { delUploadFileInfoById, getUploadFilesPagination } from '@/lib/db/upload-files';
 
 // Replace the deprecated config export with the new export syntax
 export const dynamic = 'force-dynamic';
@@ -22,9 +21,9 @@ export async function GET(request, { params }) {
     }
 
     // 获取文件列表
-    const files = await getFiles(projectId);
+    const files = await getUploadFilesPagination(projectId, 1, 10, '');
 
-    return NextResponse.json({ files });
+    return NextResponse.json(files);
   } catch (error) {
     console.error('Error obtaining file list:', error);
     return NextResponse.json({ error: error.message || 'Error obtaining file list' }, { status: 500 });
@@ -36,14 +35,14 @@ export async function DELETE(request, { params }) {
   try {
     const { projectId } = params;
     const { searchParams } = new URL(request.url);
-    const fileName = searchParams.get('fileName');
+    const fileId = searchParams.get('fileId');
 
     // 验证项目ID和文件名
     if (!projectId) {
       return NextResponse.json({ error: 'The project ID cannot be empty' }, { status: 400 });
     }
 
-    if (!fileName) {
+    if (!fileId) {
       return NextResponse.json({ error: 'The file name cannot be empty' }, { status: 400 });
     }
 
@@ -52,23 +51,8 @@ export async function DELETE(request, { params }) {
     if (!project) {
       return NextResponse.json({ error: 'The project does not exist' }, { status: 404 });
     }
-
-    // 删除文件及相关数据
-    const result = await deleteChunkAndFile(projectId, fileName);
-
-    // 更新项目配置，移除已删除的文件
-    const uploadedFiles = JSON.parse(project.uploadedFiles) || [];
-    const updatedFiles = uploadedFiles.filter(f => f !== fileName);
-
-    await updateProject(projectId, {
-      ...project,
-      uploadedFiles: updatedFiles
-    });
-
-    return NextResponse.json({
-      message: 'File deleted successfully',
-      fileName
-    });
+    await delUploadFileInfoById(fileId);
+    return NextResponse.json({ message: 'File deleted successfully' });
   } catch (error) {
     console.error('Error deleting file:', error);
     return NextResponse.json({ error: error.message || 'Error deleting file' }, { status: 500 });

@@ -28,6 +28,11 @@ export default function ModelSelect({ size = 'small', minWidth = 180 }) {
       });
     }
   };
+  useEffect(() => {
+    if (selectedModelInfo) {
+      setSelectedModel(selectedModelInfo.id);
+    }
+  }, [selectedModelInfo]);
 
   return (
     <FormControl size={size} sx={{ minWidth }}>

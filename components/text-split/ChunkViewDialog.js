@@ -12,7 +12,7 @@ export default function ChunkViewDialog({ open, chunk, onClose }) {
       <DialogContent dividers>
         {chunk ? (
           <Box sx={{ maxHeight: '60vh', overflow: 'auto' }}>
-            <ReactMarkdown>{chunk}</ReactMarkdown>
+            <ReactMarkdown>{chunk.content}</ReactMarkdown>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>

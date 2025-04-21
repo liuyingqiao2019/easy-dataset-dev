@@ -567,7 +567,7 @@ export default function DatasetsPage({ params }) {
   const handleBatchDeleteDataset = async () => {
     setDeleteDialog({
       open: true,
-      datasets: datasets.filter(dataset => selectedIds.includes(dataset.id)),
+      datasets: datasets.data.filter(dataset => selectedIds.includes(dataset.id)),
       batch: true,
       count: selectedIds.length
     });
@@ -594,6 +594,7 @@ export default function DatasetsPage({ params }) {
       if (!dataset) return;
       await handleDelete(dataset);
     }
+    setselectedIds([]);
     // 刷新数据
     getDatasetsList();
     // 关闭确认框

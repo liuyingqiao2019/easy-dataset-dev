@@ -9,6 +9,8 @@
   },
   "homepage": "https://github.com/ConardLi/easy-dataset",
   "scripts": {
+    "db:studio": "prisma studio",
+    "db:push": "prisma db push",
     "dev": "next dev -p 1717",
     "build": "prisma db push && next build",
     "start": "next start -p 1717",
@@ -23,7 +25,6 @@
     "electron-build-win": "pnpm clean-dist && next build && electron-builder --win",
     "electron-build-linux": "pnpm clean-dist && next build && electron-builder --linux",
     "docker": "docker build -t easy-dataset .",
-    "db:studio": "prisma studio",
     "prettier": "npx prettier --write ."
   },
   "bin": "desktop/server.js",
