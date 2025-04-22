@@ -46,33 +46,17 @@ export async function GET(request, { params }) {
       visionModelId: visionModel
     });
 
-    //准换完成后删除pdf文件
-    deleteChunkAndFile(projectId, fileName);
-
-    // 更新项目配置，移除已删除的文件
-    const uploadedFiles = JSON.parse(project.uploadedFiles) || [];
-    const updatedFiles = uploadedFiles.filter(f => f !== fileName);
-    await updateProject(projectId, {
-      ...project,
-      uploadedFiles: updatedFiles
-    });
     //先检查PDF转换是否成功，再将转换后的文件写入配置
     if (!result.success) {
       throw new Error(result.error);
     }
-    //将转换后文件加入到配置中
-    if (!updatedFiles.includes(fileName)) {
-      updatedFiles.push(fileName.replace('.pdf', '.md'));
-    }
     await updateProject(projectId, {
-      ...project,
-      uploadedFiles: updatedFiles
+      ...project
     });
 
     return NextResponse.json({
       projectId,
       project,
-      uploadedFiles: updatedFiles,
       batch_id: result.data
     });
   } catch (error) {

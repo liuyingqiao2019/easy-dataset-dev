@@ -25,18 +25,17 @@ import EditIcon from '@mui/icons-material/Edit';
 import FolderIcon from '@mui/icons-material/Folder';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import { useGenerateDataset } from '@/hooks/useGenerateDataset';
+import axios from 'axios';
 
 /**
  * 问题树视图组件
  * @param {Object} props
- * @param {Array} props.questions - 问题列表
  * @param {Array} props.tags - 标签树
  * @param {Array} props.selectedQuestions - 已选择的问题ID列表
  * @param {Function} props.onSelectQuestion - 选择问题的回调函数
  * @param {Function} props.onDeleteQuestion - 删除问题的回调函数
  */
 export default function QuestionTreeView({
-  questions = [],
   tags = [],
   selectedQuestions = [],
   onSelectQuestion,
@@ -49,9 +48,20 @@ export default function QuestionTreeView({
   const [questionsByTag, setQuestionsByTag] = useState({});
   const [processingQuestions, setProcessingQuestions] = useState({});
   const { generateSingleDataset } = useGenerateDataset();
-
+  const [questions, setQuestions] = useState([]);
   // 初始化时，将所有标签设置为收起状态（而不是展开状态）
   useEffect(() => {
+    async function fetchQuestions() {
+      try {
+        const response = await axios.get(`/api/projects/${projectId}/questions?all=1`);
+        setQuestions(response.data);
+      } catch (error) {
+        console.error('获取问题失败:', error);
+      }
+    }
+
+    fetchQuestions();
+
     const initialExpandedState = {};
     const processTag = tag => {
       // 将默认状态改为 false（收起）而不是 true（展开）

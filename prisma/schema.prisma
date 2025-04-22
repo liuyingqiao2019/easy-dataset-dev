@@ -23,6 +23,7 @@ model Projects {
   Chunks           Chunks[]
   ModelConfig      ModelConfig[]
   UploadFiles      UploadFiles[]
+  Tags             Tags[]
 }
 
 model UploadFiles {
@@ -30,7 +31,7 @@ model UploadFiles {
   project   Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
   fileName  String
-  fileExt  String
+  fileExt   String
   path      String
   size      Int
   md5       String
@@ -53,6 +54,16 @@ model Chunks {
   Questions Questions[]
 
   @@index([projectId])
+}
+
+model Tags {
+  id        String   @id @default(uuid())
+  label     String
+  project   Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  parentId  String?
+  parent    Tags?    @relation("Tags", fields: [parentId], references: [id])
+  children  Tags[]   @relation("Tags")
 }
 
 model Questions {

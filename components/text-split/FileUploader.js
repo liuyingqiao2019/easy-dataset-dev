@@ -180,7 +180,7 @@ export default function FileUploader({
     setError(null);
 
     try {
-      const uploadedFileNames = [];
+      const uploadedFileInfos = [];
 
       for (const file of files) {
         let fileContent;
@@ -219,7 +219,7 @@ export default function FileUploader({
         }
 
         const data = await response.json();
-        uploadedFileNames.push(data.fileName);
+        uploadedFileInfos.push({ fileName: data.fileName, fileId: data.fileId });
       }
 
       setSuccessMessage(t('textSplit.uploadSuccess', { count: files.length }));
@@ -230,7 +230,7 @@ export default function FileUploader({
 
       // 上传成功后，返回文件名列表和选中的模型信息
       if (onUploadSuccess) {
-        await onUploadSuccess(uploadedFileNames, selectModel, pdfFiles);
+        await onUploadSuccess(uploadedFileInfos, pdfFiles);
       }
     } catch (err) {
       setError(err.message || t('textSplit.uploadFailed'));

@@ -544,7 +544,12 @@ export default function DatasetDetailsPage({ params }) {
                 label={`${t('datasets.chunkId')}: ${currentDataset.chunkName}`}
                 variant="outlined"
                 color="info"
-                onClick={() => handleViewChunk(currentDataset.chunkContent)}
+                onClick={() =>
+                  handleViewChunk({
+                    name: currentDataset.chunkName,
+                    content: currentDataset.chunkContent
+                  })
+                }
                 sx={{ cursor: 'pointer' }}
               />
             </Tooltip>

@@ -5,7 +5,7 @@ import getLabelPrompt from '@/lib/llm/prompts/label';
 import getLabelEnPrompt from '@/lib/llm/prompts/labelEn';
 import { deleteFile } from '@/lib/db/texts';
 import { getProject, updateProject } from '@/lib/db/projects';
-import { saveTags, getTags } from '@/lib/db/tags';
+import { saveTags, getTags, batchSaveTags } from '@/lib/db/tags';
 import { deleteChunkAndFile } from '@/lib/db/chunks';
 
 const { extractJsonFromLLMOutput } = require('@/lib/llm/common/util');
@@ -21,7 +21,7 @@ export async function POST(request, { params }) {
     }
 
     // 获取请求体
-    const { fileName, model, language } = await request.json();
+    const { fileName, model, language, fileId } = await request.json();
 
     if (!model) {
       return NextResponse.json({ error: '请选择模型' }, { status: 400 });
@@ -36,7 +36,6 @@ export async function POST(request, { params }) {
 
     // 分割文本
     const result = await splitProjectFile(projectId, fileName);
-
     const { toc } = result;
     const llmClient = new LLMClient(model);
     // 生成领域树
@@ -47,21 +46,14 @@ export async function POST(request, { params }) {
     const tags = extractJsonFromLLMOutput(response);
 
     if (!response || !tags) {
-      // 删除前面生成的文件
-      await deleteChunkAndFile(projectId, fileName);
-      const uploadedFiles = JSON.parse(project.uploadedFiles) || [];
-      const updatedFiles = uploadedFiles.filter(f => f !== fileName);
-      await updateProject(projectId, {
-        ...project,
-        uploadedFiles: updatedFiles
-      });
+      await updateProject(projectId, { ...project });
       return NextResponse.json(
         { error: 'AI analysis failed, please check model configuration, delete file and retry!' },
         { status: 400 }
       );
     }
     console.log(projectId, fileName, 'Domain tree built:', tags);
-    await saveTags(projectId, tags);
+    await batchSaveTags(projectId, tags);
 
     return NextResponse.json({ ...result, tags });
   } catch (error) {

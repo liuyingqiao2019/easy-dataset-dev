@@ -35,7 +35,6 @@ export default function TextSplitPage({ params }) {
   const [chunks, setChunks] = useState([]);
   const [showChunks, setShowChunks] = useState([]);
   const [tocData, setTocData] = useState('');
-  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [pdfProcessing, setPdfProcessing] = useState(false);
@@ -77,11 +76,6 @@ export default function TextSplitPage({ params }) {
         console.log(t('textSplit.fileResultReceived'), data.fileResult);
         // 如果有目录结构，设置目录数据
         setTocData(data.toc);
-      }
-
-      // 如果有标签，设置标签数据
-      if (data.tags) {
-        setTags(data.tags);
       }
     } catch (error) {
       console.error(t('textSplit.fetchChunksError'), error);
@@ -156,7 +150,7 @@ export default function TextSplitPage({ params }) {
 
     // 如果有文件上传成功，自动处理第一个文件
     if (fileNames && fileNames.length > 0) {
-      handleSplitText(fileNames[0], selectedModelInfo);
+      handleSplitText(fileNames[0]);
     }
   };
 
@@ -170,7 +164,7 @@ export default function TextSplitPage({ params }) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ fileName, selectedModelInfo, language })
+        body: JSON.stringify({ fileName, model: selectedModelInfo, language })
       });
 
       if (!response.ok) {
@@ -433,14 +427,7 @@ export default function TextSplitPage({ params }) {
   // 处理文件删除
   const handleFileDeleted = (fileName, filesCount) => {
     console.log(t('textSplit.fileDeleted', { fileName }));
-
-    //如果多个文件的情况下，删除的不是最后一个文件，就复用handleSplitText重新构建领域树
-    if (filesCount > 1) {
-      handleSplitText(['rebuildToc.md'], selectedModelInfo);
-    } else {
-      //删除最后一个文件仅刷新界面即可
-      location.reload();
-    }
+    location.reload();
   };
 
   // 关闭错误提示
@@ -527,7 +514,7 @@ export default function TextSplitPage({ params }) {
         )}
 
         {/* 领域分析标签内容 */}
-        {activeTab === 1 && <DomainAnalysis projectId={projectId} toc={tocData} loading={loading} tags={tags} />}
+        {activeTab === 1 && <DomainAnalysis projectId={projectId} toc={tocData} loading={loading} />}
       </Box>
 
       {/* 加载中蒙版 */}

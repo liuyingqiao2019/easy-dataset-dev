@@ -3,7 +3,13 @@ import { getProject, updateProject } from '@/lib/db/projects';
 import path from 'path';
 import { getProjectRoot, ensureDir } from '@/lib/db/base';
 import { promises as fs } from 'fs';
-import { delUploadFileInfoById, getUploadFilesPagination } from '@/lib/db/upload-files';
+import {
+  checkUploadFileInfoByMD5,
+  createUploadFileInfo,
+  delUploadFileInfoById,
+  getUploadFilesPagination
+} from '@/lib/db/upload-files';
+import { getFileMD5 } from '@/lib/util/file';
 
 // Replace the deprecated config export with the new export syntax
 export const dynamic = 'force-dynamic';
@@ -111,25 +117,33 @@ export async function POST(request, { params }) {
 
     const filePath = path.join(filesDir, fileName);
     await fs.writeFile(filePath, fileBuffer);
+    //获取文件大小
+    const stats = await fs.stat(filePath);
+    //获取文件md5
+    const md5 = await getFileMD5(filePath);
+    //获取文件扩展名
+    const ext = path.extname(filePath);
 
-    // 更新项目配置，添加上传的文件记录
-    const uploadedFiles = JSON.parse(project.uploadedFiles) || [];
-    if (!uploadedFiles.includes(fileName)) {
-      uploadedFiles.push(fileName);
-
-      // 更新项目配置
-      await updateProject(projectId, {
-        ...project,
-        uploadedFiles
-      });
+    let res = await checkUploadFileInfoByMD5(projectId, md5);
+    if (res) {
+      return NextResponse.json({ error: `【${fileName}】该文件已在此项目中存在` }, { status: 400 });
     }
+
+    let fileInfo = await createUploadFileInfo({
+      projectId,
+      fileName,
+      size: stats.size,
+      md5,
+      fileExt: ext,
+      path: filesDir
+    });
 
     console.log('The file upload process is complete, and a successful response is returned');
     return NextResponse.json({
       message: 'File uploaded successfully',
       fileName,
-      uploadedFiles,
-      filePath
+      filePath,
+      fileId: fileInfo.id
     });
   } catch (error) {
     console.error('Error processing file upload:', error);

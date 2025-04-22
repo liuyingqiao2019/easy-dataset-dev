@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getQuestions, getQuestionsIds, isExistByQuestion, saveQuestions, updateQuestion } from '@/lib/db/questions';
+import {
+  getAllQuestionsByProjectId,
+  getQuestions,
+  getQuestionsIds,
+  isExistByQuestion,
+  saveQuestions,
+  updateQuestion
+} from '@/lib/db/questions';
 import { getDatasetsCountByQuestionId } from '@/lib/db/datasets';
 
 // 获取项目的所有问题
@@ -18,6 +25,11 @@ export async function GET(request, { params }) {
     let selectedAll = searchParams.get('selectedAll');
     if (selectedAll) {
       let data = await getQuestionsIds(projectId, answered, searchParams.get('input'));
+      return NextResponse.json(data);
+    }
+    let all = searchParams.get('all');
+    if (all) {
+      let data = await getAllQuestionsByProjectId(projectId);
       return NextResponse.json(data);
     }
     // 获取问题列表

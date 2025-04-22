@@ -1,6 +1,5 @@
-import { createProject, getProjectModelConfig, getProjects, isExistByName } from '@/lib/db/projects';
-import { getQuestionsCount } from '@/lib/db/questions';
-import { getDatasetsCount } from '@/lib/db/datasets';
+import { createProject, getProjects, isExistByName } from '@/lib/db/projects';
+import { createInitModelConfig, getModelConfigByProjectId } from '@/lib/db/model-config';
 
 export async function POST(request) {
   try {
@@ -14,14 +13,21 @@ export async function POST(request) {
     if (await isExistByName(projectData.name)) {
       return Response.json({ error: '项目名称已存在' }, { status: 400 });
     }
-
-    // 如果指定了要复用的项目配置
-    if (projectData.reuseConfigFrom) {
-      projectData.modelConfig = await getProjectModelConfig(projectData.reuseConfigFrom);
-    }
-
     // 创建项目
     const newProject = await createProject(projectData);
+    // 如果指定了要复用的项目配置
+    if (projectData.reuseConfigFrom) {
+      let data = await getModelConfigByProjectId(projectData.reuseConfigFrom);
+
+      let newData = data.map(item => {
+        delete item.id;
+        return {
+          ...item,
+          projectId: newProject.id
+        };
+      });
+      await createInitModelConfig(newData);
+    }
     return Response.json(newProject, { status: 201 });
   } catch (error) {
     console.error('创建项目出错:', error);
