@@ -35,7 +35,7 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { useSetAtom } from 'jotai/index';
-import { modelConfigListAtom } from '@/lib/store';
+import { modelConfigListAtom, selectedModelInfoAtom } from '@/lib/store';
 
 export default function Navbar({ projects = [], currentProject }) {
   const [selectedProject, setSelectedProject] = useState(currentProject || '');
@@ -44,6 +44,7 @@ export default function Navbar({ projects = [], currentProject }) {
   const theme = useMuiTheme();
   const { resolvedTheme, setTheme } = useTheme();
   const setConfigList = useSetAtom(modelConfigListAtom);
+  const setSelectedModelInfo = useSetAtom(selectedModelInfoAtom);
   // 只在项目详情页显示模块选项卡
   const isProjectDetail = pathname.includes('/projects/') && pathname.split('/').length > 3;
 
@@ -53,7 +54,12 @@ export default function Navbar({ projects = [], currentProject }) {
     axios
       .get(`/api/projects/${newProjectId}/model-config`)
       .then(response => {
-        setConfigList(response.data);
+        setConfigList(response.data.data);
+        if (response.data.defaultModelConfigId) {
+          setSelectedModelInfo(response.data.data.find(item => item.id === response.data.defaultModelConfigId));
+        } else {
+          setSelectedModelInfo('');
+        }
       })
       .catch(error => {
         toast.error('获取模型列表失败');
@@ -255,7 +261,7 @@ export default function Navbar({ projects = [], currentProject }) {
           style={{ position: 'absolute', right: '20px' }}
         >
           {/* 模型选择 */}
-          {location.pathname.includes('/projects/') && <ModelSelect />}
+          {location.pathname.includes('/projects/') && <ModelSelect projectId={selectedProject} />}
 
           {/* 同步文件格式数据 */}
           <Tooltip title={t('common.syncOldData')}>

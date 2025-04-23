@@ -92,7 +92,7 @@ export default function ModelSettings({ projectId }) {
     axios
       .get(`/api/projects/${projectId}/model-config`)
       .then(response => {
-        setModelConfigList(response.data);
+        setModelConfigList(response.data.data);
         setLoading(false);
       })
       .catch(error => {

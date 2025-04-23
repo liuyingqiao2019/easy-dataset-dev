@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createInitModelConfig, getModelConfigByProjectId, saveModelConfig } from '@/lib/db/model-config';
 import { DEFAULT_MODEL_SETTINGS, MODEL_PROVIDERS } from '@/constant/model';
+import { getProject } from '@/lib/db/projects';
 
 // 获取模型配置列表
 export async function GET(request, { params }) {
@@ -33,7 +34,8 @@ export async function GET(request, { params }) {
       });
       modelConfigList = await createInitModelConfig(insertModelConfigList);
     }
-    return NextResponse.json(modelConfigList);
+    let project = await getProject(projectId);
+    return NextResponse.json({ data: modelConfigList, defaultModelConfigId: project.defaultModelConfigId });
   } catch (error) {
     console.error('Error obtaining model configuration:', error);
     return NextResponse.json({ error: 'Failed to obtain model configuration' }, { status: 500 });

@@ -15,7 +15,6 @@ export default function ProjectPage({ params }) {
 
   // 默认重定向到文本分割页面
   useEffect(() => {
-    setSelectedModelInfo(null);
     getModelConfigList(projectId);
     router.push(`/projects/${projectId}/text-split`);
   }, [projectId, router]);
@@ -24,7 +23,12 @@ export default function ProjectPage({ params }) {
     axios
       .get(`/api/projects/${projectId}/model-config`)
       .then(response => {
-        setConfigList(response.data);
+        setConfigList(response.data.data);
+        if (response.data.defaultModelConfigId) {
+          setSelectedModelInfo(response.data.data.find(item => item.id === response.data.defaultModelConfigId));
+        } else {
+          setSelectedModelInfo('');
+        }
       })
       .catch(error => {
         toast.error('获取模型列表失败');

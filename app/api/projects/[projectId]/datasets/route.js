@@ -13,8 +13,8 @@ import getAnswerPrompt from '@/lib/llm/prompts/answer';
 import getAnswerEnPrompt from '@/lib/llm/prompts/answerEn';
 import getOptimizeCotPrompt from '@/lib/llm/prompts/optimizeCot';
 import getOptimizeCotEnPrompt from '@/lib/llm/prompts/optimizeCotEn';
-import { v4 as uuidv4 } from 'uuid';
 import { getChunkById } from '@/lib/db/chunks';
+import { nanoid } from 'nanoid';
 
 const LLMClient = require('@/lib/llm/core');
 
@@ -87,7 +87,7 @@ export async function POST(request, { params }) {
     // 调用大模型生成答案
     const { answer, cot } = await llmClient.getResponseWithCOT(prompt);
 
-    const datasetId = uuidv4();
+    const datasetId = nanoid(12);
 
     // 创建新的数据集项
     const datasets = {

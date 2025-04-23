@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
 import { getChunkByProjectId } from '@/lib/db/chunks';
 import { getProject } from '@/lib/db/projects';
+import { nanoid } from 'nanoid';
 
 // 用于处理文本分割的函数
 function splitTextContent(text, minChars = 1500, maxChars = 2000) {
@@ -120,7 +120,7 @@ export async function POST(request, { params }) {
       // 保存分割后的文本片段
       const chunkResults = [];
       for (let i = 0; i < chunks.length; i++) {
-        const chunkId = uuidv4();
+        const chunkId = nanoid(12);
         const chunkData = {
           id: chunkId,
           title: `${fileName}-片段${i + 1}`,

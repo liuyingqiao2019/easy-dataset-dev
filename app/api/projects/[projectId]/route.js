@@ -22,7 +22,7 @@ export async function PUT(request, { params }) {
     const projectData = await request.json();
 
     // 验证必要的字段
-    if (!projectData.name) {
+    if (!projectData.name && !projectData.defaultModelConfigId) {
       return Response.json({ error: '项目名称不能为空' }, { status: 400 });
     }
 

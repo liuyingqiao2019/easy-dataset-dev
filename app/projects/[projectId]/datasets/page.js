@@ -636,15 +636,14 @@ export default function DatasetsPage({ params }) {
   };
 
   // 导出数据集
-  const handleExportDatasets = exportOptions => {
+  const handleExportDatasets = async exportOptions => {
     try {
-      // 根据选项筛选数据
-      let dataToExport = [...datasets.data];
-
-      // 如果只导出已确认的数据集
+      let apiUrl = `/api/projects/${projectId}/datasets/export`;
       if (exportOptions.confirmedOnly) {
-        dataToExport = dataToExport.filter(dataset => dataset.confirmed);
+        apiUrl += `?status=confirmed`;
       }
+      const response = await axios.get(apiUrl);
+      let dataToExport = response.data;
 
       // 根据选择的格式转换数据
       let formattedData;

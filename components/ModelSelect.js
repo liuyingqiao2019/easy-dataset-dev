@@ -5,8 +5,9 @@ import { FormControl, Select, MenuItem, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useAtom, useAtomValue } from 'jotai/index';
 import { modelConfigListAtom, selectedModelInfoAtom } from '@/lib/store';
+import axios from 'axios';
 
-export default function ModelSelect({ size = 'small', minWidth = 180 }) {
+export default function ModelSelect({ size = 'small', minWidth = 180, projectId }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const models = useAtomValue(modelConfigListAtom);
@@ -22,12 +23,21 @@ export default function ModelSelect({ size = 'small', minWidth = 180 }) {
       setSelectedModel(newModelId);
       // 将完整的模型信息存储到 localStorage
       setSelectedModelInfo(selectedModelObj);
+      updateDefaultModel(newModelId);
     } else {
       setSelectedModelInfo({
         id: newModelId
       });
     }
   };
+
+  const updateDefaultModel = async id => {
+    const res = await axios.put(`/api/projects/${projectId}`, { projectId, defaultModelConfigId: id });
+    if (res.status === 200) {
+      console.log('更新成功');
+    }
+  };
+
   useEffect(() => {
     if (selectedModelInfo) {
       setSelectedModel(selectedModelInfo.id);
