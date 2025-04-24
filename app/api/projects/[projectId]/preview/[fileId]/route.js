@@ -19,9 +19,12 @@ export async function GET(request, { params }) {
     if (!fileInfo) {
       return NextResponse.json({ error: 'file does not exist' }, { status: 400 });
     }
-    // 获取文件路径
-    const filePath = path.join(fileInfo.path, fileInfo.fileName);
 
+    // 获取文件路径
+    let filePath = path.join(fileInfo.path, fileInfo.fileName);
+    if (fileInfo.fileExt !== '.md') {
+      filePath = path.join(fileInfo.path, fileInfo.fileName.replace(/\.[^/.]+$/, '.md'));
+    }
     //获取文件
     const buffer = fs.readFileSync(filePath);
 
