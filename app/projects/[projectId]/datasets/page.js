@@ -39,7 +39,7 @@ import { useRouter } from 'next/navigation';
 import ExportDatasetDialog from '@/components/ExportDatasetDialog';
 import { useTranslation } from 'react-i18next';
 import { processInParallel } from '@/lib/util/async';
-
+import config from '@/config/llm.json'
 // 数据集列表组件
 const DatasetList = ({
   datasets,
@@ -636,13 +636,32 @@ export default function DatasetsPage ({ params }) {
       // 不同文件格式
       let mimeType = 'application/json';
 
-      if (exportOptions.formatType === 'alpaca') {
-        formattedData = dataToExport.map(({ question, answer, cot }) => ({
-          instruction: question,
-          input: '',
-          output: cot && exportOptions.includeCOT ? `<think>${cot}</think>\n${answer}` : answer,
-          system: exportOptions.systemPrompt || ''
-        }));
+      if (exportOptions.formatType === 'custom' || exportOptions.asyncFlow) {
+        // 处理自定义格式
+        const { questionField, answerField, cotField, includeLabels, includeChunk } = exportOptions.customFields;
+        formattedData = dataToExport.map(({ question, answer, cot, questionLabel: labels, chunkId }) => {
+          const item = {
+            [questionField]: question,
+            [answerField]: answer
+          };
+
+          // 如果有思维链且用户选择包含思维链，则添加思维链字段
+          if (cot && exportOptions.includeCOT && cotField) {
+            item[cotField] = cot;
+          }
+
+          // 如果需要包含标签
+          if (includeLabels && labels && labels.length > 0) {
+            item.label = labels.split(' ')[1];
+          }
+
+          // 如果需要包含文本块
+          if (includeChunk && chunkId) {
+            item.chunk = chunkId;
+          }
+
+          return item;
+        });
       } else if (exportOptions.formatType === 'sharegpt') {
         formattedData = dataToExport.map(({ question, answer, cot }) => {
           const messages = [];
@@ -669,43 +688,20 @@ export default function DatasetsPage ({ params }) {
 
           return { messages };
         });
-      } else if (exportOptions.formatType === 'custom') {
-        // 处理自定义格式
-        const { questionField, answerField, cotField, includeLabels, includeChunk } = exportOptions.customFields;
-        formattedData = dataToExport.map(({ question, answer, cot, questionLabel: labels, chunkId }) => {
-          const item = {
-            [questionField]: question,
-            [answerField]: answer
-          };
-
-          // 如果有思维链且用户选择包含思维链，则添加思维链字段
-          if (cot && exportOptions.includeCOT && cotField) {
-            item[cotField] = cot;
-          }
-
-          // 如果需要包含标签
-          if (includeLabels && labels && labels.length > 0) {
-            item.label = labels.split(' ')[1];
-          }
-
-          // 如果需要包含文本块
-          if (includeChunk && chunkId) {
-            item.chunk = chunkId;
-          }
-
-          return item;
-        });
+      } else if (exportOptions.formatType === 'alpaca') {
+        formattedData = dataToExport.map(({ question, answer, cot }) => ({
+          instruction: question,
+          input: '',
+          output: cot && exportOptions.includeCOT ? `<think>${cot}</think>\n${answer}` : answer,
+          system: exportOptions.systemPrompt || ''
+        }));
       }
 
       // 处理不同的文件格式
       let content;
       let fileExtension;
 
-      if (exportOptions.fileFormat === 'jsonl') {
-        // JSONL 格式：每行一个 JSON 对象
-        content = formattedData.map(item => JSON.stringify(item)).join('\n');
-        fileExtension = 'jsonl';
-      } else if (exportOptions.fileFormat === 'csv') {
+      if (exportOptions.fileFormat === 'csv' || exportOptions.asyncFlow) {
         // CSV 格式
         const headers = Object.keys(formattedData[0] || {});
         const csvRows = [
@@ -728,18 +724,44 @@ export default function DatasetsPage ({ params }) {
         ];
         content = csvRows.join('\n');
         fileExtension = 'csv';
+      } else if (exportOptions.fileFormat === 'jsonl') {
+        // JSONL 格式：每行一个 JSON 对象
+        content = formattedData.map(item => JSON.stringify(item)).join('\n');
+        fileExtension = 'jsonl';
       } else {
         // 默认 JSON 格式
         content = JSON.stringify(formattedData, null, 2);
         fileExtension = 'json';
       }
+      const blob = new Blob([content], { type: mimeType || 'application/json' });
       if (exportOptions.asyncFlow) {
-        console.log('%c [ content ]-742', 'font-size:13px; background:pink; color:#bf2c9f;', content)
-
+        let url = `${config.ragflow.base_url}/api/v1/datasets/${config.ragflow.datasets.qa_library.dataset_id}/documents`
+        let formData = new FormData();
+        let headers = {
+          "Authorization": `Bearer ${config.ragflow.api_key}`,
+        }
+        formData.append('file', blob, `${exportOptions.fileName}-${new Date().toISOString().slice(0, 10)}.${fileExtension}`)
+        fetch(url, {
+          method: 'POST',
+          headers: headers,
+          body: formData
+        })
+          .then(response => {
+            if (!response.ok) {
+              setConfirmDialog({
+                open: true,
+                title: '错误提示',
+                content: '数据集导出失败' + response.statusText,
+              });
+            }
+            return response.json()
+          })
+          .then(data => {
+            parse_chunks(data.data[0].id)
+          })
       }
       else {
         // 创建 Blob 对象
-        const blob = new Blob([content], { type: mimeType || 'application/json' });
 
         // 创建下载链接
         const url = URL.createObjectURL(blob);
@@ -773,6 +795,35 @@ export default function DatasetsPage ({ params }) {
       });
     }
   };
+  //解析ragflow文档
+  const parse_chunks = id => {
+    let url = `${config.ragflow.base_url}/api/v1/datasets/${config.ragflow.datasets.qa_library.dataset_id}/chunks`
+    let headers = {
+      "Authorization": `Bearer ${config.ragflow.api_key}`,
+      "Content-Type": "application/json"
+    }
+    let data = {
+      "document_ids": [id]
+    }
+    fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(data)
+    })
+      .then(response => {
+        if (!response.ok) {
+          setConfirmDialog({
+            open: true,
+            title: '错误提示',
+            content: '数据集解析失败' + response.statusText,
+          });
+        }
+        return response.json()
+      })
+      .then(data => {
+        console.log('%c [ data ]-823', 'font-size:13px; background:pink; color:#bf2c9f;', data)
+      })
+  }
   // 查看详情
   const handleViewDetails = id => {
     router.push(`/projects/${projectId}/datasets/${id}`);

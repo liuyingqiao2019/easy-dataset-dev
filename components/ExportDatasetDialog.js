@@ -52,6 +52,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
   const [configPath, setConfigPath] = useState('');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [fileName, setfileName] = useState('');
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
     title: '',
@@ -70,7 +71,9 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
   const handleFileFormatChange = event => {
     setFileFormat(event.target.value);
   };
-
+  const handlefileName = event => {
+    setfileName(event.target.value)
+  }
   const handleFormatChange = event => {
     setFormatType(event.target.value);
     // 根据格式类型设置默认字段名
@@ -136,14 +139,19 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
     });
   };
   const handleAsync = () => {
+    setCustomFields({
+      questionField: '问题',
+      answerField: '回答'
+    });
     onExport({
       formatType,
       systemPrompt,
       confirmedOnly,
       fileFormat,
       includeCOT,
-      customFields: formatType === 'custom' ? customFields : undefined,
-      asyncFlow: true
+      customFields: customFields,
+      asyncFlow: true,
+      fileName: fileName
     });
   }
   // 复制路径到剪贴板
@@ -609,7 +617,21 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
               )}
             </Box>
           )}
-
+          {/* 第三个标签页：Ragflow */}
+          {currentTab === 2 && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body1" sx={{ mb: 2 }}>{t('export.asyncFileTip')}</Typography>
+              <Typography variant="subtitle1" color="text.secondary">{t('export.setFileName')}</Typography>
+              <TextField
+                fullWidth
+                name="setFileName"
+                value={fileName}
+                onChange={handlefileName}
+                type="text"
+              />
+              <Typography variant="body1" color="text.secondary">{t('export.setFileNameExample')}</Typography>
+            </Box>
+          )}
           {/* 第四个标签页：HuggingFace */}
           {currentTab === 4 && (
             <Box sx={{ mt: 2 }}>
