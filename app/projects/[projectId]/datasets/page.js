@@ -627,7 +627,7 @@ export default function DatasetsPage ({ params }) {
       let dataToExport = [...filteredDatasets];
 
       // 如果只导出已确认的数据集
-      if (exportOptions.confirmedOnly) {
+      if (exportOptions.confirmedOnly || exportOptions.asyncFlow) {
         dataToExport = dataToExport.filter(dataset => dataset.confirmed);
       }
 
