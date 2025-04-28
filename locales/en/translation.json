@@ -311,6 +311,7 @@
     "localTab": "Local Export",
     "llamaFactoryTab": "Llama Factory",
     "huggingFaceTab": "HuggingFace",
+    "asyncRaglow": "Async Raglow",
     "configExists": "Configuration File Exists",
     "configPath": "Configuration File Path",
     "updateConfig": "Update LLaMA Factory Configuration",

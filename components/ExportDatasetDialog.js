@@ -135,7 +135,17 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
       customFields: formatType === 'custom' ? customFields : undefined
     });
   };
-
+  const handleAsync = () => {
+    onExport({
+      formatType,
+      systemPrompt,
+      confirmedOnly,
+      fileFormat,
+      includeCOT,
+      customFields: formatType === 'custom' ? customFields : undefined,
+      asyncFlow: true
+    });
+  }
   // 复制路径到剪贴板
   const handleCopyPath = () => {
     const path = configPath.replace('dataset_info.json', '');
@@ -336,6 +346,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
             <Tabs value={currentTab} onChange={(e, newValue) => setCurrentTab(newValue)} aria-label="export tabs">
               <Tab label={t('export.localTab')} />
               <Tab label={t('export.llamaFactoryTab')} />
+              <Tab label={t('export.asyncRaglow')} />
               <Tab label={t('export.huggingFaceTab')} disabled />
             </Tabs>
           </Box>
@@ -599,8 +610,8 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
             </Box>
           )}
 
-          {/* 第三个标签页：HuggingFace */}
-          {currentTab === 2 && (
+          {/* 第四个标签页：HuggingFace */}
+          {currentTab === 4 && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body1">{t('export.huggingFaceComingSoon')}</Typography>
             </Box>
@@ -624,6 +635,11 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
               ) : (
                 t('export.generateConfig')
               )}
+            </Button>
+          )}
+          {currentTab === 2 && (
+            <Button onClick={handleAsync} variant="contained" sx={{ borderRadius: 2 }}>
+              {t('export.confirmAsync')}
             </Button>
           )}
         </DialogActions>

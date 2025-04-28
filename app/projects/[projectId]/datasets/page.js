@@ -733,23 +733,30 @@ export default function DatasetsPage ({ params }) {
         content = JSON.stringify(formattedData, null, 2);
         fileExtension = 'json';
       }
-      // 创建 Blob 对象
-      const blob = new Blob([content], { type: mimeType || 'application/json' });
+      if (exportOptions.asyncFlow) {
+        console.log('%c [ content ]-742', 'font-size:13px; background:pink; color:#bf2c9f;', content)
 
-      // 创建下载链接
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const formatSuffix = exportOptions.formatType === 'alpaca' ? 'alpaca' : 'sharegpt';
-      a.download = `datasets-${projectId}-${formatSuffix}-${new Date().toISOString().slice(0, 10)}.${fileExtension}`;
+      }
+      else {
+        // 创建 Blob 对象
+        const blob = new Blob([content], { type: mimeType || 'application/json' });
 
-      // 触发下载
-      document.body.appendChild(a);
-      a.click();
+        // 创建下载链接
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const formatSuffix = exportOptions.formatType === 'alpaca' ? 'alpaca' : 'sharegpt';
+        a.download = `datasets-${projectId}-${formatSuffix}-${new Date().toISOString().slice(0, 10)}.${fileExtension}`;
 
-      // 清理
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+        // 触发下载
+        document.body.appendChild(a);
+        a.click();
+
+        // 清理
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+      }
 
       // 关闭导出对话框
       handleCloseExportDialog();
