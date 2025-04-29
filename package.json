@@ -114,6 +114,11 @@
       "!**/*.{md,d.ts,map}",
       "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}"
     ],
+    "extraResources": [
+      "prisma/schema.prisma",
+      "node_modules/.prisma/**/*",
+      "node_modules/@prisma/client/**/*"
+    ],
     "directories": {
       "buildResources": "public",
       "output": "dist"
