@@ -116,6 +116,7 @@
     ],
     "extraResources": [
       "prisma/schema.prisma",
+      "prisma/template.sqlite",
       "node_modules/.prisma/**/*",
       "node_modules/@prisma/client/**/*"
     ],

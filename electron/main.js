@@ -5,6 +5,32 @@ const http = require('http');
 const fs = require('fs');
 const url = require('url');
 
+function setupLogging() {
+  const logDir = path.join(app.getPath('userData'), 'logs');
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
+  const logFilePath = path.join(logDir, `app-${new Date().toISOString().slice(0, 10)}.log`);
+
+  // 创建自定义日志函数
+  global.appLog = (message, level = 'info') => {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] [${level.toUpperCase()}] ${message}\n`;
+
+    // 同时输出到控制台和日志文件
+    console.log(message);
+    fs.appendFileSync(logFilePath, logEntry);
+  };
+
+  // 捕获全局未处理异常并记录
+  process.on('uncaughtException', (error) => {
+    global.appLog(`未捕获的异常: ${error.stack || error}`, 'error');
+  });
+
+  return logFilePath;
+}
+
 // 获取应用版本
 const getAppVersion = () => {
   try {
@@ -203,6 +229,39 @@ function createMenu() {
 async function startNextServer() {
   console.log(`Easy Dataset 客户端启动中，当前版本: ${getAppVersion()}`);
 
+  // 设置日志文件路径
+  const logDir = path.join(app.getPath('userData'), 'logs');
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+  const logFile = path.join(logDir, `nextjs-${new Date().toISOString().replace(/:/g, '-')}.log`);
+  const logStream = fs.createWriteStream(logFile, { flags: 'a' });
+
+  // 重定向 console.log 和 console.error
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+  console.log = function () {
+    const args = Array.from(arguments);
+    const logMessage = args.map(arg =>
+      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+    ).join(' ');
+
+    logStream.write(`[${new Date().toISOString()}] [LOG] ${logMessage}\n`);
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function () {
+    const args = Array.from(arguments);
+    const logMessage = args.map(arg =>
+      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+    ).join(' ');
+
+    logStream.write(`[${new Date().toISOString()}] [ERROR] ${logMessage}\n`);
+    originalConsoleError.apply(console, args);
+  };
+
+
   // 检查端口是否被占用
   const isPortBusy = await checkPort(port);
   if (isPortBusy) {
@@ -215,12 +274,29 @@ async function startNextServer() {
   try {
     // 动态导入 Next.js
     const next = require('next');
-    nextApp = next({ dev: false, dir: path.join(__dirname, '..') });
+    nextApp = next({
+      dev: false,
+      dir: path.join(__dirname, '..'),
+      conf: {
+        // 配置 Next.js 的日志输出
+        onInfo: (info) => {
+          console.log(`[Next.js Info] ${info}`);
+        },
+        onError: (error) => {
+          console.error(`[Next.js Error] ${error}`);
+        },
+        onWarn: (warn) => {
+          console.log(`[Next.js Warning] ${warn}`);
+        }
+      }
+    });
     const handle = nextApp.getRequestHandler();
 
     await nextApp.prepare();
 
     const server = http.createServer((req, res) => {
+      // 记录请求日志
+      console.log(`[Request] ${req.method} ${req.url}`);
       handle(req, res);
     });
 
@@ -340,7 +416,70 @@ ipcMain.handle('install-update', () => {
 });
 
 // 当 Electron 完成初始化时创建窗口
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+
+  // 在 app.whenReady 前调用
+  const logFilePath = setupLogging();
+
+  try {
+    // 设置数据库路径
+    const userDataPath = app.getPath('userData');
+    const dataDir = path.join(userDataPath, 'local-db');
+    const dbFilePath = path.join(dataDir, 'db.sqlite');
+
+    // 确保数据目录存在
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+      console.log(`数据目录已创建: ${dataDir}`);
+    }
+
+    // 设置数据库连接字符串 (Prisma 格式)
+    const dbConnectionString = `file:${dbFilePath}`;
+    process.env.DATABASE_URL = dbConnectionString;
+
+    // 仅在开发环境记录日志
+    const logs = {
+      userDataPath,
+      dataDir,
+      dbFilePath,
+      dbConnectionString,
+      dbExists: fs.existsSync(dbFilePath)
+    };
+    global.appLog(`数据库配置: ${JSON.stringify(logs)}`);
+
+    // 如果数据库文件不存在，初始化数据库
+    if (!fs.existsSync(dbFilePath)) {
+      global.appLog('数据库文件不存在，正在初始化...');
+
+      try {
+        // 方案一：从资源目录复制预先生成的空数据库文件
+        const resourcePath = process.env.NODE_ENV === 'development'
+          ? path.join(__dirname, '..', 'prisma', 'template.sqlite')
+          : path.join(process.resourcesPath, 'prisma', 'template.sqlite');
+
+        global.appLog(`resourcePath: ${resourcePath}`);
+
+        // 检查模板数据库是否存在
+        if (fs.existsSync(resourcePath)) {
+          // 复制模板数据库到用户数据目录
+          fs.copyFileSync(resourcePath, dbFilePath);
+          global.appLog(`数据库已从模板初始化: ${dbFilePath}`);
+        }
+      } catch (error) {
+        console.error('数据库初始化失败:', error);
+        // 显示错误对话框
+        dialog.showErrorBox(
+          '数据库初始化失败',
+          `应用无法初始化数据库，可能需要重新安装。\n错误详情: ${error.message}`
+        );
+      }
+    }
+  } catch (error) {
+    console.error('应用初始化过程中发生错误:', error);
+    dialog.showErrorBox('应用初始化错误', `启动过程中发生错误，可能影响应用功能。
+错误详情: ${error.message}`);
+  }
+
   createWindow();
   // 设置自动更新
   setupAutoUpdater();
