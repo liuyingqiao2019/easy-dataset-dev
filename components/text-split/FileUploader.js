@@ -9,8 +9,6 @@ import UploadArea from './components/UploadArea';
 import FileList from './components/FileList';
 import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import PdfProcessingDialog from './components/PdfProcessingDialog';
-import { useAtomValue } from 'jotai/index';
-import { modelConfigListAtom, selectedModelInfoAtom } from '@/lib/store';
 
 /**
  * File uploader component
@@ -46,8 +44,6 @@ export default function FileUploader({
   const [fileToDelete, setFileToDelete] = useState({});
   const [taskSettings, setTaskSettings] = useState(null);
   const [visionModels, setVisionModels] = useState([]);
-  const model = useAtomValue(modelConfigListAtom);
-  const selectModel = useAtomValue(selectedModelInfoAtom);
   // 设置PDF文件的处理方式
   const handleRadioChange = event => {
     // 传递这个值的原因是setSelectedViosnModel是异步的,PdfProcessingDialog检测到模型变更设置新的值
@@ -101,6 +97,9 @@ export default function FileUploader({
       const taskData = await taskResponse.json();
 
       setTaskSettings(taskData);
+
+      //使用Jotai会出现数据获取的延迟，导致这里模型获取不到，改用localStorage获取模型信息
+      const model =  JSON.parse(localStorage.getItem('modelConfigList'));
 
       //过滤出视觉模型
       const visionItems = model.filter(item => item.type === 'vision' && item.apiKey);
