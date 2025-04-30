@@ -286,33 +286,29 @@ export default function DatasetDetailsPage({ params }) {
     if (!confirm(t('datasets.confirmDeleteMessage'))) return;
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
+      // 尝试获取下一个数据集，在删除前先确保有可导航的目标
+      const nextResponse = await axios.get(`/api/projects/${projectId}/datasets/${datasetId}?operateType=next`);
+      const hasNextDataset = !!nextResponse.data;
+      const nextDatasetId = hasNextDataset ? nextResponse.data.id : null;
+      
+      // 删除当前数据集
+      const deleteResponse = await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
         method: 'DELETE'
       });
 
-      if (!response.ok) {
+      if (!deleteResponse.ok) {
         throw new Error(t('common.failed'));
       }
 
-      // 找到当前数据集的索引
-      const currentIndex = datasets.findIndex(d => d.id === datasetId);
-
-      // 如果这是最后一个数据集，返回列表页
-      if (datasets.length === 1) {
+      // 导航逻辑：有下一个就跳转下一个，没有则返回列表页
+      if (hasNextDataset) {
+        router.push(`/projects/${projectId}/datasets/${nextDatasetId}`);
+      } else {
+        // 没有更多数据集，返回列表页面
         router.push(`/projects/${projectId}/datasets`);
-        return;
       }
-
-      // 计算下一个数据集的索引
-      const nextIndex = (currentIndex + 1) % datasets.length;
-      // 如果是最后一个，就去第一个
-      const nextDataset = datasets[nextIndex] || datasets[0];
-
-      // 导航到下一个数据集
-      router.push(`/projects/${projectId}/datasets/${nextDataset.id}`);
-
-      // 更新本地数据集列表
-      setDatasets(prev => prev.filter(d => d.id !== datasetId));
+      
+      toast.success(t('common.deleteSuccess'));
     } catch (error) {
       setSnackbar({
         open: true,
