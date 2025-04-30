@@ -394,8 +394,8 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
         <Typography variant="body1" sx={{ mb: 2 }}>
           {batch
             ? t('datasets.batchconfirmDeleteMessage', {
-                count: datasets.length
-              })
+              count: datasets.length
+            })
             : t('common.confirmDeleteDataSet')}
         </Typography>
         {batch ? (
@@ -971,7 +971,7 @@ export default function DatasetsPage({ params }) {
 
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >

@@ -108,13 +108,13 @@ export default function TextSplitPage({ params }) {
       for (const file of pdfFiles) {
         const response = await fetch(
           `/api/projects/${projectId}/pdf?fileName=` +
-            file.name +
-            `&strategy=` +
-            pdfStrategy +
-            `&currentLanguage=` +
-            currentLanguage +
-            `&modelId=` +
-            selectedViosnModel
+          file.name +
+          `&strategy=` +
+          pdfStrategy +
+          `&currentLanguage=` +
+          currentLanguage +
+          `&modelId=` +
+          selectedViosnModel
         );
         if (!response.ok) {
           const errorData = await response.json();
@@ -445,7 +445,7 @@ export default function TextSplitPage({ params }) {
     return (
       <Snackbar
         open={Boolean(error)}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={handleCloseError}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >

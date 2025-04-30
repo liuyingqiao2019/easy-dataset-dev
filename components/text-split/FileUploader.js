@@ -344,13 +344,13 @@ export default function FileUploader({
         </Grid>
       </Grid>
 
-      <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
+      <Snackbar open={!!error} autoHideDuration={2000} onClose={handleCloseError}>
         <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
           {error}
         </Alert>
       </Snackbar>
 
-      <Snackbar open={success} autoHideDuration={3000} onClose={handleCloseSuccess}>
+      <Snackbar open={success} autoHideDuration={2000} onClose={handleCloseSuccess}>
         <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
           {successMessage}
         </Alert>
