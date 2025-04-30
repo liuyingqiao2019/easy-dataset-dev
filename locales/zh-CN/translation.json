@@ -472,6 +472,13 @@
     "success": "成功迁移 {{count}} 个项目",
     "failed": "迁移失败",
     "checkFailed": "检查未迁移项目失败",
-    "checkError": "检查未迁移项目出错"
+    "checkError": "检查未迁移项目出错",
+    "starting": "正在启动迁移任务...",
+    "processing": "正在处理迁移任务...",
+    "completed": "迁移已完成",
+    "startFailed": "启动迁移任务失败",
+    "statusFailed": "获取迁移状态失败",
+    "taskNotFound": "迁移任务不存在",
+    "progressStatus": "已迁移 {{completed}}/{{total}} 个项目"
   }
 }

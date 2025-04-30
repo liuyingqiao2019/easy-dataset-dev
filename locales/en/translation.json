@@ -472,6 +472,13 @@
     "success": "Successfully migrated {{count}} projects",
     "failed": "Migration failed",
     "checkFailed": "Failed to check unmigrated projects",
-    "checkError": "Error checking unmigrated projects"
+    "checkError": "Error checking unmigrated projects",
+    "starting": "Starting migration task...",
+    "processing": "Processing migration task...",
+    "completed": "Migration completed",
+    "startFailed": "Failed to start migration task",
+    "statusFailed": "Failed to get migration status",
+    "taskNotFound": "Migration task not found",
+    "progressStatus": "Migrated {{completed}}/{{total}} projects"
   }
 }

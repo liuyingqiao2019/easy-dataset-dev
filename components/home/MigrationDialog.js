@@ -34,6 +34,9 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
   const [migratedCount, setMigratedCount] = useState(0);
+  const [taskId, setTaskId] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [statusText, setStatusText] = useState('');
 
   // 处理迁移操作
   const handleMigration = async () => {
@@ -41,29 +44,90 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
       setMigrating(true);
       setError(null);
       setSuccess(false);
-
-      // 调用迁移接口
-      const response = await fetch('/api/update', {
-        method: 'GET'
+      setProgress(0);
+      setStatusText(t('migration.starting'));
+      
+      // 调用异步迁移接口启动迁移任务
+      const response = await fetch('/api/projects/migrate', {
+        method: 'POST'
       });
-
+      
       if (!response.ok) {
         throw new Error(t('migration.failed'));
       }
-
-      const count = await response.json();
-      setMigratedCount(count);
-      setSuccess(true);
-
-      // 迁移成功后，延迟关闭对话框并刷新页面
-      setTimeout(() => {
-        onClose();
-        window.location.reload();
-      }, 2000);
+      
+      const { success, taskId: newTaskId } = await response.json();
+      
+      if (!success || !newTaskId) {
+        throw new Error(t('migration.startFailed'));
+      }
+      
+      // 保存任务ID
+      setTaskId(newTaskId);
+      setStatusText(t('migration.processing'));
+      
+      // 开始轮询任务状态
+      await pollMigrationStatus(newTaskId);
     } catch (err) {
       console.error('迁移错误:', err);
       setError(err.message);
-    } finally {
+      setMigrating(false);
+    }
+  };
+  
+  // 轮询迁移任务状态
+  const pollMigrationStatus = async (id) => {
+    try {
+      // 定义轮询间隔（毫秒）
+      const pollInterval = 1000;
+      
+      // 发送请求获取任务状态
+      const response = await fetch(`/api/projects/migrate?taskId=${id}`);
+      
+      if (!response.ok) {
+        throw new Error(t('migration.statusFailed'));
+      }
+      
+      const { success, task } = await response.json();
+      
+      if (!success || !task) {
+        throw new Error(t('migration.taskNotFound'));
+      }
+      
+      // 更新进度
+      setProgress(task.progress || 0);
+      
+      // 根据任务状态更新UI
+      if (task.status === 'completed') {
+        // 任务完成
+        setMigratedCount(task.completed);
+        setSuccess(true);
+        setMigrating(false);
+        setStatusText(t('migration.completed'));
+        
+        // 迁移成功后，延迟关闭对话框并刷新页面
+        setTimeout(() => {
+          onClose();
+          window.location.reload();
+        }, 2000);
+      } else if (task.status === 'failed') {
+        // 任务失败
+        throw new Error(task.error || t('migration.failed'));
+      } else {
+        // 任务仍在进行中，继续轮询
+        setTimeout(() => pollMigrationStatus(id), pollInterval);
+        
+        // 更新状态文本
+        if (task.total > 0) {
+          setStatusText(t('migration.progressStatus', { 
+            completed: task.completed || 0, 
+            total: task.total 
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('获取迁移状态错误:', err);
+      setError(err.message);
       setMigrating(false);
     }
   };
@@ -119,8 +183,16 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
         )}
         
         {migrating && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-            <CircularProgress />
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 3, gap: 1.5 }}>
+            <CircularProgress variant={progress > 0 ? 'determinate' : 'indeterminate'} value={progress} />
+            <Typography variant="body2" color="text.secondary">
+              {statusText || t('migration.migrating')}
+            </Typography>
+            {progress > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                {progress}%
+              </Typography>
+            )}
           </Box>
         )}
       </DialogContent>
