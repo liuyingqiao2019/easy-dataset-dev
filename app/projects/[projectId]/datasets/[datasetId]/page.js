@@ -393,10 +393,8 @@ export default function DatasetDetailsPage({ params }) {
         throw new Error(errorData.error || '优化失败');
       }
 
-      const data = await response.json();
-
-      // 更新数据集
-      setCurrentDataset(data.dataset);
+      // 优化成功后，重新查询数据以获取最新状态
+      await fetchDatasets();
 
       setSnackbar({
         open: true,
