@@ -40,9 +40,6 @@ export async function POST(request, { params }) {
     // 创建LLM客户端
     const llmClient = new LLMClient(model);
 
-    console.log(111, dataset.question, dataset.answer || '', advice);
-    console.log(222, dataset.cot);
-
     // 生成优化后的答案和思维链
     const prompt =
       language === 'en'
@@ -51,12 +48,8 @@ export async function POST(request, { params }) {
 
     const response = await llmClient.getResponse(prompt);
 
-    console.log(333, response);
-
     // 从LLM输出中提取JSON格式的优化结果
     const optimizedResult = extractJsonFromLLMOutput(response);
-
-    console.log(444, optimizedResult);
 
     if (!optimizedResult || !optimizedResult.answer) {
       return NextResponse.json({ error: 'Failed to optimize answer, please try again' }, { status: 500 });
@@ -68,8 +61,6 @@ export async function POST(request, { params }) {
       answer: optimizedResult.answer,
       cot: optimizedResult.cot || dataset.cot
     };
-
-    console.log(333, updateDataset);
 
     await updateDataset(updatedDataset);
 
