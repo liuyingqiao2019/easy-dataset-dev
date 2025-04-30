@@ -113,7 +113,7 @@ export async function POST(request, { params }) {
     if (dataset) {
       await updateQuestion({ id: questionId, answered: true });
     }
-    console.log(datasets.length, 'Successfully generated dataset', question.question);
+    console.log('Successfully generated dataset', question.question);
 
     return NextResponse.json({
       success: true,
