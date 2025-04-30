@@ -290,7 +290,7 @@ export default function DatasetDetailsPage({ params }) {
       const nextResponse = await axios.get(`/api/projects/${projectId}/datasets/${datasetId}?operateType=next`);
       const hasNextDataset = !!nextResponse.data;
       const nextDatasetId = hasNextDataset ? nextResponse.data.id : null;
-      
+
       // 删除当前数据集
       const deleteResponse = await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
         method: 'DELETE'
@@ -307,7 +307,7 @@ export default function DatasetDetailsPage({ params }) {
         // 没有更多数据集，返回列表页面
         router.push(`/projects/${projectId}/datasets`);
       }
-      
+
       toast.success(t('common.deleteSuccess'));
     } catch (error) {
       setSnackbar({
@@ -563,7 +563,7 @@ export default function DatasetDetailsPage({ params }) {
 
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
