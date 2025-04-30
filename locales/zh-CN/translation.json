@@ -432,10 +432,11 @@
     "defaultTitle": "默认标题"
   },
   "models": {
-    "configNotFound": "模型配置未找到，请检查！",
-    "parseError": "解析模型配置出错，请检查！",
+    "configNotFound": "未找到模型配置",
+    "parseError": "解析模型配置失败",
     "fetchFailed": "获取模型失败",
     "saveFailed": "保存模型配置失败",
+    "pleaseSelectModel": "请至少选择一个模型",
     "title": "模型管理",
     "add": "添加模型",
     "unselectedModel": "未选择模型",

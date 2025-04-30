@@ -436,6 +436,7 @@
     "parseError": "Failed to parse model config",
     "fetchFailed": "Failed to fetch model",
     "saveFailed": "Failed to save model config",
+    "pleaseSelectModel": "Please select at least one model",
     "title": "Model Settings",
     "add": "Add Model",
     "unselectedModel": "Unselected Model",

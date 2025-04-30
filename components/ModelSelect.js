@@ -7,15 +7,30 @@ import { useAtom, useAtomValue } from 'jotai/index';
 import { modelConfigListAtom, selectedModelInfoAtom } from '@/lib/store';
 import axios from 'axios';
 
-export default function ModelSelect({ size = 'small', minWidth = 180, projectId }) {
+export default function ModelSelect({ size = 'small', minWidth = 180, projectId, required = false, onError }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const models = useAtomValue(modelConfigListAtom);
   const [selectedModelInfo, setSelectedModelInfo] = useAtom(selectedModelInfoAtom);
-  const [selectedModel, setSelectedModel] = useState(selectedModelInfo ? selectedModelInfo : models[0]?.id || '');
+  // 确保始终使用字符串值初始化 selectedModel，避免从非受控变为受控
+  const [selectedModel, setSelectedModel] = useState(() => {
+    if (selectedModelInfo && selectedModelInfo.id) {
+      return selectedModelInfo.id;
+    } else if (models && models.length > 0 && models[0]?.id) {
+      return models[0].id;
+    }
+    return '';
+  });
+  const [error, setError] = useState(false);
   const handleModelChange = event => {
     if (!event || !event.target) return;
     const newModelId = event.target.value;
+
+    // 清除错误状态
+    if (error) {
+      setError(false);
+      if (onError) onError(false);
+    }
 
     // 找到选中的模型对象
     const selectedModelObj = models.find(model => model.id === newModelId);
@@ -38,19 +53,37 @@ export default function ModelSelect({ size = 'small', minWidth = 180, projectId 
     }
   };
 
+  // 检查是否选择了模型
+  const validateModel = () => {
+    if (required && (!selectedModel || selectedModel === '')) {
+      setError(true);
+      if (onError) onError(true);
+      return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
-    if (selectedModelInfo) {
+    if (selectedModelInfo && selectedModelInfo.id) {
       setSelectedModel(selectedModelInfo.id);
     }
   }, [selectedModelInfo]);
+  
+  // 初始检查
+  useEffect(() => {
+    if (required) {
+      validateModel();
+    }
+  }, [required]);
 
   return (
-    <FormControl size={size} sx={{ minWidth }}>
+    <FormControl size={size} sx={{ minWidth }} error={error}>
       <Select
         value={selectedModel}
         onChange={handleModelChange}
         displayEmpty
         variant="outlined"
+        onBlur={validateModel}
         sx={{
           bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.15)',
           color: theme.palette.mode === 'dark' ? 'inherit' : 'white',
@@ -76,7 +109,7 @@ export default function ModelSelect({ size = 'small', minWidth = 180, projectId 
         }}
       >
         <MenuItem value="" disabled>
-          {t('playground.selectModelFirst')}
+          {error ? t('models.pleaseSelectModel') : t('playground.selectModelFirst')}
         </MenuItem>
         {models
           .filter(m => {
