@@ -68,28 +68,6 @@ export default function Navbar({ projects = [], currentProject }) {
     window.location.href = `/projects/${newProjectId}/text-split`;
   };
 
-  const handleSyncOldData = () => {
-    async function fetchData() {
-      const response = await fetch('/api/update');
-      if (!response.ok) {
-        throw new Error('Failed to fetch data');
-      }
-      return response.json();
-    }
-
-    toast.promise(fetchData(), {
-      loading: '数据同步中',
-      success: data => {
-        window.location.href = '/';
-        if (data === 0) return '暂无数据需要同步';
-        if (data > 0) return `${data}条数据同步成功`;
-      },
-      error: () => {
-        toast.error('数据同步失败');
-      }
-    });
-  };
-
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
@@ -262,26 +240,6 @@ export default function Navbar({ projects = [], currentProject }) {
         >
           {/* 模型选择 */}
           {location.pathname.includes('/projects/') && <ModelSelect projectId={selectedProject} />}
-
-          {/* 同步文件格式数据 */}
-          <Tooltip title={t('common.syncOldData')}>
-            <IconButton
-              size="small"
-              onClick={handleSyncOldData}
-              sx={{
-                bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.15)',
-                color: theme.palette.mode === 'dark' ? 'inherit' : 'white',
-                p: 1,
-                borderRadius: 1.5,
-                '&:hover': {
-                  bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.25)'
-                }
-              }}
-              style={{ right: '-15px' }}
-            >
-              <SyncIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
 
           {/* 数据集广场链接 - 改为图标按钮样式 */}
           <Tooltip title={t('datasetSquare.title')}>

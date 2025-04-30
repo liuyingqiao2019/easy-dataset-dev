@@ -462,5 +462,16 @@
     "questionCount": "Question Count",
     "generatedDatasets": "Generated Datasets",
     "supportedModels": "Supported Models"
+  },
+  "migration": {
+    "title": "Project Migration",
+    "description": "Some projects need to be migrated to the database. Migration can improve performance and support more features.",
+    "projectsList": "Unmigrated Projects",
+    "migrate": "Start Migration",
+    "migrating": "Migrating...",
+    "success": "Successfully migrated {{count}} projects",
+    "failed": "Migration failed",
+    "checkFailed": "Failed to check unmigrated projects",
+    "checkError": "Error checking unmigrated projects"
   }
 }
