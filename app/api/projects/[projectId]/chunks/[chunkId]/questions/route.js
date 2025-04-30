@@ -77,6 +77,8 @@ export async function POST(request, { params }) {
 
     const labelResponse = await llmClient.getResponse(labelPrompt);
     const labelQuestions = extractJsonFromLLMOutput(labelResponse);
+
+    console.log(projectId, chunkId, 'addLabel', labelQuestions);
     // 保存问题到数据库
     await saveQuestions(projectId, labelQuestions, chunkId);
     // 返回生成的问题

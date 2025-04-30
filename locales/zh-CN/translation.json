@@ -114,7 +114,7 @@
     "loading": "加载中...",
     "yes": "是",
     "no": "否",
-    "confirmDelete": "确认删除吗？",
+    "confirmDelete": "确认删除吗？此操作不可撤销！",
     "saving": "保存中...",
     "deleting": "删除中...",
     "actions": "操作",
