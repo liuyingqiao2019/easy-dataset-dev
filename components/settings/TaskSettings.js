@@ -229,7 +229,7 @@ export default function TaskSettings({ projectId }) {
 
       <Snackbar
         open={success}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
@@ -240,7 +240,7 @@ export default function TaskSettings({ projectId }) {
 
       <Snackbar
         open={!!error}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >

@@ -42,6 +42,8 @@ import { useRouter } from 'next/navigation';
 import ExportDatasetDialog from '@/components/ExportDatasetDialog';
 import { useTranslation } from 'react-i18next';
 import { processInParallel } from '@/lib/util/async';
+import axios from 'axios';
+import { useDebounce } from '@/hooks/useDebounce';
 
 // 数据集列表组件
 const DatasetList = ({
@@ -59,13 +61,11 @@ const DatasetList = ({
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
-
   const bgColor = theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light;
   const color =
     theme.palette.mode === 'dark'
       ? theme.palette.getContrastText(theme.palette.primary.main)
       : theme.palette.getContrastText(theme.palette.primary.contrastText);
-
   return (
     <Card elevation={2}>
       <TableContainer sx={{ overflowX: 'auto' }}>
@@ -82,8 +82,8 @@ const DatasetList = ({
               >
                 <Checkbox
                   color="primary"
-                  indeterminate={selectedIds.length > 0 && selectedIds.length < datasets.length}
-                  checked={datasets.length > 0 && selectedIds.length === datasets.length}
+                  indeterminate={selectedIds.length > 0 && selectedIds.length < total}
+                  checked={total > 0 && selectedIds.length === total}
                   onChange={onSelectAll}
                 />
               </TableCell>
@@ -212,6 +212,7 @@ const DatasetList = ({
                   }}
                 >
                   <Typography variant="body2" fontWeight="medium">
+                    {dataset.confirmed}
                     {dataset.confirmed && (
                       <Chip
                         label={t('datasets.confirmed')}
@@ -230,7 +231,7 @@ const DatasetList = ({
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2" color="text.secondary">
-                    {new Date(dataset.createdAt).toLocaleString('zh-CN')}
+                    {new Date(dataset.createAt).toLocaleString('zh-CN')}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -352,7 +353,7 @@ const DatasetList = ({
       <Divider />
       <TablePagination
         component="div"
-        count={total}
+        count={Math.ceil(total / rowsPerPage)}
         page={page}
         onPageChange={onPageChange}
         rowsPerPage={rowsPerPage}
@@ -437,7 +438,10 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
               <Typography variant="body2">
-                {t('datasets.batchDeleteProgress', { completed: progress.completed, total: progress.total })}
+                {t('datasets.batchDeleteProgress', {
+                  completed: progress.completed,
+                  total: progress.total
+                })}
               </Typography>
               <Typography variant="body2" color="success.main" sx={{ fontWeight: 'medium' }}>
                 {t('datasets.batchDeleteCount', { count: progress.datasetCount })}
@@ -480,9 +484,10 @@ export default function DatasetsPage({ params }) {
     // 是否正在删除
     deleting: false
   });
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery);
   const [exportDialog, setExportDialog] = useState({ open: false });
   const [selectedIds, setselectedIds] = useState([]);
   const [filterConfirmed, setFilterConfirmed] = useState('all');
@@ -505,13 +510,13 @@ export default function DatasetsPage({ params }) {
   };
 
   // 获取数据集列表
-  const fetchDatasets = async () => {
+  const getDatasetsList = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/projects/${projectId}/datasets`);
-      if (!response.ok) throw new Error(t('datasets.fetchFailed'));
-      const data = await response.json();
-      setDatasets(data);
+      const response = await axios.get(
+        `/api/projects/${projectId}/datasets?page=${page}&size=${rowsPerPage}&status=${filterConfirmed}&input=${searchQuery}`
+      );
+      setDatasets(response.data);
     } catch (error) {
       setSnackbar({
         open: true,
@@ -524,40 +529,23 @@ export default function DatasetsPage({ params }) {
   };
 
   useEffect(() => {
-    fetchDatasets();
-  }, [projectId]);
+    getDatasetsList();
+  }, [projectId, page, rowsPerPage, filterConfirmed, debouncedSearchQuery]);
 
   // 处理页码变化
   const handlePageChange = (event, newPage) => {
-    setPage(newPage);
+    console.log(newPage);
+    if (newPage <= 0) {
+      setPage(1);
+    } else {
+      setPage(newPage);
+    }
   };
 
   // 处理每页行数变化
   const handleRowsPerPageChange = event => {
+    setPage(1);
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  // 过滤数据
-  const filteredDatasets = datasets.filter(dataset => {
-    const matchesSearchQuery =
-      dataset.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (dataset.questionLabel && dataset.questionLabel.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      dataset.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dataset.chunkId.toLowerCase().includes(searchQuery.toLowerCase());
-    // 过滤已确认和未确认的数据集
-    const matchesConfirmedFilter =
-      filterConfirmed === 'all' ||
-      (filterConfirmed === 'confirmed' && dataset.confirmed) ||
-      (filterConfirmed === 'unconfirmed' && !dataset.confirmed);
-    return matchesSearchQuery && matchesConfirmedFilter;
-  });
-
-  // 获取当前页的数据
-  const getCurrentPageData = () => {
-    const start = page * rowsPerPage;
-    const end = start + rowsPerPage;
-    return filteredDatasets.slice(start, end);
   };
 
   // 打开删除确认框
@@ -579,7 +567,7 @@ export default function DatasetsPage({ params }) {
   const handleBatchDeleteDataset = async () => {
     setDeleteDialog({
       open: true,
-      datasets: datasets.filter(dataset => selectedIds.includes(dataset.id)),
+      datasets: datasets.data.filter(dataset => selectedIds.includes(dataset.id)),
       batch: true,
       count: selectedIds.length
     });
@@ -606,8 +594,9 @@ export default function DatasetsPage({ params }) {
       if (!dataset) return;
       await handleDelete(dataset);
     }
+    setselectedIds([]);
     // 刷新数据
-    fetchDatasets();
+    getDatasetsList();
     // 关闭确认框
     handleCloseDeleteDialog();
   };
@@ -647,15 +636,14 @@ export default function DatasetsPage({ params }) {
   };
 
   // 导出数据集
-  const handleExportDatasets = exportOptions => {
+  const handleExportDatasets = async exportOptions => {
     try {
-      // 根据选项筛选数据
-      let dataToExport = [...filteredDatasets];
-
-      // 如果只导出已确认的数据集
+      let apiUrl = `/api/projects/${projectId}/datasets/export`;
       if (exportOptions.confirmedOnly) {
-        dataToExport = dataToExport.filter(dataset => dataset.confirmed);
+        apiUrl += `?status=confirmed`;
       }
+      const response = await axios.get(apiUrl);
+      let dataToExport = response.data;
 
       // 根据选择的格式转换数据
       let formattedData;
@@ -804,9 +792,12 @@ export default function DatasetsPage({ params }) {
   };
 
   // 处理全选/取消全选
-  const handleSelectAll = event => {
+  const handleSelectAll = async event => {
     if (event.target.checked) {
-      setselectedIds(getCurrentPageData().map(dataset => dataset.id));
+      const response = await axios.get(
+        `/api/projects/${projectId}/datasets?page=${page}&size=${rowsPerPage}&status=${filterConfirmed}&input=${searchQuery}&selectedAll=1`
+      );
+      setselectedIds(response.data.map(dataset => dataset.id));
     } else {
       setselectedIds([]);
     }
@@ -870,12 +861,9 @@ export default function DatasetsPage({ params }) {
             </Typography>
             <Typography variant="body1" color="text.secondary">
               {t('datasets.stats', {
-                total: datasets.length,
-                confirmed: datasets.filter(d => d.confirmed).length,
-                percentage:
-                  datasets.length > 0
-                    ? Math.round((datasets.filter(d => d.confirmed).length / datasets.length) * 100)
-                    : 0
+                total: datasets.total,
+                confirmed: datasets.confirmedCount,
+                percentage: datasets.total > 0 ? ((datasets.confirmedCount / datasets.total) * 100).toFixed(2) : 0
               })}
             </Typography>
           </Box>
@@ -884,7 +872,7 @@ export default function DatasetsPage({ params }) {
               value={filterConfirmed}
               onChange={e => {
                 setFilterConfirmed(e.target.value);
-                setPage(0);
+                setPage(1);
               }}
               displayEmpty
               sx={{ width: 150 }}
@@ -912,7 +900,7 @@ export default function DatasetsPage({ params }) {
                 value={searchQuery}
                 onChange={e => {
                   setSearchQuery(e.target.value);
-                  setPage(0);
+                  setPage(1);
                 }}
               />
             </Paper>
@@ -958,14 +946,14 @@ export default function DatasetsPage({ params }) {
       )}
 
       <DatasetList
-        datasets={getCurrentPageData()}
+        datasets={datasets.data}
         onViewDetails={handleViewDetails}
         onDelete={handleOpenDeleteDialog}
         page={page}
         rowsPerPage={rowsPerPage}
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
-        total={filteredDatasets.length}
+        total={datasets.total}
         selectedIds={selectedIds}
         onSelectAll={handleSelectAll}
         onSelectItem={handleSelectItem}
@@ -983,7 +971,7 @@ export default function DatasetsPage({ params }) {
 
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >

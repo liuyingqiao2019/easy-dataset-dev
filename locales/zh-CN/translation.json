@@ -34,6 +34,8 @@
     "saveBasicInfo": "保存基本信息",
     "saveSuccess": "保存成功",
     "saveFailed": "保存失败",
+    "deleteSuccess": "删除成功",
+    "deleteFailed": "删除失败",
     "fetchTasksFailed": "获取任务配置失败",
     "saveTasksFailed": "保存任务配置失败",
     "textSplitSettings": "文本分割设置",
@@ -112,7 +114,7 @@
     "loading": "加载中...",
     "yes": "是",
     "no": "否",
-    "confirmDelete": "确认删除吗？",
+    "confirmDelete": "确认删除吗？此操作不可撤销！",
     "saving": "保存中...",
     "deleting": "删除中...",
     "actions": "操作",
@@ -127,6 +129,7 @@
     "confirmDeleteQuestion": "确认删除此问题吗？此操作不可恢复。",
     "deleteSuccess": "删除成功",
     "visitGitHub": "访问GitHub仓库",
+    "syncOldData": "同步文件数据",
     "copy": "复制",
     "copied": "已复制"
   },
@@ -429,10 +432,11 @@
     "defaultTitle": "默认标题"
   },
   "models": {
-    "configNotFound": "模型配置未找到，请检查！",
-    "parseError": "解析模型配置出错，请检查！",
+    "configNotFound": "未找到模型配置",
+    "parseError": "解析模型配置失败",
     "fetchFailed": "获取模型失败",
     "saveFailed": "保存模型配置失败",
+    "pleaseSelectModel": "请至少选择一个模型",
     "title": "模型管理",
     "add": "添加模型",
     "unselectedModel": "未选择模型",
@@ -459,5 +463,23 @@
     "questionCount": "问题数量",
     "generatedDatasets": "已生成的数据集",
     "supportedModels": "已支持的模型"
+  },
+  "migration": {
+    "title": "【重要】历史数据迁移",
+    "description": "为了提升大量数据集的检索性能，自 1.3.1 版本起，Easy Dataset 将文件存储方式变更为本地数据库存储，检测到您有历史项目尚未进行迁移，在完成迁移前，您将无法访问这些项目，请尽快完成迁移！",
+    "projectsList": "未迁移的项目",
+    "migrate": "开始迁移",
+    "migrating": "迁移中...",
+    "success": "成功迁移 {{count}} 个项目",
+    "failed": "迁移失败",
+    "checkFailed": "检查未迁移项目失败",
+    "checkError": "检查未迁移项目出错",
+    "starting": "正在启动迁移任务...",
+    "processing": "正在处理迁移任务...",
+    "completed": "迁移已完成",
+    "startFailed": "启动迁移任务失败",
+    "statusFailed": "获取迁移状态失败",
+    "taskNotFound": "迁移任务不存在",
+    "progressStatus": "已迁移 {{completed}}/{{total}} 个项目"
   }
 }

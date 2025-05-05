@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 
 export default function UploadArea({ theme, files, uploading, uploadedFiles, onFileSelect, onRemoveFile, onUpload }) {
   const { t } = useTranslation();
-
   return (
     <Box
       sx={{
@@ -51,7 +50,7 @@ export default function UploadArea({ theme, files, uploading, uploadedFiles, onF
       </Button>
 
       <Typography variant="body2" color="textSecondary">
-        {uploadedFiles.length > 0 ? t('textSplit.mutilFileMessage') : t('textSplit.supportedFormats')}
+        {uploadedFiles.total > 0 ? t('textSplit.mutilFileMessage') : t('textSplit.supportedFormats')}
       </Typography>
 
       {files.length > 0 && (

@@ -294,7 +294,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
           setError(err.message);
         });
     }
-  }, [currentTab, projectId]);
+  }, [currentTab, projectId, configExists]);
 
   return (
     <Dialog

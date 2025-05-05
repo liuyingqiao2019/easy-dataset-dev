@@ -9,6 +9,8 @@ import UploadArea from './components/UploadArea';
 import FileList from './components/FileList';
 import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import PdfProcessingDialog from './components/PdfProcessingDialog';
+import { useAtomValue } from 'jotai/index';
+import { modelConfigListAtom, selectedModelInfoAtom } from '@/lib/store';
 
 /**
  * File uploader component
@@ -33,7 +35,7 @@ export default function FileUploader({
   const { t } = useTranslation();
   const [files, setFiles] = useState([]);
   const [pdfFiles, setPdfFiles] = useState([]);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploadedFiles, setUploadedFiles] = useState({});
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -41,10 +43,11 @@ export default function FileUploader({
   const [successMessage, setSuccessMessage] = useState('');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [pdfProcessConfirmOpen, setpdfProcessConfirmOpen] = useState(false);
-  const [fileToDelete, setFileToDelete] = useState(null);
+  const [fileToDelete, setFileToDelete] = useState({});
   const [taskSettings, setTaskSettings] = useState(null);
   const [visionModels, setVisionModels] = useState([]);
-
+  const model = useAtomValue(modelConfigListAtom);
+  const selectModel = useAtomValue(selectedModelInfoAtom);
   // 设置PDF文件的处理方式
   const handleRadioChange = event => {
     // 传递这个值的原因是setSelectedViosnModel是异步的,PdfProcessingDialog检测到模型变更设置新的值
@@ -59,8 +62,8 @@ export default function FileUploader({
       const model = visionModels.find(item => item.id === modelId);
       setSuccessMessage(
         t('textSplit.customVisionModelSelected', {
-          name: model.name,
-          provider: model.provider
+          name: model.modelName,
+          provider: model.projectName
         })
       );
     } else {
@@ -87,7 +90,7 @@ export default function FileUploader({
       }
 
       const data = await response.json();
-      setUploadedFiles(data.files || []);
+      setUploadedFiles(data);
 
       //获取到配置信息，用于判断用户是否启用MinerU和视觉大模型
       const taskResponse = await fetch(`/api/projects/${projectId}/tasks`);
@@ -98,16 +101,6 @@ export default function FileUploader({
       const taskData = await taskResponse.json();
 
       setTaskSettings(taskData);
-
-      //获取配置的视觉模型
-      const modelResponse = await fetch(`/api/projects/${projectId}/models`);
-
-      if (!response.ok) {
-        throw new Error(t('models.fetchFailed'));
-      }
-
-      //获取所有模型
-      const model = await modelResponse.json();
 
       //过滤出视觉模型
       const visionItems = model.filter(item => item.type === 'vision' && item.apiKey);
@@ -187,23 +180,7 @@ export default function FileUploader({
     setError(null);
 
     try {
-      // 从 localStorage 获取当前选择的模型信息
-      let selectedModelInfo = null;
-
-      // 尝试从 localStorage 获取完整的模型信息
-      const modelInfoStr = localStorage.getItem('selectedModelInfo');
-
-      if (modelInfoStr) {
-        try {
-          selectedModelInfo = JSON.parse(modelInfoStr);
-        } catch (e) {
-          throw new Error(t('textSplit.modelInfoParseError'));
-        }
-      } else {
-        throw new Error(t('textSplit.selectModelFirst'));
-      }
-
-      const uploadedFileNames = [];
+      const uploadedFileInfos = [];
 
       for (const file of files) {
         let fileContent;
@@ -242,7 +219,7 @@ export default function FileUploader({
         }
 
         const data = await response.json();
-        uploadedFileNames.push(data.fileName);
+        uploadedFileInfos.push({ fileName: data.fileName, fileId: data.fileId });
       }
 
       setSuccessMessage(t('textSplit.uploadSuccess', { count: files.length }));
@@ -253,7 +230,7 @@ export default function FileUploader({
 
       // 上传成功后，返回文件名列表和选中的模型信息
       if (onUploadSuccess) {
-        await onUploadSuccess(uploadedFileNames, selectedModelInfo, pdfFiles);
+        await onUploadSuccess(uploadedFileInfos, pdfFiles);
       }
     } catch (err) {
       setError(err.message || t('textSplit.uploadFailed'));
@@ -263,8 +240,8 @@ export default function FileUploader({
   };
 
   // 打开删除确认对话框
-  const openDeleteConfirm = fileName => {
-    setFileToDelete(fileName);
+  const openDeleteConfirm = (fileId, fileName) => {
+    setFileToDelete({ fileId, fileName });
     setDeleteConfirmOpen(true);
   };
 
@@ -287,7 +264,7 @@ export default function FileUploader({
       setLoading(true);
       closeDeleteConfirm();
 
-      const response = await fetch(`/api/projects/${projectId}/files?fileName=${encodeURIComponent(fileToDelete)}`, {
+      const response = await fetch(`/api/projects/${projectId}/files?fileId=${fileToDelete.fileId}`, {
         method: 'DELETE'
       });
 
@@ -301,11 +278,11 @@ export default function FileUploader({
 
       // 通知父组件文件已删除，需要刷新文本块列表
       if (onFileDeleted) {
-        const filesLength = uploadedFiles.length;
+        const filesLength = uploadedFiles.total;
         onFileDeleted(fileToDelete, filesLength);
       }
 
-      setSuccessMessage(t('textSplit.deleteSuccess', { fileName: fileToDelete }));
+      setSuccessMessage(t('textSplit.deleteSuccess', { fileName: fileToDelete.fileName }));
       setSuccess(true);
     } catch (error) {
       console.error('删除文件出错:', error);
@@ -367,13 +344,13 @@ export default function FileUploader({
         </Grid>
       </Grid>
 
-      <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
+      <Snackbar open={!!error} autoHideDuration={2000} onClose={handleCloseError}>
         <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
           {error}
         </Alert>
       </Snackbar>
 
-      <Snackbar open={success} autoHideDuration={3000} onClose={handleCloseSuccess}>
+      <Snackbar open={success} autoHideDuration={2000} onClose={handleCloseSuccess}>
         <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
           {successMessage}
         </Alert>
@@ -381,7 +358,7 @@ export default function FileUploader({
 
       <DeleteConfirmDialog
         open={deleteConfirmOpen}
-        fileName={fileToDelete}
+        fileName={fileToDelete?.fileName}
         onClose={closeDeleteConfirm}
         onConfirm={handleDeleteFile}
       />

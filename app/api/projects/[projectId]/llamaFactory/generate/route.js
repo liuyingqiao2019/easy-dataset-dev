@@ -21,12 +21,7 @@ export async function POST(request, { params }) {
     const sharegptPath = path.join(projectPath, 'sharegpt.json');
 
     // 获取数据集
-    let datasets = await getDatasets(projectId);
-
-    // 如果只导出已确认的数据集
-    if (confirmedOnly) {
-      datasets = datasets.filter(dataset => dataset.confirmed);
-    }
+    let datasets = await getDatasets(projectId, !!confirmedOnly);
 
     // 创建 dataset_info.json 配置
     const config = {

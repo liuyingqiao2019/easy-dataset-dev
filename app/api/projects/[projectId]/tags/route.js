@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { saveTags, getTags } from '@/lib/db/tags';
+import { saveTags, getTags, createTag, updateTag, deleteTag } from '@/lib/db/tags';
+import { getQuestionsByTagName } from '@/lib/db/questions';
 
 // 获取项目的标签树
 export async function GET(request, { params }) {
@@ -33,10 +34,13 @@ export async function PUT(request, { params }) {
 
     // 获取请求体
     const { tags } = await request.json();
-
-    // 验证标签数据
-    if (!tags || !Array.isArray(tags)) {
-      return NextResponse.json({ error: 'Tag data format is incorrect' }, { status: 400 });
+    if (tags.id === undefined || tags.id === null || tags.id === '') {
+      console.log('createTag', tags);
+      let res = await createTag(projectId, tags.label, tags.parentId);
+      return NextResponse.json({ tags: res });
+    } else {
+      let res = await updateTag(tags.label, tags.id);
+      return NextResponse.json({ tags: res });
     }
 
     // 保存更新后的标签树
@@ -46,5 +50,42 @@ export async function PUT(request, { params }) {
   } catch (error) {
     console.error('Failed to update tags:', error);
     return NextResponse.json({ error: error.message || 'Failed to update tags' }, { status: 500 });
+  }
+}
+
+export async function POST(request, { params }) {
+  try {
+    const { projectId } = params;
+
+    // 验证项目ID
+    if (!projectId) {
+      return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
+    }
+    const { tagName } = await request.json();
+    console.log('tagName', tagName);
+    let data = await getQuestionsByTagName(projectId, tagName);
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Failed to obtain the label tree:', error);
+    return NextResponse.json({ error: error.message || 'Failed to obtain the label tree' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request, { params }) {
+  try {
+    const { projectId } = params;
+
+    // 验证项目ID
+    if (!projectId) {
+      return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
+    }
+    const { searchParams } = new URL(request.url);
+    let id = searchParams.get('id');
+    let res = await deleteTag(id);
+    return NextResponse.json(res);
+  } catch (error) {
+    console.error('Failed to obtain the label tree:', error);
+    return NextResponse.json({ error: error.message || 'Failed to obtain the label tree' }, { status: 500 });
   }
 }

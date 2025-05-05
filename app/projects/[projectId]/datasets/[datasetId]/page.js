@@ -32,6 +32,10 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/lib/i18n';
 import ChunkViewDialog from '@/components/text-split/ChunkViewDialog';
+import { useAtomValue } from 'jotai/index';
+import { selectedModelInfoAtom } from '@/lib/store';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 // 编辑区域组件
 const EditableField = ({ label, value, multiline = true, editing, onEdit, onChange, onSave, onCancel, onOptimize }) => {
@@ -139,7 +143,9 @@ const OptimizeDialog = ({ open, onClose, onConfirm, loading }) => {
 export default function DatasetDetailsPage({ params }) {
   const { projectId, datasetId } = params;
   const router = useRouter();
-  const [dataset, setDataset] = useState(null);
+  // 获取数据集列表（用于导航）
+  const [datasets, setDatasets] = useState([]);
+  const [currentDataset, setCurrentDataset] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingAnswer, setEditingAnswer] = useState(false);
   const [editingCot, setEditingCot] = useState(false);
@@ -157,52 +163,23 @@ export default function DatasetDetailsPage({ params }) {
   });
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewChunk, setViewChunk] = useState(null);
+  const [datasetsAllCount, setDatasetsAllCount] = useState(0);
+  const [datasetsConfirmCount, setDatasetsConfirmCount] = useState(0);
   const theme = useTheme();
-  // 获取数据集列表（用于导航）
-  const [datasets, setDatasets] = useState([]);
+  const model = useAtomValue(selectedModelInfoAtom);
   const { t } = useTranslation();
 
-  // 从本地存储获取模型参数
-  const getModelFromLocalStorage = () => {
-    if (typeof window === 'undefined') return null;
-
-    try {
-      let model = null;
-
-      // 尝试从 localStorage 获取完整的模型信息
-      const modelInfoStr = localStorage.getItem('selectedModelInfo');
-
-      if (modelInfoStr) {
-        try {
-          model = JSON.parse(modelInfoStr);
-        } catch (e) {
-          console.error('解析模型信息失败', e);
-          return null;
-        }
-      }
-
-      return model;
-    } catch (error) {
-      console.error('获取模型配置失败', error);
-      return null;
-    }
-  };
-
-  // 获取所有数据集
+  // 获取数据集详情
   const fetchDatasets = async () => {
     try {
-      const response = await fetch(`/api/projects/${projectId}/datasets`);
+      const response = await fetch(`/api/projects/${projectId}/datasets/${datasetId}`);
       if (!response.ok) throw new Error(t('datasets.fetchFailed'));
       const data = await response.json();
-      setDatasets(data);
-
-      // 找到当前数据集
-      const currentDataset = data.find(d => d.id === datasetId);
-      if (currentDataset) {
-        setDataset(currentDataset);
-        setAnswerValue(currentDataset.answer);
-        setCotValue(currentDataset.cot || '');
-      }
+      setCurrentDataset(data.datasets);
+      setCotValue(data.datasets?.cot);
+      setAnswerValue(data.datasets?.answer);
+      setDatasetsAllCount(data.total);
+      setDatasetsConfirmCount(data.confirmedCount);
     } catch (error) {
       setSnackbar({
         open: true,
@@ -231,7 +208,7 @@ export default function DatasetDetailsPage({ params }) {
         throw new Error(t('common.failed'));
       }
 
-      setDataset(prev => ({ ...prev, confirmed: true }));
+      setCurrentDataset(prev => ({ ...prev, confirmed: true }));
 
       setSnackbar({
         open: true,
@@ -257,17 +234,13 @@ export default function DatasetDetailsPage({ params }) {
   }, [projectId, datasetId]);
 
   // 导航到其他数据集
-  const handleNavigate = direction => {
-    const currentIndex = datasets.findIndex(d => d.id === datasetId);
-    if (currentIndex === -1) return;
-
-    const newIndex =
-      direction === 'prev'
-        ? (currentIndex - 1 + datasets.length) % datasets.length
-        : (currentIndex + 1) % datasets.length;
-
-    const newDataset = datasets[newIndex];
-    router.push(`/projects/${projectId}/datasets/${newDataset.id}`);
+  const handleNavigate = async direction => {
+    const response = await axios.get(`/api/projects/${projectId}/datasets/${datasetId}?operateType=${direction}`);
+    if (response.data) {
+      router.push(`/projects/${projectId}/datasets/${response.data.id}`);
+    } else {
+      toast.warning(`已经是${direction === 'next' ? '最后' : '第'}一条数据了`);
+    }
   };
 
   // 保存编辑
@@ -288,7 +261,7 @@ export default function DatasetDetailsPage({ params }) {
       }
 
       const data = await response.json();
-      setDataset(prev => ({ ...prev, [field]: value }));
+      setCurrentDataset(prev => ({ ...prev, [field]: value }));
 
       setSnackbar({
         open: true,
@@ -313,33 +286,29 @@ export default function DatasetDetailsPage({ params }) {
     if (!confirm(t('datasets.confirmDeleteMessage'))) return;
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
+      // 尝试获取下一个数据集，在删除前先确保有可导航的目标
+      const nextResponse = await axios.get(`/api/projects/${projectId}/datasets/${datasetId}?operateType=next`);
+      const hasNextDataset = !!nextResponse.data;
+      const nextDatasetId = hasNextDataset ? nextResponse.data.id : null;
+
+      // 删除当前数据集
+      const deleteResponse = await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
         method: 'DELETE'
       });
 
-      if (!response.ok) {
+      if (!deleteResponse.ok) {
         throw new Error(t('common.failed'));
       }
 
-      // 找到当前数据集的索引
-      const currentIndex = datasets.findIndex(d => d.id === datasetId);
-
-      // 如果这是最后一个数据集，返回列表页
-      if (datasets.length === 1) {
+      // 导航逻辑：有下一个就跳转下一个，没有则返回列表页
+      if (hasNextDataset) {
+        router.push(`/projects/${projectId}/datasets/${nextDatasetId}`);
+      } else {
+        // 没有更多数据集，返回列表页面
         router.push(`/projects/${projectId}/datasets`);
-        return;
       }
 
-      // 计算下一个数据集的索引
-      const nextIndex = (currentIndex + 1) % datasets.length;
-      // 如果是最后一个，就去第一个
-      const nextDataset = datasets[nextIndex] || datasets[0];
-
-      // 导航到下一个数据集
-      router.push(`/projects/${projectId}/datasets/${nextDataset.id}`);
-
-      // 更新本地数据集列表
-      setDatasets(prev => prev.filter(d => d.id !== datasetId));
+      toast.success(t('common.deleteSuccess'));
     } catch (error) {
       setSnackbar({
         open: true,
@@ -367,19 +336,10 @@ export default function DatasetDetailsPage({ params }) {
   };
 
   // 查看文本块详情
-  const handleViewChunk = async chunkId => {
+  const handleViewChunk = async chunkContent => {
     try {
+      setViewChunk(chunkContent);
       setViewDialogOpen(true);
-      setViewChunk(null);
-
-      const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`);
-
-      if (!response.ok) {
-        throw new Error(t('textSplit.fetchChunkFailed'));
-      }
-
-      const data = await response.json();
-      setViewChunk(data);
     } catch (error) {
       console.error(t('textSplit.fetchChunkError'), error);
       setSnackbar({
@@ -398,7 +358,6 @@ export default function DatasetDetailsPage({ params }) {
 
   // 提交优化请求
   const handleOptimize = async advice => {
-    const model = getModelFromLocalStorage();
     if (!model) {
       setSnackbar({
         open: true,
@@ -430,12 +389,8 @@ export default function DatasetDetailsPage({ params }) {
         throw new Error(errorData.error || '优化失败');
       }
 
-      const data = await response.json();
-
-      // 更新数据集
-      setDataset(data.dataset);
-      setAnswerValue(data.dataset.answer);
-      setCotValue(data.dataset.cot || '');
+      // 优化成功后，重新查询数据以获取最新状态
+      await fetchDatasets();
 
       setSnackbar({
         open: true,
@@ -466,7 +421,7 @@ export default function DatasetDetailsPage({ params }) {
     );
   }
 
-  if (!dataset) {
+  if (!currentDataset) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Alert severity="error">{t('datasets.noData')}</Alert>
@@ -487,9 +442,9 @@ export default function DatasetDetailsPage({ params }) {
             <Typography variant="h6">{t('datasets.datasetDetail')}</Typography>
             <Typography variant="body2" color="text.secondary">
               {t('datasets.stats', {
-                total: datasets.length,
-                confirmed: datasets.filter(d => d.confirmed).length,
-                percentage: Math.round((datasets.filter(d => d.confirmed).length / datasets.length) * 100)
+                total: datasetsAllCount,
+                confirmed: datasetsConfirmCount,
+                percentage: ((datasetsConfirmCount / datasetsAllCount) * 100).toFixed(2)
               })}
             </Typography>
           </Box>
@@ -504,13 +459,13 @@ export default function DatasetDetailsPage({ params }) {
             <Button
               variant="contained"
               color="primary"
-              disabled={confirming || dataset.confirmed}
+              disabled={confirming || currentDataset.confirmed}
               onClick={handleConfirm}
               sx={{ mr: 1 }}
             >
               {confirming ? (
                 <CircularProgress size={24} />
-              ) : dataset.confirmed ? (
+              ) : currentDataset.confirmed ? (
                 t('datasets.confirmed')
               ) : (
                 t('datasets.confirmSave')
@@ -530,7 +485,7 @@ export default function DatasetDetailsPage({ params }) {
             {t('datasets.question')}
           </Typography>
           <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-            {dataset.question}
+            {currentDataset.question}
           </Typography>
         </Box>
 
@@ -543,7 +498,7 @@ export default function DatasetDetailsPage({ params }) {
           onSave={() => handleSave('answer', answerValue)}
           onCancel={() => {
             setEditingAnswer(false);
-            setAnswerValue(dataset.answer);
+            setAnswerValue(currentDataset.answer);
           }}
           onOptimize={handleOpenOptimizeDialog}
         />
@@ -557,7 +512,7 @@ export default function DatasetDetailsPage({ params }) {
           onSave={() => handleSave('cot', cotValue)}
           onCancel={() => {
             setEditingCot(false);
-            setCotValue(dataset.cot || '');
+            setCotValue(currentDataset.cot || '');
           }}
         />
 
@@ -566,24 +521,33 @@ export default function DatasetDetailsPage({ params }) {
             {t('datasets.metadata')}
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <Chip label={`${t('datasets.model')}: ${dataset.model}`} variant="outlined" />
-            {dataset.questionLabel && (
-              <Chip label={`${t('common.label')}: ${dataset.questionLabel}`} color="primary" variant="outlined" />
+            <Chip label={`${t('datasets.model')}: ${currentDataset.model}`} variant="outlined" />
+            {currentDataset.questionLabel && (
+              <Chip
+                label={`${t('common.label')}: ${currentDataset.questionLabel}`}
+                color="primary"
+                variant="outlined"
+              />
             )}
             <Chip
-              label={`${t('datasets.createdAt')}: ${new Date(dataset.createdAt).toLocaleString('zh-CN')}`}
+              label={`${t('datasets.createdAt')}: ${new Date(currentDataset.createAt).toLocaleString('zh-CN')}`}
               variant="outlined"
             />
             <Tooltip title={t('textSplit.viewChunk')}>
               <Chip
-                label={`${t('datasets.chunkId')}: ${dataset.chunkId.substring(0, 12)}...`}
+                label={`${t('datasets.chunkId')}: ${currentDataset.chunkName}`}
                 variant="outlined"
                 color="info"
-                onClick={() => handleViewChunk(dataset.chunkId)}
+                onClick={() =>
+                  handleViewChunk({
+                    name: currentDataset.chunkName,
+                    content: currentDataset.chunkContent
+                  })
+                }
                 sx={{ cursor: 'pointer' }}
               />
             </Tooltip>
-            {dataset.confirmed && (
+            {currentDataset.confirmed && (
               <Chip
                 label={t('datasets.confirmed')}
                 sx={{
@@ -599,7 +563,7 @@ export default function DatasetDetailsPage({ params }) {
 
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >

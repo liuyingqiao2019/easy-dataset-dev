@@ -24,7 +24,9 @@ import DomainAnalysis from '@/components/text-split/DomainAnalysis';
 import request from '@/lib/util/request';
 import { processInParallel } from '@/lib/util/async';
 import useTaskSettings from '@/hooks/useTaskSettings';
-import { finished } from 'stream';
+import { useAtomValue, useSetAtom } from 'jotai/index';
+import { selectedModelInfoAtom } from '@/lib/store';
+import axios from 'axios';
 
 export default function TextSplitPage({ params }) {
   const { t } = useTranslation();
@@ -33,7 +35,6 @@ export default function TextSplitPage({ params }) {
   const [chunks, setChunks] = useState([]);
   const [showChunks, setShowChunks] = useState([]);
   const [tocData, setTocData] = useState('');
-  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [pdfProcessing, setPdfProcessing] = useState(false);
@@ -42,7 +43,7 @@ export default function TextSplitPage({ params }) {
   const [pdfStrategy, setPdfStrategy] = useState('default');
   const [questionFilter, setQuestionFilter] = useState('all'); // 'all', 'generated', 'ungenerated'
   const [selectedViosnModel, setSelectedViosnModel] = useState('');
-
+  let selectedModelInfo = useAtomValue(selectedModelInfoAtom);
   // 进度状态
   const [progress, setProgress] = useState({
     total: 0, // 总共选择的文本块数量
@@ -60,7 +61,7 @@ export default function TextSplitPage({ params }) {
   const fetchChunks = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/projects/${projectId}/split`);
+      const response = await fetch(`/api/projects/${projectId}/split?filter=${questionFilter}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -70,27 +71,11 @@ export default function TextSplitPage({ params }) {
       const data = await response.json();
       setChunks(data.chunks || []);
 
-      // Apply filter when setting showChunks
-      const filteredChunks = (data.chunks || []).filter(chunk => {
-        if (questionFilter === 'generated') {
-          return chunk.questions && chunk.questions.length > 0;
-        } else if (questionFilter === 'ungenerated') {
-          return !chunk.questions || chunk.questions.length === 0;
-        }
-        return true;
-      });
-      setShowChunks(filteredChunks);
-
       // 如果有文件结果，处理详细信息
       if (data.toc) {
         console.log(t('textSplit.fileResultReceived'), data.fileResult);
         // 如果有目录结构，设置目录数据
         setTocData(data.toc);
-      }
-
-      // 如果有标签，设置标签数据
-      if (data.tags) {
-        setTags(data.tags);
       }
     } catch (error) {
       console.error(t('textSplit.fetchChunksError'), error);
@@ -106,7 +91,7 @@ export default function TextSplitPage({ params }) {
   };
 
   // 处理文件上传成功
-  const handleUploadSuccess = async (fileNames, model, pdfFiles) => {
+  const handleUploadSuccess = async (fileNames, pdfFiles) => {
     console.log(t('textSplit.fileUploadSuccess'), fileNames);
     //上传完处理PDF文件
     try {
@@ -165,12 +150,12 @@ export default function TextSplitPage({ params }) {
 
     // 如果有文件上传成功，自动处理第一个文件
     if (fileNames && fileNames.length > 0) {
-      handleSplitText(fileNames[0], model);
+      handleSplitText(fileNames[0]);
     }
   };
 
   // 处理文本分割
-  const handleSplitText = async (fileName, model) => {
+  const handleSplitText = async fileName => {
     try {
       setProcessing(true);
       const language = i18n.language === 'zh-CN' ? '中文' : 'en';
@@ -179,7 +164,7 @@ export default function TextSplitPage({ params }) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ fileName, model, language })
+        body: JSON.stringify({ fileName, model: selectedModelInfo, language })
       });
 
       if (!response.ok) {
@@ -261,19 +246,7 @@ export default function TextSplitPage({ params }) {
         questionCount: 0
       });
 
-      let model = null;
-
-      // 尝试从 localStorage 获取完整的模型信息
-      const modelInfoStr = localStorage.getItem('selectedModelInfo');
-
-      if (modelInfoStr) {
-        try {
-          model = JSON.parse(modelInfoStr);
-        } catch (e) {
-          console.error('解析模型信息出错:', e);
-          // 继续执行，将在下面尝试获取模型信息
-        }
-      }
+      let model = selectedModelInfo;
 
       // 如果仍然没有模型信息，抛出错误
       if (!model) {
@@ -286,7 +259,7 @@ export default function TextSplitPage({ params }) {
         // 获取当前语言环境
         const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
 
-        const response = await request(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}/questions`, {
+        const response = await request(`/api/projects/${projectId}/chunks/${chunkId}/questions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -319,16 +292,13 @@ export default function TextSplitPage({ params }) {
             // 获取当前语言环境
             const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
 
-            const response = await request(
-              `/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}/questions`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ model, language: currentLanguage })
-              }
-            );
+            const response = await request(`/api/projects/${projectId}/chunks/${chunkId}/questions`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ model, language: currentLanguage })
+            });
 
             if (!response.ok) {
               const errorData = await response.json();
@@ -426,7 +396,7 @@ export default function TextSplitPage({ params }) {
       setProcessing(true);
       setError(null);
 
-      const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`, {
+      const response = await fetch(`/api/projects/${projectId}/chunks/${chunkId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -457,28 +427,7 @@ export default function TextSplitPage({ params }) {
   // 处理文件删除
   const handleFileDeleted = (fileName, filesCount) => {
     console.log(t('textSplit.fileDeleted', { fileName }));
-    // 从 localStorage 获取当前选择的模型信息
-    let selectedModelInfo = null;
-
-    // 尝试从 localStorage 获取完整的模型信息
-    const modelInfoStr = localStorage.getItem('selectedModelInfo');
-
-    if (modelInfoStr) {
-      try {
-        selectedModelInfo = JSON.parse(modelInfoStr);
-      } catch (e) {
-        throw new Error(t('textSplit.modelInfoParseError'));
-      }
-    } else {
-      throw new Error(t('textSplit.selectModelFirst'));
-    }
-    //如果多个文件的情况下，删除的不是最后一个文件，就复用handleSplitText重新构建领域树
-    if (filesCount > 1) {
-      handleSplitText(['rebuildToc.md'], selectedModelInfo);
-    } else {
-      //删除最后一个文件仅刷新界面即可
-      location.reload();
-    }
+    location.reload();
   };
 
   // 关闭错误提示
@@ -496,7 +445,7 @@ export default function TextSplitPage({ params }) {
     return (
       <Snackbar
         open={Boolean(error)}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={handleCloseError}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
@@ -508,37 +457,17 @@ export default function TextSplitPage({ params }) {
   };
 
   // 处理筛选器变更
-  const handleQuestionFilterChange = value => {
-    setQuestionFilter(value);
-
-    // 应用筛选
-    const filteredChunks = chunks.filter(chunk => {
-      if (value === 'generated') {
-        return chunk.questions && chunk.questions.length > 0;
-      } else if (value === 'ungenerated') {
-        return !chunk.questions || chunk.questions.length === 0;
-      }
-      return true;
-    });
-    setShowChunks(filteredChunks);
-  };
+  useEffect(() => {
+    fetchChunks();
+  }, [questionFilter]);
 
   const handleSelected = array => {
     if (array.length > 0) {
-      let selectedChunks = [];
-      for (let i = 0; i < array.length; i++) {
-        const name = array[i].replace(/\.md$/, '');
-        console.log(name);
-        const tempChunks = chunks.filter(item => item.id.includes(name));
-        tempChunks.forEach(item => {
-          selectedChunks.push(item);
-        });
-      }
-      setShowChunks(selectedChunks);
-      console.log(selectedChunks);
+      axios.post(`/api/projects/${projectId}/chunks`, { array }).then(response => {
+        setChunks(response.data);
+      });
     } else {
-      const allChunks = chunks;
-      setShowChunks(allChunks);
+      fetchChunks();
     }
   };
 
@@ -574,18 +503,18 @@ export default function TextSplitPage({ params }) {
         {activeTab === 0 && (
           <ChunkList
             projectId={projectId}
-            chunks={showChunks}
+            chunks={chunks}
             onDelete={handleDeleteChunk}
             onEdit={handleEditChunk}
             onGenerateQuestions={handleGenerateQuestions}
             loading={loading}
             questionFilter={questionFilter}
-            onQuestionFilterChange={handleQuestionFilterChange}
+            setQuestionFilter={setQuestionFilter}
           />
         )}
 
         {/* 领域分析标签内容 */}
-        {activeTab === 1 && <DomainAnalysis projectId={projectId} toc={tocData} loading={loading} tags={tags} />}
+        {activeTab === 1 && <DomainAnalysis projectId={projectId} toc={tocData} loading={loading} />}
       </Box>
 
       {/* 加载中蒙版 */}

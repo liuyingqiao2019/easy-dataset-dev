@@ -12,9 +12,9 @@ export const MODEL_PROVIDERS = [
     defaultModels: ['gpt-4o', 'gpt-4o-mini', 'o1-mini']
   },
   {
-    id: 'siliconflow',
+    id: 'siliconcloud',
     name: '硅基流动',
-    defaultEndpoint: 'https://api.siliconflow.cn/v1/',
+    defaultEndpoint: 'https://api.ap.siliconflow.com/v1/',
     defaultModels: [
       'deepseek-ai/DeepSeek-R1',
       'deepseek-ai/DeepSeek-V3',
@@ -41,7 +41,7 @@ export const MODEL_PROVIDERS = [
     defaultModels: ['glm-4-flash', 'glm-4-flashx', 'glm-4-plus', 'glm-4-long']
   },
   {
-    id: 'huoshan',
+    id: 'Doubao',
     name: '火山引擎',
     defaultEndpoint: 'https://ark.cn-beijing.volces.com/api/v3/',
     defaultModels: []
@@ -55,7 +55,7 @@ export const MODEL_PROVIDERS = [
   {
     id: 'grok',
     name: 'Grok',
-    defaultEndpoint: 'https://api.x.ai',
+    defaultEndpoint: 'https://api.x.ai/v1',
     defaultModels: ['Grok Beta']
   },
   {

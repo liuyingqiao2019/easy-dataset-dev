@@ -1,12 +1,20 @@
 import { NextResponse } from 'next/server';
-import { getTextChunk } from '@/lib/db/texts';
-import { getQuestionsForChunk } from '@/lib/db/questions';
-import { getDatasets, saveDatasets, updateDataset } from '@/lib/db/datasets';
+import { getQuestionById, updateQuestion } from '@/lib/db/questions';
+import {
+  createDataset,
+  deleteDataset,
+  getDatasetsById,
+  getDatasetsByPagination,
+  getDatasetsIds,
+  updateDataset
+} from '@/lib/db/datasets';
 import { getProject } from '@/lib/db/projects';
 import getAnswerPrompt from '@/lib/llm/prompts/answer';
 import getAnswerEnPrompt from '@/lib/llm/prompts/answerEn';
 import getOptimizeCotPrompt from '@/lib/llm/prompts/optimizeCot';
 import getOptimizeCotEnPrompt from '@/lib/llm/prompts/optimizeCotEn';
+import { getChunkById } from '@/lib/db/chunks';
+import { nanoid } from 'nanoid';
 
 const LLMClient = require('@/lib/llm/core');
 
@@ -16,7 +24,7 @@ async function optimizeCot(originalQuestion, answer, originalCot, language, llmC
       ? getOptimizeCotEnPrompt(originalQuestion, answer, originalCot)
       : getOptimizeCotPrompt(originalQuestion, answer, originalCot);
   const { answer: optimizedAnswer } = await llmClient.getResponseWithCOT(prompt);
-  await updateDataset(projectId, id, { cot: optimizedAnswer.replace('优化后的思维链', '') });
+  await updateDataset({ id, cot: optimizedAnswer.replace('优化后的思维链', '') });
   console.log(originalQuestion, id, 'Successfully optimized thought process');
 }
 
@@ -26,10 +34,9 @@ async function optimizeCot(originalQuestion, answer, originalCot, language, llmC
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
-    const { questionId, chunkId, model, language } = await request.json();
-
+    const { questionId, model, language } = await request.json();
     // 验证参数
-    if (!projectId || !questionId || !chunkId || !model) {
+    if (!projectId || !questionId || !model) {
       return NextResponse.json(
         {
           error: '缺少必要参数'
@@ -38,24 +45,23 @@ export async function POST(request, { params }) {
       );
     }
 
-    // 获取文本块内容
-    const chunk = await getTextChunk(projectId, chunkId);
-    if (!chunk) {
+    // 获取问题
+    const question = await getQuestionById(questionId);
+    if (!question) {
       return NextResponse.json(
         {
-          error: 'Text block does not exist'
+          error: 'Question not found'
         },
         { status: 404 }
       );
     }
 
-    // 获取问题
-    const questions = await getQuestionsForChunk(projectId, chunkId);
-    const question = questions.find(q => q.question === questionId);
-    if (!question) {
+    // 获取文本块内容
+    const chunk = await getChunkById(question.chunkId);
+    if (!chunk) {
       return NextResponse.json(
         {
-          error: 'Question not found'
+          error: 'Text block does not exist'
         },
         { status: 404 }
       );
@@ -66,14 +72,7 @@ export async function POST(request, { params }) {
     const { globalPrompt, answerPrompt } = project;
 
     // 创建LLM客户端
-    const llmClient = new LLMClient({
-      provider: model.provider,
-      endpoint: model.endpoint,
-      apiKey: model.apiKey,
-      model: model.name,
-      temperature: model.temperature,
-      maxTokens: model.maxTokens
-    });
+    const llmClient = new LLMClient(model);
 
     const promptFuc = language === 'en' ? getAnswerEnPrompt : getAnswerPrompt;
 
@@ -88,35 +87,37 @@ export async function POST(request, { params }) {
     // 调用大模型生成答案
     const { answer, cot } = await llmClient.getResponseWithCOT(prompt);
 
-    // 获取现有数据集
-    const datasets = await getDatasets(projectId);
-
-    const datasetId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const datasetId = nanoid(12);
 
     // 创建新的数据集项
-    const datasetItem = {
+    const datasets = {
       id: datasetId,
+      projectId: projectId,
       question: question.question,
       answer: answer,
-      chunkId: chunkId,
-      model: model.name,
-      createdAt: new Date().toISOString(),
+      model: model.modelName,
+      cot: '',
       questionLabel: question.label || null
     };
 
+    let chunkData = await getChunkById(question.chunkId);
+    datasets.chunkName = chunkData.name;
+    datasets.chunkContent = chunkData.content;
+    datasets.questionId = question.id;
+
+    let dataset = await createDataset(datasets);
     if (cot) {
       // 为了性能考虑，这里异步优化
       optimizeCot(question.question, answer, cot, language, llmClient, datasetId, projectId);
     }
-
-    // 添加到数据集
-    datasets.push(datasetItem);
-    await saveDatasets(projectId, datasets);
-    console.log(datasets.length, 'Successfully generated dataset', question.question);
+    if (dataset) {
+      await updateQuestion({ id: questionId, answered: true });
+    }
+    console.log('Successfully generated dataset', question.question);
 
     return NextResponse.json({
       success: true,
-      dataset: datasetItem
+      dataset
     });
   } catch (error) {
     console.error('Failed to generate dataset:', error);
@@ -135,19 +136,30 @@ export async function POST(request, { params }) {
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
-
+    const { searchParams } = new URL(request.url);
     // 验证项目ID
     if (!projectId) {
-      return NextResponse.json(
-        {
-          error: '项目ID不能为空'
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '项目ID不能为空' }, { status: 400 });
+    }
+    let status = searchParams.get('status');
+    let confirmed = undefined;
+    if (status === 'confirmed') confirmed = true;
+    if (status === 'unconfirmed') confirmed = false;
+
+    let selectedAll = searchParams.get('selectedAll');
+    if (selectedAll) {
+      let data = await getDatasetsIds(projectId, confirmed, searchParams.get('input'));
+      return NextResponse.json(data);
     }
 
     // 获取数据集
-    const datasets = await getDatasets(projectId);
+    const datasets = await getDatasetsByPagination(
+      projectId,
+      parseInt(searchParams.get('page')),
+      parseInt(searchParams.get('size')),
+      confirmed,
+      searchParams.get('input')
+    );
 
     return NextResponse.json(datasets);
   } catch (error) {
@@ -164,22 +176,10 @@ export async function GET(request, { params }) {
 /**
  * 删除数据集
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(request) {
   try {
-    const { projectId } = params;
     const { searchParams } = new URL(request.url);
     const datasetId = searchParams.get('id');
-
-    // 验证参数
-    if (!projectId) {
-      return NextResponse.json(
-        {
-          error: 'Project ID cannot be empty'
-        },
-        { status: 400 }
-      );
-    }
-
     if (!datasetId) {
       return NextResponse.json(
         {
@@ -189,26 +189,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // 获取所有数据集
-    const datasets = await getDatasets(projectId);
-
-    // 找到要删除的数据集索引
-    const datasetIndex = datasets.findIndex(dataset => dataset.id === datasetId);
-
-    if (datasetIndex === -1) {
-      return NextResponse.json(
-        {
-          error: 'Dataset does not exist'
-        },
-        { status: 404 }
-      );
-    }
-
-    // 删除数据集
-    datasets.splice(datasetIndex, 1);
-
-    // 保存更新后的数据集列表
-    await saveDatasets(projectId, datasets);
+    await deleteDataset(datasetId);
 
     return NextResponse.json({
       success: true,
@@ -228,23 +209,11 @@ export async function DELETE(request, { params }) {
 /**
  * 编辑数据集
  */
-export async function PATCH(request, { params }) {
+export async function PATCH(request) {
   try {
-    const { projectId } = params;
     const { searchParams } = new URL(request.url);
     const datasetId = searchParams.get('id');
     const { answer, cot, confirmed } = await request.json();
-
-    // 验证参数
-    if (!projectId) {
-      return NextResponse.json(
-        {
-          error: 'Project ID cannot be empty'
-        },
-        { status: 400 }
-      );
-    }
-
     if (!datasetId) {
       return NextResponse.json(
         {
@@ -253,14 +222,9 @@ export async function PATCH(request, { params }) {
         { status: 400 }
       );
     }
-
     // 获取所有数据集
-    const datasets = await getDatasets(projectId);
-
-    // 找到要编辑的数据集
-    const datasetIndex = datasets.findIndex(dataset => dataset.id === datasetId);
-
-    if (datasetIndex === -1) {
+    let dataset = await getDatasetsById(datasetId);
+    if (!dataset) {
       return NextResponse.json(
         {
           error: 'Dataset does not exist'
@@ -268,15 +232,13 @@ export async function PATCH(request, { params }) {
         { status: 404 }
       );
     }
-
-    // 更新数据集
-    const dataset = datasets[datasetIndex];
-    if (answer !== undefined) dataset.answer = answer;
-    if (cot !== undefined) dataset.cot = cot;
-    if (confirmed !== undefined) dataset.confirmed = confirmed;
+    let data = { id: datasetId };
+    if (confirmed) data.confirmed = confirmed;
+    if (answer) data.answer = answer;
+    if (cot) data.cot = cot;
 
     // 保存更新后的数据集列表
-    await saveDatasets(projectId, datasets);
+    await updateDataset(data);
 
     return NextResponse.json({
       success: true,

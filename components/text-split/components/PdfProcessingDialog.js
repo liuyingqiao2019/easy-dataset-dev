@@ -76,7 +76,7 @@ const OptionCard = ({
             >
               {visionModels.map(item => (
                 <MenuItem key={item.id} value={item.id}>
-                  {item.name} ({item.provider})
+                  {item.modelName} ({item.providerName})
                 </MenuItem>
               ))}
             </Select>
