@@ -4,6 +4,7 @@ const path = require('path');
 const http = require('http');
 const fs = require('fs');
 const url = require('url');
+const { updateDatabase } = require('./db-updater');
 
 function setupLogging() {
   const logDir = path.join(app.getPath('userData'), 'logs');
@@ -447,31 +448,58 @@ app.whenReady().then(async () => {
     };
     global.appLog(`数据库配置: ${JSON.stringify(logs)}`);
 
-    // 如果数据库文件不存在，初始化数据库
     if (!fs.existsSync(dbFilePath)) {
       global.appLog('数据库文件不存在，正在初始化...');
 
       try {
-        // 方案一：从资源目录复制预先生成的空数据库文件
         const resourcePath = process.env.NODE_ENV === 'development'
           ? path.join(__dirname, '..', 'prisma', 'template.sqlite')
           : path.join(process.resourcesPath, 'prisma', 'template.sqlite');
 
         global.appLog(`resourcePath: ${resourcePath}`);
 
-        // 检查模板数据库是否存在
         if (fs.existsSync(resourcePath)) {
-          // 复制模板数据库到用户数据目录
           fs.copyFileSync(resourcePath, dbFilePath);
           global.appLog(`数据库已从模板初始化: ${dbFilePath}`);
         }
       } catch (error) {
         console.error('数据库初始化失败:', error);
-        // 显示错误对话框
         dialog.showErrorBox(
           '数据库初始化失败',
           `应用无法初始化数据库，可能需要重新安装。\n错误详情: ${error.message}`
         );
+      }
+    } else {
+      // 数据库文件存在，检查是否需要更新
+      global.appLog('检查数据库是否需要更新...');
+      try {
+        const resourcesPath = process.env.NODE_ENV === 'development'
+          ? path.join(__dirname, '..')
+          : process.resourcesPath;
+        
+        const isDev = process.env.NODE_ENV === 'development';
+        
+        // 更新数据库
+        const result = await updateDatabase(userDataPath, resourcesPath, isDev, global.appLog);
+        
+        if (result.updated) {
+          global.appLog(`数据库更新成功: ${result.message}`);
+          global.appLog(`执行的版本: ${result.executedVersions.join(', ')}`);
+        } else {
+          global.appLog(`数据库无需更新: ${result.message}`);
+        }
+      } catch (error) {
+        console.error('数据库更新失败:', error);
+        global.appLog(`数据库更新失败: ${error.message}`, 'error');
+        
+        // 非致命错误，只提示但不阻止应用启动
+        dialog.showMessageBox({
+          type: 'warning',
+          title: '数据库更新警告',
+          message: '数据库更新过程中出现错误，部分功能可能受影响。',
+          detail: `错误详情: ${error.message}\n\n您可以继续使用应用，但如果遇到问题，请重新安装应用。`,
+          buttons: ['继续']
+        });
       }
     }
   } catch (error) {
