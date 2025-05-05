@@ -108,13 +108,13 @@ export default function TextSplitPage({ params }) {
       for (const file of pdfFiles) {
         const response = await fetch(
           `/api/projects/${projectId}/pdf?fileName=` +
-          file.name +
-          `&strategy=` +
-          pdfStrategy +
-          `&currentLanguage=` +
-          currentLanguage +
-          `&modelId=` +
-          selectedViosnModel
+            file.name +
+            `&strategy=` +
+            pdfStrategy +
+            `&currentLanguage=` +
+            currentLanguage +
+            `&modelId=` +
+            selectedViosnModel
         );
         if (!response.ok) {
           const errorData = await response.json();

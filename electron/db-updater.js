@@ -14,17 +14,17 @@ async function executeSql(dbUrl, sql) {
     .split(';')
     .map(stmt => stmt.trim())
     .filter(stmt => stmt.length > 0);
-  
+
   if (statements.length === 0) {
     return;
   }
-  
+
   // 设置环境变量
   process.env.DATABASE_URL = dbUrl;
-  
+
   // 创建Prisma实例
   const prisma = new PrismaClient();
-  
+
   try {
     // 执行每条SQL语句
     for (const statement of statements) {
@@ -46,7 +46,7 @@ async function executeSql(dbUrl, sql) {
 async function getSqlConfigs(userDataPath, resourcesPath, isDev) {
   // 用户SQL配置文件路径
   const userSqlPath = path.join(userDataPath, 'sql.json');
-  
+
   // 应用SQL配置文件路径
   const appSqlPath = isDev
     ? path.join(__dirname, '..', 'prisma', 'sql.json')
@@ -121,7 +121,7 @@ function getSqlsToExecute(userSqlConfig, appSqlConfig) {
  */
 async function updateDatabase(userDataPath, resourcesPath, isDev, logger = console.log) {
   const dbPath = path.join(userDataPath, 'local-db', 'db.sqlite');
-  
+
   // 确保数据库文件存在
   if (!fs.existsSync(dbPath)) {
     logger('数据库文件不存在，无需更新');
@@ -131,10 +131,10 @@ async function updateDatabase(userDataPath, resourcesPath, isDev, logger = conso
   try {
     // 获取SQL配置
     const { userSqlConfig, appSqlConfig } = await getSqlConfigs(userDataPath, resourcesPath, isDev);
-    
+
     // 获取需要执行的SQL
     const sqlsToExecute = getSqlsToExecute(userSqlConfig, appSqlConfig);
-    
+
     if (sqlsToExecute.length === 0) {
       logger('数据库已是最新版本，无需更新');
       return { updated: false, message: '数据库已是最新版本' };
@@ -148,19 +148,19 @@ async function updateDatabase(userDataPath, resourcesPath, isDev, logger = conso
     for (const item of sqlsToExecute) {
       logger(`执行版本 ${item.version} 的SQL更新: ${item.sql.substring(0, 100)}...`);
       await executeSql(dbUrl, item.sql);
-      
+
       // 添加到用户SQL配置
       userSqlConfig.push(item);
     }
 
     // 更新用户SQL配置文件
     updateUserSqlConfig(userDataPath, userSqlConfig);
-    
+
     logger('数据库更新完成');
-    return { 
-      updated: true, 
-      message: `成功执行了 ${sqlsToExecute.length} 个数据库更新`, 
-      executedVersions: sqlsToExecute.map(item => item.version) 
+    return {
+      updated: true,
+      message: `成功执行了 ${sqlsToExecute.length} 个数据库更新`,
+      executedVersions: sqlsToExecute.map(item => item.version)
     };
   } catch (error) {
     logger(`数据库更新失败: ${error.message}`);

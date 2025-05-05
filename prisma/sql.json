@@ -1,6 +1,6 @@
 [
-    {
-        "version": "1.2.5",
-        "sql": "ALTER TABLE Projects ADD COLUMN test VARCHAR(255) DEFAULT '';"
-    }
+  {
+    "version": "1.2.5",
+    "sql": "ALTER TABLE Projects ADD COLUMN test VARCHAR(255) DEFAULT '';"
+  }
 ]

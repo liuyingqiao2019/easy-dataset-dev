@@ -394,8 +394,8 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
         <Typography variant="body1" sx={{ mb: 2 }}>
           {batch
             ? t('datasets.batchconfirmDeleteMessage', {
-              count: datasets.length
-            })
+                count: datasets.length
+              })
             : t('common.confirmDeleteDataSet')}
         </Typography>
         {batch ? (

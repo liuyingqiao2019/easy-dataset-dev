@@ -27,7 +27,7 @@ function setupLogging() {
   };
 
   // 捕获全局未处理异常并记录
-  process.on('uncaughtException', (error) => {
+  process.on('uncaughtException', error => {
     global.appLog(`未捕获的异常: ${error.stack || error}`, 'error');
   });
 
@@ -262,7 +262,8 @@ function createMenu() {
                 detail: '这将删除日志目录下的所有文件以及本地数据库缓存文件（不包括主数据库文件）。'
               });
 
-              if (response.response === 1) { // 用户点击了确认
+              if (response.response === 1) {
+                // 用户点击了确认
                 await clearCache();
                 dialog.showMessageBox(mainWindow, {
                   type: 'info',
@@ -284,7 +285,6 @@ function createMenu() {
   Menu.setApplicationMenu(menu);
 }
 
-
 // 启动 Next.js 服务
 async function startNextServer() {
   console.log(`Easy Dataset 客户端启动中，当前版本: ${getAppVersion()}`);
@@ -303,9 +303,7 @@ async function startNextServer() {
 
   console.log = function () {
     const args = Array.from(arguments);
-    const logMessage = args.map(arg =>
-      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
-    ).join(' ');
+    const logMessage = args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg)).join(' ');
 
     logStream.write(`[${new Date().toISOString()}] [LOG] ${logMessage}\n`);
     originalConsoleLog.apply(console, args);
@@ -313,14 +311,11 @@ async function startNextServer() {
 
   console.error = function () {
     const args = Array.from(arguments);
-    const logMessage = args.map(arg =>
-      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
-    ).join(' ');
+    const logMessage = args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg)).join(' ');
 
     logStream.write(`[${new Date().toISOString()}] [ERROR] ${logMessage}\n`);
     originalConsoleError.apply(console, args);
   };
-
 
   // 检查端口是否被占用
   const isPortBusy = await checkPort(port);
@@ -339,13 +334,13 @@ async function startNextServer() {
       dir: path.join(__dirname, '..'),
       conf: {
         // 配置 Next.js 的日志输出
-        onInfo: (info) => {
+        onInfo: info => {
           console.log(`[Next.js Info] ${info}`);
         },
-        onError: (error) => {
+        onError: error => {
           console.error(`[Next.js Error] ${error}`);
         },
-        onWarn: (warn) => {
+        onWarn: warn => {
           console.log(`[Next.js Warning] ${warn}`);
         }
       }
@@ -477,7 +472,6 @@ ipcMain.handle('install-update', () => {
 
 // 当 Electron 完成初始化时创建窗口
 app.whenReady().then(async () => {
-
   // 在 app.whenReady 前调用
   const logFilePath = setupLogging();
 
@@ -511,9 +505,10 @@ app.whenReady().then(async () => {
       global.appLog('数据库文件不存在，正在初始化...');
 
       try {
-        const resourcePath = process.env.NODE_ENV === 'development'
-          ? path.join(__dirname, '..', 'prisma', 'template.sqlite')
-          : path.join(process.resourcesPath, 'prisma', 'template.sqlite');
+        const resourcePath =
+          process.env.NODE_ENV === 'development'
+            ? path.join(__dirname, '..', 'prisma', 'template.sqlite')
+            : path.join(process.resourcesPath, 'prisma', 'template.sqlite');
 
         global.appLog(`resourcePath: ${resourcePath}`);
 
@@ -523,18 +518,14 @@ app.whenReady().then(async () => {
         }
       } catch (error) {
         console.error('数据库初始化失败:', error);
-        dialog.showErrorBox(
-          '数据库初始化失败',
-          `应用无法初始化数据库，可能需要重新安装。\n错误详情: ${error.message}`
-        );
+        dialog.showErrorBox('数据库初始化失败', `应用无法初始化数据库，可能需要重新安装。\n错误详情: ${error.message}`);
       }
     } else {
       // 数据库文件存在，检查是否需要更新
       global.appLog('检查数据库是否需要更新...');
       try {
-        const resourcesPath = process.env.NODE_ENV === 'development'
-          ? path.join(__dirname, '..')
-          : process.resourcesPath;
+        const resourcesPath =
+          process.env.NODE_ENV === 'development' ? path.join(__dirname, '..') : process.resourcesPath;
 
         const isDev = process.env.NODE_ENV === 'development';
 
@@ -563,8 +554,11 @@ app.whenReady().then(async () => {
     }
   } catch (error) {
     console.error('应用初始化过程中发生错误:', error);
-    dialog.showErrorBox('应用初始化错误', `启动过程中发生错误，可能影响应用功能。
-错误详情: ${error.message}`);
+    dialog.showErrorBox(
+      '应用初始化错误',
+      `启动过程中发生错误，可能影响应用功能。
+错误详情: ${error.message}`
+    );
   }
 
   createWindow();

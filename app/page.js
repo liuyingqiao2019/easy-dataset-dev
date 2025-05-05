@@ -34,7 +34,7 @@ export default function Home() {
 
         const data = await response.json();
         setProjects(data);
-        
+
         // 检查是否有未迁移的项目
         await checkUnmigratedProjects();
       } catch (error) {
@@ -49,14 +49,14 @@ export default function Home() {
     async function checkUnmigratedProjects() {
       try {
         const response = await fetch('/api/projects/unmigrated');
-        
+
         if (!response.ok) {
           console.error('检查未迁移项目失败');
           return;
         }
-        
+
         const { success, data } = await response.json();
-        
+
         if (success && Array.isArray(data) && data.length > 0) {
           setUnmigratedProjects(data);
           setMigrationDialogOpen(true);
@@ -142,12 +142,12 @@ export default function Home() {
       </Container>
 
       <CreateProjectDialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} />
-      
+
       {/* 项目迁移对话框 */}
-      <MigrationDialog 
-        open={migrationDialogOpen} 
-        onClose={() => setMigrationDialogOpen(false)} 
-        projectIds={unmigratedProjects} 
+      <MigrationDialog
+        open={migrationDialogOpen}
+        onClose={() => setMigrationDialogOpen(false)}
+        projectIds={unmigratedProjects}
       />
     </main>
   );
