@@ -46,26 +46,26 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
       setSuccess(false);
       setProgress(0);
       setStatusText(t('migration.starting'));
-      
+
       // 调用异步迁移接口启动迁移任务
       const response = await fetch('/api/projects/migrate', {
         method: 'POST'
       });
-      
+
       if (!response.ok) {
         throw new Error(t('migration.failed'));
       }
-      
+
       const { success, taskId: newTaskId } = await response.json();
-      
+
       if (!success || !newTaskId) {
         throw new Error(t('migration.startFailed'));
       }
-      
+
       // 保存任务ID
       setTaskId(newTaskId);
       setStatusText(t('migration.processing'));
-      
+
       // 开始轮询任务状态
       await pollMigrationStatus(newTaskId);
     } catch (err) {
@@ -74,29 +74,29 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
       setMigrating(false);
     }
   };
-  
+
   // 轮询迁移任务状态
-  const pollMigrationStatus = async (id) => {
+  const pollMigrationStatus = async id => {
     try {
       // 定义轮询间隔（毫秒）
       const pollInterval = 1000;
-      
+
       // 发送请求获取任务状态
       const response = await fetch(`/api/projects/migrate?taskId=${id}`);
-      
+
       if (!response.ok) {
         throw new Error(t('migration.statusFailed'));
       }
-      
+
       const { success, task } = await response.json();
-      
+
       if (!success || !task) {
         throw new Error(t('migration.taskNotFound'));
       }
-      
+
       // 更新进度
       setProgress(task.progress || 0);
-      
+
       // 根据任务状态更新UI
       if (task.status === 'completed') {
         // 任务完成
@@ -104,7 +104,7 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
         setSuccess(true);
         setMigrating(false);
         setStatusText(t('migration.completed'));
-        
+
         // 迁移成功后，延迟关闭对话框并刷新页面
         setTimeout(() => {
           onClose();
@@ -116,13 +116,15 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
       } else {
         // 任务仍在进行中，继续轮询
         setTimeout(() => pollMigrationStatus(id), pollInterval);
-        
+
         // 更新状态文本
         if (task.total > 0) {
-          setStatusText(t('migration.progressStatus', { 
-            completed: task.completed || 0, 
-            total: task.total 
-          }));
+          setStatusText(
+            t('migration.progressStatus', {
+              completed: task.completed || 0,
+              total: task.total
+            })
+          );
         }
       }
     } catch (err) {
@@ -133,23 +135,18 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
   };
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={migrating ? undefined : onClose}
-      maxWidth="sm"
-      fullWidth
-    >
-      <DialogTitle sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 1.5
-      }}>
+    <Dialog open={open} onClose={migrating ? undefined : onClose} maxWidth="sm" fullWidth>
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5
+        }}
+      >
         <WarningAmberIcon color="warning" />
-        <Typography variant="h6">
-          {t('migration.title')}
-        </Typography>
+        <Typography variant="h6">{t('migration.title')}</Typography>
       </DialogTitle>
-      
+
       <DialogContent>
         {success ? (
           <Alert severity="success" sx={{ mb: 2 }}>
@@ -160,11 +157,11 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
             {error}
           </Alert>
         ) : null}
-        
+
         <Typography variant="body1" sx={{ mb: 2 }}>
           {t('migration.description')}
         </Typography>
-        
+
         {projectIds.length > 0 && (
           <Box sx={{ mt: 2, mb: 2 }}>
             <Typography variant="subtitle1" sx={{ mb: 1 }}>
@@ -172,7 +169,7 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
             </Typography>
             <Paper variant="outlined" sx={{ maxHeight: 180, overflow: 'auto' }}>
               <List dense>
-                {projectIds.map((id) => (
+                {projectIds.map(id => (
                   <ListItem key={id}>
                     <ListItemText primary={id} />
                   </ListItem>
@@ -181,7 +178,7 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
             </Paper>
           </Box>
         )}
-        
+
         {migrating && (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 3, gap: 1.5 }}>
             <CircularProgress variant={progress > 0 ? 'determinate' : 'indeterminate'} value={progress} />
@@ -196,20 +193,12 @@ export default function MigrationDialog({ open, onClose, projectIds = [] }) {
           </Box>
         )}
       </DialogContent>
-      
+
       <DialogActions>
-        <Button 
-          onClick={onClose} 
-          disabled={migrating}
-        >
+        <Button onClick={onClose} disabled={migrating}>
           {t('common.cancel')}
         </Button>
-        <Button 
-          onClick={handleMigration} 
-          variant="contained" 
-          color="primary"
-          disabled={migrating || success}
-        >
+        <Button onClick={handleMigration} variant="contained" color="primary" disabled={migrating || success}>
           {migrating ? t('migration.migrating') : t('migration.migrate')}
         </Button>
       </DialogActions>

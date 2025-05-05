@@ -1,9 +1,12 @@
-const { app, BrowserWindow, dialog, Menu, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, dialog, shell, ipcMain, Menu } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
 const url = require('url');
+const { updateDatabase } = require('./db-updater');
+const { getAppVersion } = require('./util');
+const { promises: fsPromises } = require('fs');
 
 function setupLogging() {
   const logDir = path.join(app.getPath('userData'), 'logs');
@@ -24,27 +27,12 @@ function setupLogging() {
   };
 
   // 捕获全局未处理异常并记录
-  process.on('uncaughtException', (error) => {
+  process.on('uncaughtException', error => {
     global.appLog(`未捕获的异常: ${error.stack || error}`, 'error');
   });
 
   return logFilePath;
 }
-
-// 获取应用版本
-const getAppVersion = () => {
-  try {
-    const packageJsonPath = path.join(__dirname, '../package.json');
-    if (fs.existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-      return packageJson.version;
-    }
-    return '1.0.0';
-  } catch (error) {
-    console.error('读取版本信息失败:', error);
-    return '1.0.0';
-  }
-};
 
 // 检查端口是否被占用
 const checkPort = port => {
@@ -146,7 +134,45 @@ function createWindow() {
   mainWindow.maximize();
 }
 
-// 创建应用菜单
+// 清除缓存函数 - 清理logs和local-db目录
+async function clearCache() {
+  // 清理日志目录
+  const logsDir = path.join(app.getPath('userData'), 'logs');
+  if (fs.existsSync(logsDir)) {
+    // 读取目录下所有文件
+    const files = await fsPromises.readdir(logsDir);
+    // 删除所有文件
+    for (const file of files) {
+      const filePath = path.join(logsDir, file);
+      await fsPromises.unlink(filePath);
+      global.appLog(`已删除日志文件: ${filePath}`);
+    }
+  }
+
+  // 清理local-db目录，保留db.sqlite文件
+  const localDbDir = path.join(app.getPath('userData'), 'local-db');
+  if (fs.existsSync(localDbDir)) {
+    // 读取目录下所有文件
+    const files = await fsPromises.readdir(localDbDir);
+    // 删除除了db.sqlite之外的所有文件
+    for (const file of files) {
+      if (file !== 'db.sqlite') {
+        const filePath = path.join(localDbDir, file);
+        const stat = await fsPromises.stat(filePath);
+        if (stat.isFile()) {
+          await fsPromises.unlink(filePath);
+          global.appLog(`已删除数据库缓存文件: ${filePath}`);
+        } else if (stat.isDirectory()) {
+          // 如果是目录，可能需要递归删除，根据需求决定
+          // 这里简单实现，如果需要递归删除，可以使用fs-extra等库
+          global.appLog(`跳过目录: ${filePath}`);
+        }
+      }
+    }
+  }
+  return true;
+}
+
 function createMenu() {
   const template = [
     {
@@ -181,6 +207,29 @@ function createMenu() {
       label: '帮助',
       submenu: [
         {
+          label: '关于',
+          click: () => {
+            dialog.showMessageBox(mainWindow, {
+              title: '关于 Easy Dataset',
+              message: `Easy Dataset v${getAppVersion()}`,
+              detail: '一个用于创建大模型微调数据集的应用程序。',
+              buttons: ['确定']
+            });
+          }
+        },
+        {
+          label: '访问 GitHub',
+          click: () => {
+            shell.openExternal('https://github.com/ConardLi/easy-dataset');
+          }
+        }
+      ]
+    },
+    ,
+    {
+      label: '更多',
+      submenu: [
+        {
           label: '打开日志目录',
           click: () => {
             const logsDir = path.join(app.getPath('userData'), 'logs');
@@ -201,20 +250,31 @@ function createMenu() {
           }
         },
         {
-          label: '关于',
-          click: () => {
-            dialog.showMessageBox(mainWindow, {
-              title: '关于 Easy Dataset',
-              message: `Easy Dataset v${getAppVersion()}`,
-              detail: '一个用于创建大模型微调数据集的应用程序。',
-              buttons: ['确定']
-            });
-          }
-        },
-        {
-          label: '访问 GitHub',
-          click: () => {
-            shell.openExternal('https://github.com/ConardLi/easy-dataset');
+          label: '清除缓存',
+          click: async () => {
+            try {
+              const response = await dialog.showMessageBox(mainWindow, {
+                type: 'question',
+                buttons: ['取消', '确认'],
+                defaultId: 1,
+                title: '清除缓存',
+                message: '确定要清除缓存吗？',
+                detail: '这将删除日志目录下的所有文件以及本地数据库缓存文件（不包括主数据库文件）。'
+              });
+
+              if (response.response === 1) {
+                // 用户点击了确认
+                await clearCache();
+                dialog.showMessageBox(mainWindow, {
+                  type: 'info',
+                  title: '清除成功',
+                  message: '缓存已成功清除'
+                });
+              }
+            } catch (error) {
+              global.appLog(`清除缓存失败: ${error.message}`, 'error');
+              dialog.showErrorBox('清除缓存失败', error.message);
+            }
           }
         }
       ]
@@ -243,9 +303,7 @@ async function startNextServer() {
 
   console.log = function () {
     const args = Array.from(arguments);
-    const logMessage = args.map(arg =>
-      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
-    ).join(' ');
+    const logMessage = args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg)).join(' ');
 
     logStream.write(`[${new Date().toISOString()}] [LOG] ${logMessage}\n`);
     originalConsoleLog.apply(console, args);
@@ -253,14 +311,11 @@ async function startNextServer() {
 
   console.error = function () {
     const args = Array.from(arguments);
-    const logMessage = args.map(arg =>
-      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
-    ).join(' ');
+    const logMessage = args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg)).join(' ');
 
     logStream.write(`[${new Date().toISOString()}] [ERROR] ${logMessage}\n`);
     originalConsoleError.apply(console, args);
   };
-
 
   // 检查端口是否被占用
   const isPortBusy = await checkPort(port);
@@ -279,13 +334,13 @@ async function startNextServer() {
       dir: path.join(__dirname, '..'),
       conf: {
         // 配置 Next.js 的日志输出
-        onInfo: (info) => {
+        onInfo: info => {
           console.log(`[Next.js Info] ${info}`);
         },
-        onError: (error) => {
+        onError: error => {
           console.error(`[Next.js Error] ${error}`);
         },
-        onWarn: (warn) => {
+        onWarn: warn => {
           console.log(`[Next.js Warning] ${warn}`);
         }
       }
@@ -417,7 +472,6 @@ ipcMain.handle('install-update', () => {
 
 // 当 Electron 完成初始化时创建窗口
 app.whenReady().then(async () => {
-
   // 在 app.whenReady 前调用
   const logFilePath = setupLogging();
 
@@ -447,37 +501,64 @@ app.whenReady().then(async () => {
     };
     global.appLog(`数据库配置: ${JSON.stringify(logs)}`);
 
-    // 如果数据库文件不存在，初始化数据库
     if (!fs.existsSync(dbFilePath)) {
       global.appLog('数据库文件不存在，正在初始化...');
 
       try {
-        // 方案一：从资源目录复制预先生成的空数据库文件
-        const resourcePath = process.env.NODE_ENV === 'development'
-          ? path.join(__dirname, '..', 'prisma', 'template.sqlite')
-          : path.join(process.resourcesPath, 'prisma', 'template.sqlite');
+        const resourcePath =
+          process.env.NODE_ENV === 'development'
+            ? path.join(__dirname, '..', 'prisma', 'template.sqlite')
+            : path.join(process.resourcesPath, 'prisma', 'template.sqlite');
 
         global.appLog(`resourcePath: ${resourcePath}`);
 
-        // 检查模板数据库是否存在
         if (fs.existsSync(resourcePath)) {
-          // 复制模板数据库到用户数据目录
           fs.copyFileSync(resourcePath, dbFilePath);
           global.appLog(`数据库已从模板初始化: ${dbFilePath}`);
         }
       } catch (error) {
         console.error('数据库初始化失败:', error);
-        // 显示错误对话框
-        dialog.showErrorBox(
-          '数据库初始化失败',
-          `应用无法初始化数据库，可能需要重新安装。\n错误详情: ${error.message}`
-        );
+        dialog.showErrorBox('数据库初始化失败', `应用无法初始化数据库，可能需要重新安装。\n错误详情: ${error.message}`);
+      }
+    } else {
+      // 数据库文件存在，检查是否需要更新
+      global.appLog('检查数据库是否需要更新...');
+      try {
+        const resourcesPath =
+          process.env.NODE_ENV === 'development' ? path.join(__dirname, '..') : process.resourcesPath;
+
+        const isDev = process.env.NODE_ENV === 'development';
+
+        // 更新数据库
+        const result = await updateDatabase(userDataPath, resourcesPath, isDev, global.appLog);
+
+        if (result.updated) {
+          global.appLog(`数据库更新成功: ${result.message}`);
+          global.appLog(`执行的版本: ${result.executedVersions.join(', ')}`);
+        } else {
+          global.appLog(`数据库无需更新: ${result.message}`);
+        }
+      } catch (error) {
+        console.error('数据库更新失败:', error);
+        global.appLog(`数据库更新失败: ${error.message}`, 'error');
+
+        // 非致命错误，只提示但不阻止应用启动
+        dialog.showMessageBox({
+          type: 'warning',
+          title: '数据库更新警告',
+          message: '数据库更新过程中出现错误，部分功能可能受影响。',
+          detail: `错误详情: ${error.message}\n\n您可以继续使用应用，但如果遇到问题，请重新安装应用。`,
+          buttons: ['继续']
+        });
       }
     }
   } catch (error) {
     console.error('应用初始化过程中发生错误:', error);
-    dialog.showErrorBox('应用初始化错误', `启动过程中发生错误，可能影响应用功能。
-错误详情: ${error.message}`);
+    dialog.showErrorBox(
+      '应用初始化错误',
+      `启动过程中发生错误，可能影响应用功能。
+错误详情: ${error.message}`
+    );
   }
 
   createWindow();

@@ -12,24 +12,24 @@ export async function GET() {
   try {
     // 获取项目根目录
     const projectRoot = await getProjectRoot();
-    
+
     // 读取根目录下的所有文件夹（每个文件夹代表一个项目）
     const files = await fs.promises.readdir(projectRoot, { withFileTypes: true });
-    
+
     // 过滤出目录类型的条目
     const projectDirs = files.filter(file => file.isDirectory());
-    
+
     // 如果没有项目目录，则直接返回空列表
     if (projectDirs.length === 0) {
-      return NextResponse.json({ 
-        success: true, 
-        data: [] 
+      return NextResponse.json({
+        success: true,
+        data: []
       });
     }
-    
+
     // 获取所有项目ID
     const projectIds = projectDirs.map(dir => dir.name);
-    
+
     // 批量查询已迁移的项目
     const existingProjects = await db.projects.findMany({
       where: {
@@ -41,25 +41,28 @@ export async function GET() {
         id: true
       }
     });
-    
+
     // 转换为集合以便快速查找
     const existingProjectIds = new Set(existingProjects.map(p => p.id));
-    
+
     // 筛选出未迁移的项目
     const unmigratedProjectDirs = projectDirs.filter(dir => !existingProjectIds.has(dir.name));
-    
+
     // 获取未迁移项目的ID列表
     const unmigratedProjects = unmigratedProjectDirs.map(dir => dir.name);
-    
-    return NextResponse.json({ 
-      success: true, 
-      data: unmigratedProjects 
+
+    return NextResponse.json({
+      success: true,
+      data: unmigratedProjects
     });
   } catch (error) {
     console.error('获取未迁移项目列表出错:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error.message 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message
+      },
+      { status: 500 }
+    );
   }
 }

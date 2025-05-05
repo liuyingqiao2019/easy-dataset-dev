@@ -17,6 +17,7 @@ model Projects {
   labelPrompt          String        @default("")
   domainTreePrompt     String        @default("")
   defaultModelConfigId String?
+  test                 String        @default("")
   createAt             DateTime      @default(now())
   updateAt             DateTime      @updatedAt
   Questions            Questions[]

@@ -68,7 +68,7 @@ export default function ModelSelect({ size = 'small', minWidth = 180, projectId,
       setSelectedModel(selectedModelInfo.id);
     }
   }, [selectedModelInfo]);
-  
+
   // 初始检查
   useEffect(() => {
     if (required) {
