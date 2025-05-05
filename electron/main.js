@@ -145,7 +145,7 @@ async function clearCache() {
     for (const file of files) {
       const filePath = path.join(logsDir, file);
       await fsPromises.unlink(filePath);
-      global.appLog(`已删除日志文件: ${filePath}`); 
+      global.appLog(`已删除日志文件: ${filePath}`);
     }
   }
 
@@ -240,6 +240,16 @@ function createMenu() {
           }
         },
         {
+          label: '打开数据目录',
+          click: () => {
+            const dataDir = path.join(app.getPath('userData'), 'local-db');
+            if (!fs.existsSync(dataDir)) {
+              fs.mkdirSync(dataDir, { recursive: true });
+            }
+            shell.openPath(dataDir);
+          }
+        },
+        {
           label: '清除缓存',
           click: async () => {
             try {
@@ -251,7 +261,7 @@ function createMenu() {
                 message: '确定要清除缓存吗？',
                 detail: '这将删除日志目录下的所有文件以及本地数据库缓存文件（不包括主数据库文件）。'
               });
-              
+
               if (response.response === 1) { // 用户点击了确认
                 await clearCache();
                 dialog.showMessageBox(mainWindow, {
@@ -264,17 +274,6 @@ function createMenu() {
               global.appLog(`清除缓存失败: ${error.message}`, 'error');
               dialog.showErrorBox('清除缓存失败', error.message);
             }
-          }
-        },
-
-        {
-          label: '打开数据目录',
-          click: () => {
-            const dataDir = path.join(app.getPath('userData'), 'local-db');
-            if (!fs.existsSync(dataDir)) {
-              fs.mkdirSync(dataDir, { recursive: true });
-            }
-            shell.openPath(dataDir);
           }
         }
       ]
