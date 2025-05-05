@@ -1,10 +1,12 @@
-const { app, BrowserWindow, dialog, Menu, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, dialog, shell, ipcMain, Menu } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
 const url = require('url');
 const { updateDatabase } = require('./db-updater');
+const { getAppVersion } = require('./util');
+const { promises: fsPromises } = require('fs');
 
 function setupLogging() {
   const logDir = path.join(app.getPath('userData'), 'logs');
@@ -31,21 +33,6 @@ function setupLogging() {
 
   return logFilePath;
 }
-
-// 获取应用版本
-const getAppVersion = () => {
-  try {
-    const packageJsonPath = path.join(__dirname, '../package.json');
-    if (fs.existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-      return packageJson.version;
-    }
-    return '1.0.0';
-  } catch (error) {
-    console.error('读取版本信息失败:', error);
-    return '1.0.0';
-  }
-};
 
 // 检查端口是否被占用
 const checkPort = port => {
@@ -147,7 +134,45 @@ function createWindow() {
   mainWindow.maximize();
 }
 
-// 创建应用菜单
+// 清除缓存函数 - 清理logs和local-db目录
+async function clearCache() {
+  // 清理日志目录
+  const logsDir = path.join(app.getPath('userData'), 'logs');
+  if (fs.existsSync(logsDir)) {
+    // 读取目录下所有文件
+    const files = await fsPromises.readdir(logsDir);
+    // 删除所有文件
+    for (const file of files) {
+      const filePath = path.join(logsDir, file);
+      await fsPromises.unlink(filePath);
+      global.appLog(`已删除日志文件: ${filePath}`); 
+    }
+  }
+
+  // 清理local-db目录，保留db.sqlite文件
+  const localDbDir = path.join(app.getPath('userData'), 'local-db');
+  if (fs.existsSync(localDbDir)) {
+    // 读取目录下所有文件
+    const files = await fsPromises.readdir(localDbDir);
+    // 删除除了db.sqlite之外的所有文件
+    for (const file of files) {
+      if (file !== 'db.sqlite') {
+        const filePath = path.join(localDbDir, file);
+        const stat = await fsPromises.stat(filePath);
+        if (stat.isFile()) {
+          await fsPromises.unlink(filePath);
+          global.appLog(`已删除数据库缓存文件: ${filePath}`);
+        } else if (stat.isDirectory()) {
+          // 如果是目录，可能需要递归删除，根据需求决定
+          // 这里简单实现，如果需要递归删除，可以使用fs-extra等库
+          global.appLog(`跳过目录: ${filePath}`);
+        }
+      }
+    }
+  }
+  return true;
+}
+
 function createMenu() {
   const template = [
     {
@@ -182,26 +207,6 @@ function createMenu() {
       label: '帮助',
       submenu: [
         {
-          label: '打开日志目录',
-          click: () => {
-            const logsDir = path.join(app.getPath('userData'), 'logs');
-            if (!fs.existsSync(logsDir)) {
-              fs.mkdirSync(logsDir, { recursive: true });
-            }
-            shell.openPath(logsDir);
-          }
-        },
-        {
-          label: '打开数据目录',
-          click: () => {
-            const dataDir = path.join(app.getPath('userData'), 'local-db');
-            if (!fs.existsSync(dataDir)) {
-              fs.mkdirSync(dataDir, { recursive: true });
-            }
-            shell.openPath(dataDir);
-          }
-        },
-        {
           label: '关于',
           click: () => {
             dialog.showMessageBox(mainWindow, {
@@ -219,12 +224,67 @@ function createMenu() {
           }
         }
       ]
+    },
+    ,
+    {
+      label: '更多',
+      submenu: [
+        {
+          label: '打开日志目录',
+          click: () => {
+            const logsDir = path.join(app.getPath('userData'), 'logs');
+            if (!fs.existsSync(logsDir)) {
+              fs.mkdirSync(logsDir, { recursive: true });
+            }
+            shell.openPath(logsDir);
+          }
+        },
+        {
+          label: '清除缓存',
+          click: async () => {
+            try {
+              const response = await dialog.showMessageBox(mainWindow, {
+                type: 'question',
+                buttons: ['取消', '确认'],
+                defaultId: 1,
+                title: '清除缓存',
+                message: '确定要清除缓存吗？',
+                detail: '这将删除日志目录下的所有文件以及本地数据库缓存文件（不包括主数据库文件）。'
+              });
+              
+              if (response.response === 1) { // 用户点击了确认
+                await clearCache();
+                dialog.showMessageBox(mainWindow, {
+                  type: 'info',
+                  title: '清除成功',
+                  message: '缓存已成功清除'
+                });
+              }
+            } catch (error) {
+              global.appLog(`清除缓存失败: ${error.message}`, 'error');
+              dialog.showErrorBox('清除缓存失败', error.message);
+            }
+          }
+        },
+
+        {
+          label: '打开数据目录',
+          click: () => {
+            const dataDir = path.join(app.getPath('userData'), 'local-db');
+            if (!fs.existsSync(dataDir)) {
+              fs.mkdirSync(dataDir, { recursive: true });
+            }
+            shell.openPath(dataDir);
+          }
+        }
+      ]
     }
   ];
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 }
+
 
 // 启动 Next.js 服务
 async function startNextServer() {
@@ -476,12 +536,12 @@ app.whenReady().then(async () => {
         const resourcesPath = process.env.NODE_ENV === 'development'
           ? path.join(__dirname, '..')
           : process.resourcesPath;
-        
+
         const isDev = process.env.NODE_ENV === 'development';
-        
+
         // 更新数据库
         const result = await updateDatabase(userDataPath, resourcesPath, isDev, global.appLog);
-        
+
         if (result.updated) {
           global.appLog(`数据库更新成功: ${result.message}`);
           global.appLog(`执行的版本: ${result.executedVersions.join(', ')}`);
@@ -491,7 +551,7 @@ app.whenReady().then(async () => {
       } catch (error) {
         console.error('数据库更新失败:', error);
         global.appLog(`数据库更新失败: ${error.message}`, 'error');
-        
+
         // 非致命错误，只提示但不阻止应用启动
         dialog.showMessageBox({
           type: 'warning',
