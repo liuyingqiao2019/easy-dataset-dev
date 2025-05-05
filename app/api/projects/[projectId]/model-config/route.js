@@ -59,6 +59,9 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'The model configuration cannot be empty ' }, { status: 400 });
     }
     modelConfig.projectId = projectId;
+    if (!modelConfig.modelId) {
+      modelConfig.modelId = modelConfig.modelName;
+    }
     const res = await saveModelConfig(modelConfig);
 
     return NextResponse.json(res);

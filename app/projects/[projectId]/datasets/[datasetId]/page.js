@@ -449,7 +449,7 @@ export default function DatasetDetailsPage({ params }) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [shortcutsEnabled, confirming, dataset]);
+  }, [shortcutsEnabled, confirming, currentDataset]);
 
   if (loading) {
     return (
