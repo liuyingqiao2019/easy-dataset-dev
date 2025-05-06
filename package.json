@@ -155,13 +155,6 @@
           ]
         }
       ]
-    },
-    "linux": {
-      "icon": "public/imgs/logo.png",
-      "target": [
-        "AppImage"
-      ],
-      "category": "Development"
     }
   }
 }
