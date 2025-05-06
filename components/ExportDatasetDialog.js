@@ -60,9 +60,9 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
     confirmAction: null
   });
   const [customFields, setCustomFields] = useState({
-    questionField: 'instruction',
-    answerField: 'output',
-    cotField: 'complexCOT', // 添加思维链字段名
+    questionField: '问题',
+    answerField: '回答',
+    cotField: '思考过程', // 添加思维链字段名
     includeLabels: false,
     includeChunk: false, // 添加是否包含chunk字段
   });
@@ -80,14 +80,14 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
     if (event.target.value === 'alpaca') {
       setCustomFields({
         ...customFields,
-        questionField: 'instruction',
-        answerField: 'output'
+        questionField: '问题',
+        answerField: '回答'
       });
     } else if (event.target.value === 'sharegpt') {
       setCustomFields({
         ...customFields,
-        questionField: 'content',
-        answerField: 'content'
+        questionField: '问题',
+        answerField: '回答'
       });
     } else if (event.target.value === 'custom') {
       // 自定义格式保持当前值
@@ -167,8 +167,8 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
   const getCustomFormatExample = () => {
     const { questionField, answerField, cotField, includeLabels, includeChunk } = customFields;
     const example = {
-      [questionField]: '问题内容',
-      [answerField]: '答案内容'
+      [questionField]: '问题',
+      [answerField]: '答案'
     };
 
     // 如果包含思维链字段，添加到示例中
@@ -244,10 +244,10 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
       if (customFields.includeChunk) headers.push('chunkId');
 
       const row = {
-        [customFields.questionField]: '问题内容',
-        [customFields.answerField]: '答案内容'
+        [customFields.questionField]: '问题',
+        [customFields.answerField]: '答案'
       };
-      if (includeCOT) row[customFields.cotField] = '思维链过程内容';
+      if (includeCOT) row[customFields.cotField] = '思考过程';
       if (customFields.includeLabels) row.labels = '领域标签';
       if (customFields.includeChunk) row.chunkId = '文本块';
       return {
