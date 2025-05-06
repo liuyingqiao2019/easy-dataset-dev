@@ -8,7 +8,11 @@ import { NextResponse } from 'next/server';
  * 获取未迁移的项目列表
  * @returns {Promise<Response>} 包含未迁移项目列表的响应
  */
-export async function GET() {
+export async function GET(request) {
+  // 获取当前请求的 URL，从中提取查询参数
+  const { searchParams } = new URL(request.url);
+  // 这行代码是关键，强制每次请求都是不同的
+  const timestamp = searchParams.get('_t') || Date.now();
   try {
     // 获取项目根目录
     const projectRoot = await getProjectRoot();
@@ -53,7 +57,10 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: unmigratedProjects
+      data: unmigratedProjects,
+      projectRoot,
+      number: Date.now(),
+      timestamp
     });
   } catch (error) {
     console.error('获取未迁移项目列表出错:', error);

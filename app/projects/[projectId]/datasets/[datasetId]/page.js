@@ -489,7 +489,7 @@ export default function DatasetDetailsPage({ params }) {
             </Typography>
           </Box>
           {/* 快捷键启用选项 */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="body1">{t('datasets.enableShortcuts')}</Typography>
             <Tooltip title={t('datasets.shortcutsHelp')}>
               <IconButton size="small" color="info">
@@ -502,7 +502,7 @@ export default function DatasetDetailsPage({ params }) {
             >
               {shortcutsEnabled ? t('common.enabled') : t('common.disabled')}
             </Button>
-          </Box>
+          </Box> */}
           <Box sx={{ display: 'flex', gap: 1 }}>
             <IconButton onClick={() => handleNavigate('prev')}>
               <NavigateBeforeIcon />

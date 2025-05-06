@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
     try {
       await fs.access(projectPath);
     } catch (error) {
-      return NextResponse.json({ error: 'Project does not exist' }, { status: 404 });
+      return NextResponse.json({ error: 'Project does not exist' + projectPath }, { status: 404 });
     }
 
     const taskConfig = await getTaskConfig(projectId);
