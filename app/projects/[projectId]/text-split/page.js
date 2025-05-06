@@ -94,22 +94,18 @@ export default function TextSplitPage({ params }) {
     console.log(t('textSplit.fileUploadSuccess'), fileNames);
     //上传完处理PDF文件
     try {
-      // 正确过滤：仅处理本次新上传的 PDF 文件（文件名在 fileNames 中）
-      const newlyUploadedPdfs = pdfFiles.filter(pdfFile => fileNames.includes(pdfFile.name));
-      if (newlyUploadedPdfs.length === 0) return; // 无新文件则直接返回
-
       setPdfProcessing(true);
       setError(null);
       // 重置进度：基于新上传的文件数量
       setProgress({
-        total: newlyUploadedPdfs.length, // 关键修正：使用过滤后的总数
+        total: pdfFiles.length, // 关键修正：使用过滤后的总数
         completed: 0,
         percentage: 0,
         questionCount: 0
       });
 
       const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
-      for (const file of newlyUploadedPdfs) { // 关键修正：遍历过滤后的列表
+      for (const file of pdfFiles) { // 关键修正：遍历过滤后的列表
         const response = await fetch(`/api/projects/${projectId}/pdf?fileName=${encodeURIComponent(file.name)}&strategy=${pdfStrategy}&currentLanguage=${currentLanguage}&modelId=${selectedViosnModel}`);
         if (!response.ok) {
           const errorData = await response.json();
