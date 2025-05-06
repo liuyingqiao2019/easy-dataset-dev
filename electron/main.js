@@ -194,7 +194,6 @@ function createMenu() {
       label: '视图',
       submenu: [
         { role: 'reload', label: '刷新' },
-        { role: 'toggledevtools', label: '开发者工具' },
         { type: 'separator' },
         { role: 'resetzoom', label: '重置缩放' },
         { role: 'zoomin', label: '放大' },
@@ -229,6 +228,7 @@ function createMenu() {
     {
       label: '更多',
       submenu: [
+        { role: 'toggledevtools', label: '开发者工具' },
         {
           label: '打开日志目录',
           click: () => {
@@ -480,6 +480,7 @@ app.whenReady().then(async () => {
     const userDataPath = app.getPath('userData');
     const dataDir = path.join(userDataPath, 'local-db');
     const dbFilePath = path.join(dataDir, 'db.sqlite');
+    const dbJSONPath = path.join(dataDir, 'db.json');
 
     // 确保数据目录存在
     if (!fs.existsSync(dataDir)) {
@@ -510,11 +511,21 @@ app.whenReady().then(async () => {
             ? path.join(__dirname, '..', 'prisma', 'template.sqlite')
             : path.join(process.resourcesPath, 'prisma', 'template.sqlite');
 
+        const resourceJSONPath =
+          process.env.NODE_ENV === 'development'
+            ? path.join(__dirname, '..', 'prisma', 'sql.json')
+            : path.join(process.resourcesPath, 'prisma', 'sql.json');
+
         global.appLog(`resourcePath: ${resourcePath}`);
 
         if (fs.existsSync(resourcePath)) {
           fs.copyFileSync(resourcePath, dbFilePath);
           global.appLog(`数据库已从模板初始化: ${dbFilePath}`);
+        }
+
+        if (fs.existsSync(resourceJSONPath)) {
+          fs.copyFileSync(resourceJSONPath, dbJSONPath);
+          global.appLog(`数据库SQL配置已初始化: ${dbJSONPath}`);
         }
       } catch (error) {
         console.error('数据库初始化失败:', error);

@@ -122,12 +122,6 @@ function getSqlsToExecute(userSqlConfig, appSqlConfig) {
 async function updateDatabase(userDataPath, resourcesPath, isDev, logger = console.log) {
   const dbPath = path.join(userDataPath, 'local-db', 'db.sqlite');
 
-  // 确保数据库文件存在
-  if (!fs.existsSync(dbPath)) {
-    logger('数据库文件不存在，无需更新');
-    return { updated: false, message: '数据库文件不存在' };
-  }
-
   try {
     // 获取SQL配置
     const { userSqlConfig, appSqlConfig } = await getSqlConfigs(userDataPath, resourcesPath, isDev);
