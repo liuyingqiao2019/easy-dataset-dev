@@ -162,7 +162,14 @@ export default function FileUploader({
 
   // 移除文件
   const removeFile = index => {
+    // 获取将要被移除的文件信息
+    const fileToRemove = files[index];
+    // 更新 files 状态，移除该文件
     setFiles(prev => prev.filter((_, i) => i !== index));
+    // 如果被移除的文件是 PDF，则同时更新 pdfFiles 状态
+    if (fileToRemove && fileToRemove.name.toLowerCase().endsWith('.pdf')) {
+      setPdfFiles(prevPdfFiles => prevPdfFiles.filter(pdfFile => pdfFile.name !== fileToRemove.name));
+    }
   };
 
   // 上传文件
