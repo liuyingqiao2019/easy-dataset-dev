@@ -33,7 +33,6 @@ export default function TextSplitPage({ params }) {
   const { projectId } = params;
   const [activeTab, setActiveTab] = useState(0);
   const [chunks, setChunks] = useState([]);
-  const [showChunks, setShowChunks] = useState([]);
   const [tocData, setTocData] = useState('');
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -79,7 +78,7 @@ export default function TextSplitPage({ params }) {
       }
     } catch (error) {
       console.error(t('textSplit.fetchChunksError'), error);
-      setError(error.message);
+      setError({ severity: 'error', message: error.message });
     } finally {
       setLoading(false);
     }
@@ -95,18 +94,23 @@ export default function TextSplitPage({ params }) {
     console.log(t('textSplit.fileUploadSuccess'), fileNames);
     //上传完处理PDF文件
     try {
+      // 正确过滤：仅处理本次新上传的 PDF 文件（文件名在 fileNames 中）
+      const newlyUploadedPdfs = pdfFiles.filter(pdfFile => fileNames.includes(pdfFile.name));
+      if (newlyUploadedPdfs.length === 0) return; // 无新文件则直接返回
+
       setPdfProcessing(true);
       setError(null);
-      // 重置进度状态
+      // 重置进度：基于新上传的文件数量
       setProgress({
-        total: pdfFiles.length,
+        total: newlyUploadedPdfs.length, // 关键修正：使用过滤后的总数
         completed: 0,
         percentage: 0,
         questionCount: 0
       });
+
       const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
-      for (const file of pdfFiles) {
-        const response = await fetch(`/api/projects/${projectId}/pdf?fileName=` + file.name + `&strategy=` + pdfStrategy + `&currentLanguage=` + currentLanguage + `&modelId=` + selectedViosnModel);
+      for (const file of newlyUploadedPdfs) { // 关键修正：遍历过滤后的列表
+        const response = await fetch(`/api/projects/${projectId}/pdf?fileName=${encodeURIComponent(file.name)}&strategy=${pdfStrategy}&currentLanguage=${currentLanguage}&modelId=${selectedViosnModel}`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(t('textSplit.pdfProcessingFailed') + errorData.error);
@@ -176,16 +180,6 @@ export default function TextSplitPage({ params }) {
         return newChunks;
       });
 
-      setShowChunks(prev => {
-        const newChunks = [...prev];
-        data.chunks.forEach(chunk => {
-          if (!newChunks.find(c => c.id === chunk.id)) {
-            newChunks.push(chunk);
-          }
-        });
-        return newChunks;
-      });
-
       // 更新目录结构
       if (data.toc) {
         setTocData(data.toc);
@@ -193,10 +187,11 @@ export default function TextSplitPage({ params }) {
 
       // 自动切换到智能分割标签
       setActiveTab(0);
-      location.reload();
+      // 替换location.reload()为状态更新和数据获取
+      fetchChunks();
     } catch (error) {
       console.error(t('textSplit.splitTextError'), error);
-      setError(error.message);
+      setError({ severity: 'error', message: error.message });
     } finally {
       setProcessing(false);
     }
@@ -216,10 +211,9 @@ export default function TextSplitPage({ params }) {
 
       // 更新文本块列表
       setChunks(prev => prev.filter(chunk => chunk.id !== chunkId));
-      setShowChunks(prev => prev.filter(chunk => chunk.id !== chunkId));
     } catch (error) {
       console.error(t('textSplit.deleteChunkError'), error);
-      setError(error.message);
+      setError({ severity: 'error', message: error.message });
     }
   };
 
@@ -283,7 +277,7 @@ export default function TextSplitPage({ params }) {
             // 获取当前语言环境
             const currentLanguage = i18n.language === 'zh-CN' ? '中文' : 'en';
 
-            const response = await request(`/api/projects/${projectId}/chunks/${chunkId}/questions`, {
+            const response = await request(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}/questions`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
@@ -387,7 +381,7 @@ export default function TextSplitPage({ params }) {
       setProcessing(true);
       setError(null);
 
-      const response = await fetch(`/api/projects/${projectId}/chunks/${chunkId}`, {
+      const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunkId)}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -418,7 +412,8 @@ export default function TextSplitPage({ params }) {
   // 处理文件删除
   const handleFileDeleted = (fileName, filesCount) => {
     console.log(t('textSplit.fileDeleted', { fileName }));
-    location.reload();
+    // 替换location.reload()为数据刷新
+    fetchChunks();
   };
 
   // 关闭错误提示

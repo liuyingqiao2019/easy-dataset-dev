@@ -58,12 +58,18 @@ export default function FileList({
     setPageLoading(true);
     const text = await getFileContent(fileId);
 
+     // Modify the filename if it ends with .pdf
+     let downloadName = fileName || 'download.txt';
+     if (downloadName.toLowerCase().endsWith('.pdf')) {
+         downloadName = downloadName.slice(0, -4) + '.md';
+     }
+
     const blob = new Blob([text.content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = fileName || 'download.txt';
+    a.download = downloadName;
 
     document.body.appendChild(a);
     a.click();
