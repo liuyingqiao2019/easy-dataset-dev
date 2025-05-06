@@ -96,7 +96,7 @@ export default function TextSplitPage({ params }) {
     //上传完处理PDF文件
     try {
       // 过滤 pdfFiles 列表，只保留那些在当前成功上传的文件列表 (fileNames) 中存在的 PDF 文件
-      const successfullyUploadedPdfs = pdfFiles.filter(pdfFile => fileNames.includes(pdfFile.name));
+      const successfullyUploadedPdfs = pdfFiles.filter(pdfFile => !fileNames.includes(pdfFile.name));
       if (successfullyUploadedPdfs.length > 0) {
         setPdfProcessing(true);
         setError(null);
