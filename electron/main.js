@@ -481,6 +481,7 @@ app.whenReady().then(async () => {
     const dataDir = path.join(userDataPath, 'local-db');
     const dbFilePath = path.join(dataDir, 'db.sqlite');
     const dbJSONPath = path.join(dataDir, 'db.json');
+    fs.writeFileSync(path.join(process.resourcesPath, 'root-path.txt'), dataDir);
 
     // 确保数据目录存在
     if (!fs.existsSync(dataDir)) {
