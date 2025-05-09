@@ -31,4 +31,4 @@ RUN npm run build
 EXPOSE 1717
 
 # 启动应用
-CMD ["npm", "start"]
+CMD ["npm", "dev"]
