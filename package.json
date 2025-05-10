@@ -26,7 +26,8 @@
     "electron-build-win": "pnpm clean-dist && pnpm db:template && prisma db push && next build && electron-builder --win",
     "electron-build-linux": "pnpm clean-dist && pnpm db:template && prisma db push && next build && electron-builder --linux",
     "docker": "docker build -t easy-dataset .",
-    "prettier": "npx prettier --write ."
+    "prettier": "npx prettier --write .",
+    "prepare": "husky"
   },
   "bin": "desktop/server.js",
   "pkg": {
@@ -92,9 +93,13 @@
     "electron": "^29.4.6",
     "electron-builder": "^24.13.3",
     "husky": "^9.1.7",
+    "lint-staged": "15.5.2",
     "pkg": "^5.8.1",
     "prisma": "^6.6.0",
     "wait-on": "^7.2.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,md}": "npm run prettier"
   },
   "main": "electron/main.js",
   "description": "一个用于创建大模型微调数据集的应用程序",
