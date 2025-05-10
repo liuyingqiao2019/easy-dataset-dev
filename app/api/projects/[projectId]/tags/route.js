@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { saveTags, getTags, createTag, updateTag, deleteTag } from '@/lib/db/tags';
+import { getTags, createTag, updateTag, deleteTag } from '@/lib/db/tags';
 import { getQuestionsByTagName } from '@/lib/db/questions';
 
 // 获取项目的标签树
@@ -42,11 +42,6 @@ export async function PUT(request, { params }) {
       let res = await updateTag(tags.label, tags.id);
       return NextResponse.json({ tags: res });
     }
-
-    // 保存更新后的标签树
-    const updatedTags = await saveTags(projectId, tags);
-
-    return NextResponse.json({ tags: updatedTags });
   } catch (error) {
     console.error('Failed to update tags:', error);
     return NextResponse.json({ error: error.message || 'Failed to update tags' }, { status: 500 });

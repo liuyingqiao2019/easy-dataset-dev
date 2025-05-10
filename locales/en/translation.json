@@ -101,6 +101,7 @@
     "noTagSelected": "Please select a tag"
   },
   "common": {
+    "jumpTo": "Jump To",
     "unknownError": "Unknown Error",
     "create": "Create",
     "edit": "Edit",

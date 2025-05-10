@@ -12,7 +12,9 @@ import {
   Pagination,
   Divider,
   Paper,
-  CircularProgress
+  CircularProgress,
+  Button,
+  TextField
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
@@ -228,7 +230,7 @@ export default function QuestionListView({
 
       {/* 分页 */}
       {totalQuestions > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3, mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 3, mb: 2 }}>
           <Pagination
             count={totalQuestions}
             page={currentPage}
@@ -239,6 +241,27 @@ export default function QuestionListView({
             shape="rounded"
             size="medium"
           />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2">{t('common.jumpTo')}:</Typography>
+            <TextField
+              size="small"
+              type="number"
+              inputProps={{
+                min: 1,
+                max: totalQuestions,
+                style: { padding: '4px 8px', width: '50px' }
+              }}
+              onKeyPress={e => {
+                if (e.key === 'Enter') {
+                  const pageNum = parseInt(e.target.value, 10);
+                  if (pageNum >= 1 && pageNum <= totalQuestions) {
+                    handlePageChange(null, pageNum);
+                    e.target.value = '';
+                  }
+                }
+              }}
+            />
+          </Box>
         </Box>
       )}
     </Box>

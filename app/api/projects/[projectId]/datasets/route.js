@@ -87,7 +87,6 @@ export async function POST(request, { params }) {
 
     // 调用大模型生成答案
     const { answer, cot } = await llmClient.getResponseWithCOT(prompt);
-    console.log(111, { answer, cot });
 
     const datasetId = nanoid(12);
 

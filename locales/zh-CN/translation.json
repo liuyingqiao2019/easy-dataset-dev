@@ -101,6 +101,7 @@
     "noTagSelected": "请选择标签"
   },
   "common": {
+    "jumpTo": "跳转至",
     "unknownError": "未知错误",
     "create": "创建",
     "edit": "编辑",

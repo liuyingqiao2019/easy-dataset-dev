@@ -32,7 +32,8 @@ import {
   Checkbox,
   LinearProgress,
   Select,
-  MenuItem
+  MenuItem,
+  TextField
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -351,22 +352,54 @@ const DatasetList = ({
         </Table>
       </TableContainer>
       <Divider />
-      <TablePagination
-        component="div"
-        count={Math.ceil(total / rowsPerPage)}
-        page={page}
-        onPageChange={onPageChange}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={onRowsPerPageChange}
-        labelRowsPerPage={t('datasets.rowsPerPage')}
-        labelDisplayedRows={({ from, to, count }) => t('datasets.pagination', { from, to, count })}
+      <Box
         sx={{
-          borderTop: `1px solid ${theme.palette.divider}`,
-          '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-            fontWeight: 'medium'
-          }
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 2,
+          py: 1,
+          borderTop: `1px solid ${theme.palette.divider}`
         }}
-      />
+      >
+        <TablePagination
+          component="div"
+          count={total}
+          page={page - 1}
+          onPageChange={onPageChange}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={onRowsPerPageChange}
+          labelRowsPerPage={t('datasets.rowsPerPage')}
+          labelDisplayedRows={({ from, to, count }) => t('datasets.pagination', { from, to, count })}
+          sx={{
+            '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+              fontWeight: 'medium'
+            },
+            border: 'none'
+          }}
+        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="body2">{t('common.jumpTo')}:</Typography>
+          <TextField
+            size="small"
+            type="number"
+            inputProps={{
+              min: 1,
+              max: Math.ceil(total / rowsPerPage),
+              style: { padding: '4px 8px', width: '50px' }
+            }}
+            onKeyPress={e => {
+              if (e.key === 'Enter') {
+                const pageNum = parseInt(e.target.value, 10);
+                if (pageNum >= 1 && pageNum <= Math.ceil(total / rowsPerPage)) {
+                  onPageChange(null, pageNum - 1);
+                  e.target.value = '';
+                }
+              }
+            }}
+          />
+        </Box>
+      </Box>
     </Card>
   );
 };
@@ -534,12 +567,8 @@ export default function DatasetsPage({ params }) {
 
   // 处理页码变化
   const handlePageChange = (event, newPage) => {
-    console.log(newPage);
-    if (newPage <= 0) {
-      setPage(1);
-    } else {
-      setPage(newPage);
-    }
+    // MUI TablePagination 的页码从 0 开始，而我们的 API 从 1 开始
+    setPage(newPage + 1);
   };
 
   // 处理每页行数变化
