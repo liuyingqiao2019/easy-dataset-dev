@@ -57,8 +57,15 @@ export async function DELETE(request, { params }) {
     if (!project) {
       return NextResponse.json({ error: 'The project does not exist' }, { status: 404 });
     }
-    await delUploadFileInfoById(fileId);
-    return NextResponse.json({ message: 'File deleted successfully' });
+
+    // 删除文件及其相关的文本块、问题和数据集
+    const result = await delUploadFileInfoById(fileId);
+
+    return NextResponse.json({
+      message: '文件删除成功',
+      stats: result.stats,
+      cascadeDelete: true
+    });
   } catch (error) {
     console.error('Error deleting file:', error);
     return NextResponse.json({ error: error.message || 'Error deleting file' }, { status: 500 });

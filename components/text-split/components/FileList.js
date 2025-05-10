@@ -155,7 +155,7 @@ export default function FileList({
                         <Download />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="删除文献">
+                    <Tooltip title={t('textSplit.deleteFile')}>
                       <IconButton color="error" onClick={() => onDeleteFile(file.id, file.fileName)}>
                         <DeleteIcon />
                       </IconButton>

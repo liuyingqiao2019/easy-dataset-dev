@@ -256,11 +256,16 @@
     "customVisionModelSelected": "已选择使用视觉大模型 {{name}}（{{provider}}） 解析PDF）",
     "defaultSelected": "已选择使用默认内置策略解析PDF",
     "download": "下载文献",
+    "deleteFile": "删除文献",
     "viewChunk": "查看文本块",
     "editChunk": "编辑文本块 {{chunkId}}",
     "editChunkSuccess": "文本块编辑成功",
     "editChunkFailed": "文本块编辑失败",
-    "editChunkError": "编辑文本块时出错"
+    "editChunkError": "编辑文本块时出错",
+    "deleteFileWarning": "警告：删除文献将同时删除以下相关内容",
+    "deleteFileWarningChunks": "所有关联的文本块",
+    "deleteFileWarningQuestions": "所有文本块生成的问题",
+    "deleteFileWarningDatasets": "所有问题生成的数据集"
   },
   "domain": {
     "title": "领域知识树",
