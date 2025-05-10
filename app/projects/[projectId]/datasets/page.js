@@ -594,9 +594,19 @@ export default function DatasetsPage({ params }) {
   };
 
   const handleBatchDeleteDataset = async () => {
+    if (selectedIds.length === 0) {
+      setSnackbar({
+        open: true,
+        message: t('datasets.noSelected'),
+        severity: 'warning'
+      });
+      return;
+    }
+
+    const datasetsArray = selectedIds.map(id => ({ id }));
     setDeleteDialog({
       open: true,
-      datasets: datasets.data.filter(dataset => selectedIds.includes(dataset.id)),
+      datasets: datasetsArray,
       batch: true,
       count: selectedIds.length
     });
@@ -632,14 +642,37 @@ export default function DatasetsPage({ params }) {
 
   // 批量删除数据集
   const handleBatchDelete = async () => {
-    // TODO: 并发删除存在问题，这里只能同时删除1个，待优化
-    await processInParallel(deleteDialog.datasets, handleDelete, 1, (cur, total) => {
-      setDeteleProgress({
-        total: total,
-        completed: cur,
-        percentage: Math.floor((cur / total) * 100)
+    try {
+      await processInParallel(
+        selectedIds,
+        async datasetId => {
+          await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
+            method: 'DELETE'
+          });
+        },
+        3,
+        (cur, total) => {
+          setDeteleProgress({
+            total,
+            completed: cur,
+            percentage: Math.floor((cur / total) * 100)
+          });
+        }
+      );
+
+      setSnackbar({
+        open: true,
+        message: t('datasets.batchDeleteSuccess', { count: selectedIds.length }),
+        severity: 'success'
       });
-    });
+    } catch (error) {
+      console.error('批量删除失败:', error);
+      setSnackbar({
+        open: true,
+        message: error.message || t('datasets.batchDeleteFailed'),
+        severity: 'error'
+      });
+    }
   };
 
   // 删除数据集
@@ -823,8 +856,9 @@ export default function DatasetsPage({ params }) {
   // 处理全选/取消全选
   const handleSelectAll = async event => {
     if (event.target.checked) {
+      // 获取所有符合当前筛选条件的数据，不受分页限制
       const response = await axios.get(
-        `/api/projects/${projectId}/datasets?page=${page}&size=${rowsPerPage}&status=${filterConfirmed}&input=${searchQuery}&selectedAll=1`
+        `/api/projects/${projectId}/datasets?status=${filterConfirmed}&input=${searchQuery}&selectedAll=1`
       );
       setselectedIds(response.data.map(dataset => dataset.id));
     } else {
