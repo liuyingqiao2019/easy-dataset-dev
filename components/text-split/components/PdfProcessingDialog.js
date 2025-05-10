@@ -111,7 +111,6 @@ export default function PdfProcessingDialog({
   const handleOptionClick = optionValue => {
     if (optionValue === 'mineru-web') {
       window.open('https://mineru.net/OpenSourceTools/Extractor', '_blank');
-      onClose();
     } else {
       onRadioChange({ target: { value: optionValue, selectedVision: selectedModel } });
       onClose();
