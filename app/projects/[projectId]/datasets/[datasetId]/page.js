@@ -422,7 +422,7 @@ export default function DatasetDetailsPage({ params }) {
 
   // 监听键盘事件
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = event => {
       if (!shortcutsEnabled) return;
       switch (event.key) {
         case 'ArrowLeft': // 上一个

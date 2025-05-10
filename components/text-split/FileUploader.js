@@ -99,7 +99,7 @@ export default function FileUploader({
       setTaskSettings(taskData);
 
       //使用Jotai会出现数据获取的延迟，导致这里模型获取不到，改用localStorage获取模型信息
-      const model =  JSON.parse(localStorage.getItem('modelConfigList'));
+      const model = JSON.parse(localStorage.getItem('modelConfigList'));
 
       //过滤出视觉模型
       const visionItems = model.filter(item => item.type === 'vision' && item.apiKey);
