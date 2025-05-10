@@ -55,7 +55,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
     answerField: 'output',
     cotField: 'complexCOT', // 添加思维链字段名
     includeLabels: false,
-    includeChunk: false, // 添加是否包含chunk字段
+    includeChunk: false // 添加是否包含chunk字段
   });
   const [copied, setCopied] = useState(false);
 
@@ -294,7 +294,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
           setError(err.message);
         });
     }
-  }, [currentTab, projectId]);
+  }, [currentTab, projectId, configExists]);
 
   return (
     <Dialog
@@ -306,7 +306,8 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
         sx: {
           borderRadius: 2
         }
-      }}>
+      }}
+    >
       <DialogTitle>{t('export.title')}</DialogTitle>
       <DialogContent>
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
@@ -330,7 +331,8 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                   name="fileFormat"
                   value={fileFormat}
                   onChange={handleFileFormatChange}
-                  row>
+                  row
+                >
                   <FormControlLabel value="json" control={<Radio />} label="JSON" />
                   <FormControlLabel value="jsonl" control={<Radio />} label="JSONL" />
                   <FormControlLabel value="csv" control={<Radio />} label="CSV" />
@@ -398,10 +400,10 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                   label={t('export.includeLabels')}
                 />
                 <FormControlLabel
-                    control={
-                      <Checkbox checked={customFields.includeChunk} onChange={handleIncludeChunkChange} size="small" />
-                    }
-                    label={t('export.includeChunk')}
+                  control={
+                    <Checkbox checked={customFields.includeChunk} onChange={handleIncludeChunkChange} size="small" />
+                  }
+                  label={t('export.includeChunk')}
                 />
               </Box>
             )}
@@ -447,49 +449,50 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
                     p: 2,
                     backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[100],
                     overflowX: 'auto'
-                  }}>
+                  }}
+                >
                   <pre style={{ margin: 0 }}>
                     {formatType === 'custom'
                       ? getCustomFormatExample()
                       : formatType === 'alpaca'
-                      ? fileFormat === 'json'
-                        ? JSON.stringify(
-                            [
-                              {
-                                instruction: '人类指令（必填）', // 映射到 question 字段
-                                input: '人类输入（选填）',
-                                output: '模型回答（必填）', // 映射到 cot+answer 字段
-                                system: '系统提示词（选填）'
-                              }
-                            ],
-                            null,
-                            2
-                          )
-                        : '{"instruction": "人类指令（必填）", "input": "人类输入（选填）", "output": "模型回答（必填）", "system": "系统提示词（选填）"}\n{"instruction": "第二个指令", "input": "", "output": "第二个回答", "system": "系统提示词"}'
-                      : fileFormat === 'json'
-                      ? JSON.stringify(
-                          [
-                            {
-                              messages: [
+                        ? fileFormat === 'json'
+                          ? JSON.stringify(
+                              [
                                 {
-                                  role: 'system',
-                                  content: '系统提示词（选填）'
-                                },
-                                {
-                                  role: 'user',
-                                  content: '人类指令' // 映射到 question 字段
-                                },
-                                {
-                                  role: 'assistant',
-                                  content: '模型回答' // 映射到 cot+answer 字段
+                                  instruction: '人类指令（必填）', // 映射到 question 字段
+                                  input: '人类输入（选填）',
+                                  output: '模型回答（必填）', // 映射到 cot+answer 字段
+                                  system: '系统提示词（选填）'
                                 }
-                              ]
-                            }
-                          ],
-                          null,
-                          2
-                        )
-                      : '{"messages": [{"role": "system", "content": "系统提示词（选填）"}, {"role": "user", "content": "人类指令"}, {"role": "assistant", "content": "模型回答"}]}\n{"messages": [{"role": "user", "content": "第二个问题"}, {"role": "assistant", "content": "第二个回答"}]}'}
+                              ],
+                              null,
+                              2
+                            )
+                          : '{"instruction": "人类指令（必填）", "input": "人类输入（选填）", "output": "模型回答（必填）", "system": "系统提示词（选填）"}\n{"instruction": "第二个指令", "input": "", "output": "第二个回答", "system": "系统提示词"}'
+                        : fileFormat === 'json'
+                          ? JSON.stringify(
+                              [
+                                {
+                                  messages: [
+                                    {
+                                      role: 'system',
+                                      content: '系统提示词（选填）'
+                                    },
+                                    {
+                                      role: 'user',
+                                      content: '人类指令' // 映射到 question 字段
+                                    },
+                                    {
+                                      role: 'assistant',
+                                      content: '模型回答' // 映射到 cot+answer 字段
+                                    }
+                                  ]
+                                }
+                              ],
+                              null,
+                              2
+                            )
+                          : '{"messages": [{"role": "system", "content": "系统提示词（选填）"}, {"role": "user", "content": "人类指令"}, {"role": "assistant", "content": "模型回答"}]}\n{"messages": [{"role": "user", "content": "第二个问题"}, {"role": "assistant", "content": "第二个回答"}]}'}
                   </pre>
                 </Paper>
               )}

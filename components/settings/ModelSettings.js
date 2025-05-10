@@ -9,230 +9,207 @@ import {
   Grid,
   Card,
   CardContent,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   FormControl,
-  Alert,
-  Snackbar,
   Autocomplete,
-  Paper,
-  Chip,
-  Avatar,
-  Stack,
-  Tooltip,
   Slider,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  Stack,
+  Paper,
+  Avatar,
+  Tooltip,
+  IconButton,
+  Chip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import { DEFAULT_MODEL_SETTINGS, MODEL_PROVIDERS } from '@/constant/model';
 import { useTranslation } from 'react-i18next';
-
-const providerOptions = MODEL_PROVIDERS.map(provider => ({
-  id: provider.id,
-  label: provider.name
-}));
+import axios from 'axios';
+import { ProviderIcon } from '@lobehub/icons';
+import { toast } from 'sonner';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useAtom } from 'jotai';
+import { modelConfigListAtom, selectedModelInfoAtom } from '@/lib/store';
 
 export default function ModelSettings({ projectId }) {
   const { t } = useTranslation();
-  const [models, setModels] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [ollamaModels, setOllamaModels] = useState([]);
-
-  // 获取 Ollama 模型列表
-  const fetchOllamaModels = async endpoint => {
-    try {
-      // 从 endpoint 中提取 host 和 port
-      let host = '127.0.0.1';
-      let port = '11434';
-
-      if (endpoint) {
-        const url = new URL(endpoint);
-        host = url.hostname;
-        port = url.port || '11434';
-      }
-
-      const response = await fetch(`/api/llm/ollama/models?host=${host}&port=${port}`);
-
-      if (!response.ok) {
-        throw new Error(t('common.fetchError'));
-      }
-
-      const data = await response.json();
-      setOllamaModels(data.map(model => model.name));
-    } catch (error) {
-      // console.error('获取 Ollama 模型列表出错:', error);
-      setOllamaModels([]);
-    }
-  };
-
   // 模型对话框状态
   const [openModelDialog, setOpenModelDialog] = useState(false);
   const [editingModel, setEditingModel] = useState(null);
-  const [modelForm, setModelForm] = useState({
-    provider: '',
+  const [loading, setLoading] = useState(true);
+  const [providerList, setProviderList] = useState([]);
+  const [providerOptions, setProviderOptions] = useState([]);
+  const [selectedProvider, setSelectedProvider] = useState({});
+  const [models, setModels] = useState([]);
+  const [modelConfigList, setModelConfigList] = useAtom(modelConfigListAtom);
+  const [selectedModelInfo, setSelectedModelInfo] = useAtom(selectedModelInfoAtom);
+  const [modelConfigForm, setModelConfigForm] = useState({
+    id: '',
     providerId: '',
-    name: '',
-    type: "text",
+    providerName: '',
     endpoint: '',
-    apiKey: ''
+    apiKey: '',
+    modelId: '',
+    modelName: '',
+    type: 'text',
+    temperature: 0.0,
+    maxTokens: 0,
+    topP: 0,
+    topK: 0,
+    status: 1
   });
 
   useEffect(() => {
-    async function fetchModelSettings() {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/projects/${projectId}/models`);
+    getProvidersList();
+    getModelConfigList();
+  }, []);
 
-        if (!response.ok) {
-          throw new Error(t('models.fetchFailed'));
-        }
+  // 获取提供商列表
+  const getProvidersList = () => {
+    axios.get('/api/llm/providers').then(response => {
+      console.log('获取的模型列表:', response.data);
+      setProviderList(response.data);
+      const providerOptions = response.data.map(provider => ({
+        id: provider.id,
+        label: provider.name
+      }));
+      setSelectedProvider(response.data[0]);
+      getProviderModels(response.data[0].id);
+      setProviderOptions(providerOptions);
+    });
+  };
 
-        const data = await response.json();
-
-        // 如果没有配置任何模型，添加默认模型
-        if (data.length === 0) {
-          const defaultModels = MODEL_PROVIDERS.map((provider, index) => ({
-            id: `default-${index + 1}`,
-            provider: provider.name,
-            providerId: provider.id,
-            name: provider.defaultModels[0],
-            endpoint: provider.defaultEndpoint,
-            apiKey: '',
-            ...DEFAULT_MODEL_SETTINGS
-          }));
-          setModels(defaultModels);
-        } else {
-          setModels(data);
-        }
-      } catch (error) {
-        console.error('获取模型配置出错:', error);
-        setError(error.message);
-      } finally {
+  // 获取模型配置列表
+  const getModelConfigList = () => {
+    axios
+      .get(`/api/projects/${projectId}/model-config`)
+      .then(response => {
+        setModelConfigList(response.data.data);
         setLoading(false);
-      }
-    }
-
-    fetchModelSettings();
-  }, [projectId, t]);
-
-  // 当组件挂载或模型列表变化时，检查是否有 Ollama 模型
-  useEffect(() => {
-    const ollamaModel = models.find(m => m.providerId === 'ollama');
-    if (ollamaModel) {
-      fetchOllamaModels(ollamaModel.endpoint).then(() => {
-        // 如果获取到了模型列表，并且当前 Ollama 模型不在列表中，更新为列表中的第一个模型
-        if (ollamaModels.length > 0 && !ollamaModels.includes(ollamaModel.name)) {
-          const updatedModels = models.map(m => (m.id === ollamaModel.id ? { ...m, name: ollamaModels[0] } : m));
-          setModels(updatedModels);
-        }
+      })
+      .catch(error => {
+        setLoading(false);
+        toast.error('获取模型列表失败');
       });
-    }
-  }, [models]);
+  };
 
-  // 保存所有模型配置
-  const saveAllModels = async () => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/models`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(models)
-      });
-
-      if (!response.ok) {
-        throw new Error(t('models.saveFailed'));
+  const onChangeProvider = (event, newValue) => {
+    console.log('选择提供商:', newValue, typeof newValue);
+    if (typeof newValue === 'string') {
+      // 用户手动输入了自定义提供商
+      setModelConfigForm(prev => ({
+        ...prev,
+        providerId: 'custom',
+        endpoint: '',
+        providerName: ''
+      }));
+    } else if (newValue && newValue.id) {
+      // 用户从下拉列表中选择了一个提供商
+      const selectedProvider = providerList.find(p => p.id === newValue.id);
+      if (selectedProvider) {
+        setSelectedProvider(selectedProvider);
+        setModelConfigForm(prev => ({
+          ...prev,
+          providerId: selectedProvider.id,
+          endpoint: selectedProvider.apiUrl,
+          providerName: selectedProvider.name,
+          modelName: ''
+        }));
+        getProviderModels(newValue.id);
       }
-
-      setSuccess(true);
-      return true; // 返回成功状态
-    } catch (error) {
-      console.error('Failed to save model configuration:', error);
-      setError(error.message);
-      return false; // 返回失败状态
     }
   };
+
+  // 获取提供商的模型列表（DB）
+  const getProviderModels = providerId => {
+    axios
+      .get(`/api/llm/model?providerId=${providerId}`)
+      .then(response => {
+        setModels(response.data);
+      })
+      .catch(error => {
+        toast.error('获取模型列表失败');
+      });
+  };
+
+  //同步模型列表
+  const refreshProviderModels = async () => {
+    let data = await getNewModels();
+    if (!data) return;
+    if (data.length > 0) {
+      setModels(data);
+      toast.success('刷新模型成功');
+      const newModelsData = await axios.post('/api/llm/model', {
+        newModels: data,
+        providerId: selectedProvider.id
+      });
+      if (newModelsData.status === 200) {
+        toast.success('同步模型成功');
+      }
+    } else {
+      toast.info('没有新的模型需要刷新');
+    }
+  };
+
+  //获取最新模型列表
+  async function getNewModels() {
+    try {
+      if (!modelConfigForm || !modelConfigForm.endpoint) {
+        return null;
+      }
+      let url = modelConfigForm.endpoint.replace(/\/$/, ''); // 去除末尾的斜杠
+      const providerId = modelConfigForm.providerId;
+      console.log(providerId, 'getNewModels providerId');
+      url += providerId === 'ollama' ? '/tags' : '/models';
+      const res = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${modelConfigForm.apiKey}`
+        }
+      });
+      if (providerId === 'ollama') {
+        return res.data.models.map(item => ({
+          modelId: item.model,
+          modelName: item.name,
+          providerId
+        }));
+      } else {
+        return res.data.data.map(item => ({
+          modelId: item.id,
+          modelName: item.id,
+          providerId
+        }));
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        toast.error('API Key 错误，请检查后重试');
+      } else {
+        toast.error('刷新模型列表失败');
+      }
+      return null;
+    }
+  }
 
   // 打开模型对话框
   const handleOpenModelDialog = (model = null) => {
     if (model) {
-      setEditingModel(model);
-      setModelForm({
-        ...DEFAULT_MODEL_SETTINGS,
-        provider: model.provider,
-        providerId: model.providerId,
-        name: model.name,
-        endpoint: model.endpoint,
-        apiKey: model.apiKey,
-        ...model
-      });
-
-      // 如果是 Ollama 提供商，获取模型列表
-      if (model.providerId === 'ollama') {
-        fetchOllamaModels(model.endpoint);
-      }
+      console.log('handleOpenModelDialog', model);
+      setModelConfigForm(model);
+      getProviderModels(model.providerId);
     } else {
-      setEditingModel(null);
-
-      // 默认选择第一个提供商
-      const defaultProvider = MODEL_PROVIDERS[0];
-
-      // 如果默认提供商是 Ollama，获取模型列表
-      if (defaultProvider.id === 'ollama') {
-        setModelForm({
-          provider: defaultProvider.name,
-          providerId: defaultProvider.id,
-          endpoint: defaultProvider.defaultEndpoint,
-          apiKey: '',
-          ...DEFAULT_MODEL_SETTINGS
-          // 不设置 name，等待获取模型列表后再设置
-        });
-
-        fetchOllamaModels(defaultProvider.defaultEndpoint)
-          .then(() => {
-            // 获取成功后，使用第一个可用的模型
-            if (ollamaModels.length > 0) {
-              setModelForm(prev => ({
-                ...prev,
-                name: ollamaModels[0]
-              }));
-            } else {
-              // 如果没有获取到模型，使用默认模型
-              setModelForm(prev => ({
-                ...prev,
-                name: defaultProvider.defaultModels[0]
-              }));
-            }
-          })
-          .catch(() => {
-            // 获取失败时，使用默认模型
-            setModelForm(prev => ({
-              ...prev,
-              name: defaultProvider.defaultModels[0]
-            }));
-          });
-      } else {
-        // 非 Ollama 提供商，直接使用预定义的默认模型
-        setModelForm({
-          provider: defaultProvider.name,
-          providerId: defaultProvider.id,
-          name: defaultProvider.defaultModels[0],
-          endpoint: defaultProvider.defaultEndpoint,
-          apiKey: '',
-          ...DEFAULT_MODEL_SETTINGS
-        });
-      }
+      setModelConfigForm({
+        ...modelConfigForm,
+        apiKey: '',
+        ...DEFAULT_MODEL_SETTINGS,
+        id: ''
+      });
     }
     setOpenModelDialog(true);
   };
@@ -245,143 +222,47 @@ export default function ModelSettings({ projectId }) {
   // 处理模型表单变更
   const handleModelFormChange = e => {
     const { name, value } = e.target;
-
-    if (name === 'providerId') {
-      // 当选择提供商时，自动填充相关信息
-      const selectedProvider = MODEL_PROVIDERS.find(p => p.id === value);
-      if (selectedProvider) {
-        // 如果选择的是 Ollama，获取本地模型列表后再设置模型
-        if (value === 'ollama') {
-          // 先设置基本信息，但不设置模型名称
-          setModelForm(prev => ({
-            ...prev,
-            providerId: value,
-            provider: selectedProvider.name,
-            endpoint: selectedProvider.defaultEndpoint
-          }));
-
-          // 获取 Ollama 模型列表
-          fetchOllamaModels(selectedProvider.defaultEndpoint)
-            .then(() => {
-              // 获取成功后，使用第一个可用的模型
-              if (ollamaModels.length > 0) {
-                setModelForm(prev => ({
-                  ...prev,
-                  name: ollamaModels[0]
-                }));
-              } else {
-                // 如果没有获取到模型，使用默认模型
-                setModelForm(prev => ({
-                  ...prev,
-                  name: selectedProvider.defaultModels[0]
-                }));
-              }
-            })
-            .catch(() => {
-              // 获取失败时，使用默认模型
-              setModelForm(prev => ({
-                ...prev,
-                name: selectedProvider.defaultModels[0]
-              }));
-            });
-        } else {
-          // 非 Ollama 提供商，直接使用预定义的默认模型
-          setModelForm({
-            ...modelForm,
-            providerId: value,
-            provider: selectedProvider.name,
-            endpoint: selectedProvider.defaultEndpoint,
-            name: selectedProvider.defaultModels[0]
-          });
-        }
-      }
-    } else if (name === 'endpoint' && modelForm.providerId === 'ollama') {
-      // 当修改 Ollama 端点时，重新获取模型列表
-      setModelForm(prev => ({
-        ...prev,
-        [name]: value
-      }));
-      fetchOllamaModels(value);
-    } else {
-      setModelForm(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    console.log('handleModelFormChange', name, value);
+    setModelConfigForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   // 保存模型
   const handleSaveModel = () => {
-    let updatedModel = null;
-    if (editingModel) {
-      // 更新现有模型
-      setModels(prev => {
-        const updatedModels = prev.map(m => (m.id === editingModel.id ? { ...m, ...modelForm } : m));
-
-        // 保存更新后的模型引用，用于更新 localStorage
-        updatedModel = updatedModels.find(m => m.id === editingModel.id);
-        // 如果更新的是当前选中的模型，同时更新 localStorage
-        const modelInfo = JSON.parse(localStorage.getItem('selectedModelInfo'));
-        if (modelInfo) {
-          if (modelInfo.id === updatedModel.id) {
-            localStorage.setItem('selectedModelInfo', JSON.stringify(updatedModel));
-            console.log('已更新 localStorage 中的模型信息:', updatedModel);
-          }
+    axios
+      .post(`/api/projects/${projectId}/model-config`, modelConfigForm)
+      .then(response => {
+        if (selectedModelInfo && selectedModelInfo.id === response.data.id) {
+          setSelectedModelInfo(response.data);
         }
-
-
-        return updatedModels;
+        toast.success(t('settings.saveSuccess'));
+        getModelConfigList();
+        handleCloseModelDialog();
+      })
+      .catch(error => {
+        toast.error(t('settings.saveFailed'));
+        console.error(error);
       });
-    } else {
-      // 添加新模型
-      const newModel = { id: `model-${Date.now()}`, ...modelForm };
-      setModels(prev => {
-        const updatedModels = [...prev, newModel];
-        return updatedModels;
-      });
-    }
-
-    handleCloseModelDialog();
   };
 
   // 删除模型
   const handleDeleteModel = id => {
-    setModels(prev => {
-      const updatedModels = prev.filter(m => m.id !== id);
-      return updatedModels;
-    });
-  };
-
-  // 监听 models 变化并保存
-  useEffect(() => {
-    console.log('models 发生变化:', models);
-    // 跳过初始加载时的保存
-    if (!loading) {
-      console.log('触发保存操作...');
-      saveAllModels().then(() => {
-        // 保存成功后，触发自定义事件通知 layout.js 刷新模型数据
-        console.log('触发模型配置变化事件');
-        const event = new CustomEvent('model-config-changed');
-        window.dispatchEvent(event);
-
-        // 如果有选中的模型，需要检查它是否还存在
-        const selectedModelInfo = localStorage.getItem('selectedModelInfo');
-        if (selectedModelInfo) {
-          const sId = JSON.parse(selectedModelInfo).id;
-          const modelExists = models.some(m => m.id === sId);
-        }
+    axios
+      .delete(`/api/projects/${projectId}/model-config/${id}`)
+      .then(response => {
+        toast.success(t('settings.deleteSuccess'));
+        getModelConfigList();
+      })
+      .catch(error => {
+        toast.error(t('settings.deleteFailed'));
       });
-    }
-  }, [models]);
-
-  const handleCloseSnackbar = () => {
-    setSuccess(false);
-    setError(null);
   };
 
   // 获取模型状态图标和颜色
   const getModelStatusInfo = model => {
-    if (model.provider === 'Ollama') {
+    if (model.providerId.toLowerCase() === 'ollama') {
       return {
         icon: <CheckCircleIcon fontSize="small" />,
         color: 'success',
@@ -402,19 +283,6 @@ export default function ModelSettings({ projectId }) {
     }
   };
 
-  // 获取提供商图标
-  const getProviderAvatar = providerId => {
-    const providerMap = {
-      openai: '🤖',
-      anthropic: '🧠',
-      ollama: '🐑',
-      azure: '☁️',
-      custom: '🔧'
-    };
-
-    return providerMap[providerId] || '🔌';
-  };
-
   if (loading) {
     return <Typography>{t('textSplit.loading')}</Typography>;
   }
@@ -431,13 +299,14 @@ export default function ModelSettings({ projectId }) {
             color="primary"
             startIcon={<AddIcon />}
             onClick={() => handleOpenModelDialog()}
-            size="small">
+            size="small"
+          >
             {t('models.add')}
           </Button>
         </Box>
 
         <Stack spacing={2}>
-          {models.map(model => (
+          {modelConfigList.map(model => (
             <Paper
               key={model.id}
               elevation={1}
@@ -449,24 +318,14 @@ export default function ModelSettings({ projectId }) {
                   boxShadow: 3,
                   transform: 'translateY(-2px)'
                 }
-              }}>
+              }}
+            >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar
-                    sx={{
-                      bgcolor: 'primary.main', // 更改为主色调
-                      width: 40,
-                      height: 40,
-                      fontSize: '1.2rem',
-                      fontWeight: 'bold', // 加粗字体
-                      boxShadow: 2 // 添加阴影
-                    }}>
-                    {getProviderAvatar(model.providerId)}
-                  </Avatar>
-
+                  <ProviderIcon key={model.providerId} provider={model.providerId} size={32} type={'color'} />
                   <Box>
                     <Typography variant="subtitle1" fontWeight="bold">
-                      {model.name ? model.name : t('models.unselectedModel')}
+                      {model.modelName ? model.modelName : t('models.unselectedModel')}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -478,8 +337,9 @@ export default function ModelSettings({ projectId }) {
                         py: 0.2, // 垂直内边距
                         borderRadius: 1, // 圆角
                         display: 'inline-block' // 行内块元素
-                      }}>
-                      {model.provider}
+                      }}
+                    >
+                      {model.providerName}
                     </Typography>
                   </Box>
                 </Box>
@@ -490,7 +350,7 @@ export default function ModelSettings({ projectId }) {
                       icon={getModelStatusInfo(model).icon}
                       label={
                         model.endpoint.replace(/^https?:\/\//, '') +
-                        (model.provider !== 'Ollama' && !model.apiKey
+                        (model.providerId.toLowerCase() !== 'ollama' && !model.apiKey
                           ? ' (' + t('models.unconfiguredAPIKey') + ')'
                           : '')
                       }
@@ -499,11 +359,12 @@ export default function ModelSettings({ projectId }) {
                       variant="outlined"
                     />
                   </Tooltip>
-                  <Tooltip title={t("models.typeTips")}>
-                    <Chip sx={{ marginLeft: '5px' }}
+                  <Tooltip title={t('models.typeTips')}>
+                    <Chip
+                      sx={{ marginLeft: '5px' }}
                       label={t(`models.${model.type || 'text'}`)}
                       size="small"
-                      color={model.type === "vision" ? "secondary" : "info"}
+                      color={model.type === 'vision' ? 'secondary' : 'info'}
                       variant="outlined"
                     />
                   </Tooltip>
@@ -514,8 +375,9 @@ export default function ModelSettings({ projectId }) {
                   <IconButton
                     size="small"
                     onClick={() => handleDeleteModel(model.id)}
-                    disabled={models.length <= 1}
-                    color="error">
+                    disabled={modelConfigList.length <= 1}
+                    color="error"
+                  >
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
@@ -523,12 +385,6 @@ export default function ModelSettings({ projectId }) {
             </Paper>
           ))}
         </Stack>
-
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-          <Button variant="contained" onClick={saveAllModels} color="primary">
-            {t('models.saveAllModels')}
-          </Button>
-        </Box>
       </CardContent>
 
       {/* 模型表单对话框 */}
@@ -536,6 +392,7 @@ export default function ModelSettings({ projectId }) {
         <DialogTitle>{editingModel ? t('models.edit') : t('models.add')}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 0.5 }}>
+            {/*ai提供商*/}
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <Autocomplete
@@ -543,72 +400,82 @@ export default function ModelSettings({ projectId }) {
                   options={providerOptions}
                   getOptionLabel={option => option.label}
                   value={
-                    providerOptions.find(p => p.id === modelForm.providerId) || {
+                    providerOptions.find(p => p.id === modelConfigForm.providerId) || {
                       id: 'custom',
-                      label: modelForm.provider
+                      label: modelConfigForm.providerName || ''
                     }
                   }
-                  onChange={(event, newValue) => {
-                    if (typeof newValue === 'string') {
-                      // 用户手动输入了自定义提供商
-                      setModelForm(prev => ({
-                        ...prev,
-                        providerId: 'custom',
-                        provider: newValue,
-                        endpoint: '',
-                        name: ''
-                      }));
-                    } else if (newValue && newValue.id) {
-                      // 用户从下拉列表中选择了一个提供商
-                      const selectedProvider = MODEL_PROVIDERS.find(p => p.id === newValue.id);
-                      if (selectedProvider) {
-                        setModelForm(prev => ({
-                          ...prev,
-                          providerId: selectedProvider.id,
-                          provider: selectedProvider.name,
-                          endpoint: selectedProvider.defaultEndpoint,
-                          name: selectedProvider.defaultModels[0]
-                        }));
-
-                        // 如果选择的是 Ollama，获取本地模型列表
-                        if (selectedProvider.id === 'ollama') {
-                          fetchOllamaModels(selectedProvider.defaultEndpoint);
-                        }
-                      }
-                    }
-                  }}
+                  onChange={onChangeProvider}
                   renderInput={params => (
                     <TextField
                       {...params}
                       label={t('models.provider')}
                       onChange={e => {
                         // 当用户手动输入时，更新 provider 字段
-                        setModelForm(prev => ({
+                        setModelConfigForm(prev => ({
                           ...prev,
                           providerId: 'custom',
-                          provider: e.target.value
+                          providerName: e.target.value
                         }));
                       }}
                     />
                   )}
+                  renderOption={(props, option) => {
+                    return (
+                      <div {...props}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <ProviderIcon key={option.id} provider={option.id} size={32} type={'color'} />
+                          {option.label}
+                        </div>
+                      </div>
+                    );
+                  }}
                 />
               </FormControl>
             </Grid>
-
+            {/*接口地址*/}
             <Grid item xs={12}>
-              <FormControl fullWidth>
+              <TextField
+                fullWidth
+                label={t('models.endpoint')}
+                name="endpoint"
+                value={modelConfigForm.endpoint}
+                onChange={handleModelFormChange}
+                placeholder="例如: https://api.openai.com/v1"
+              />
+            </Grid>
+            {/*api密钥*/}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label={t('models.apiKey')}
+                name="apiKey"
+                type="password"
+                value={modelConfigForm.apiKey}
+                onChange={handleModelFormChange}
+                placeholder="例如: sk-..."
+              />
+            </Grid>
+            {/*模型列表*/}
+            <Grid item xs={12} style={{ display: 'flex', alignItems: 'center' }}>
+              <FormControl style={{ width: '70%' }}>
                 <Autocomplete
                   freeSolo
-                  options={
-                    modelForm.providerId === 'ollama'
-                      ? ollamaModels
-                      : MODEL_PROVIDERS.find(p => p.id === modelForm.providerId)?.defaultModels || []
-                  }
-                  value={modelForm.name}
+                  options={models
+                    .filter(model => model && model.modelName)
+                    .map(model => ({
+                      label: model.modelName,
+                      id: model.id,
+                      modelId: model.modelId,
+                      providerId: model.providerId
+                    }))}
+                  value={modelConfigForm.modelName}
                   onChange={(event, newValue) => {
-                    setModelForm(prev => ({
+                    console.log('newValue', newValue);
+                    setModelConfigForm(prev => ({
                       ...prev,
-                      name: newValue
+                      modelName: newValue?.label,
+                      modelId: newValue?.modelId ? newValue?.modelId : newValue?.label
                     }));
                   }}
                   renderInput={params => (
@@ -616,36 +483,18 @@ export default function ModelSettings({ projectId }) {
                       {...params}
                       label={t('models.modelName')}
                       onChange={e => {
-                        setModelForm(prev => ({
+                        setModelConfigForm(prev => ({
                           ...prev,
-                          name: e.target.value
+                          modelName: e.target.value
                         }));
                       }}
                     />
                   )}
                 />
               </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label={t('models.endpoint')}
-                name="endpoint"
-                value={modelForm.endpoint}
-                onChange={handleModelFormChange}
-                placeholder="例如: https://api.openai.com/v1"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label={t('models.apiKey')}
-                name="apiKey"
-                type="password"
-                value={modelForm.apiKey}
-                onChange={handleModelFormChange}
-                placeholder="例如: sk-..."
-              />
+              <Button variant="contained" onClick={() => refreshProviderModels()} sx={{ ml: 2 }}>
+                刷新模型列表
+              </Button>
             </Grid>
             {/* 新增：视觉模型选择项 */}
             <Grid item xs={12}>
@@ -653,10 +502,9 @@ export default function ModelSettings({ projectId }) {
                 <InputLabel>{t('models.type')}</InputLabel>
                 <Select
                   label={t('models.type')}
-                  value={modelForm.type || 'text'}
+                  value={modelConfigForm.type || 'text'}
                   onChange={handleModelFormChange}
                   name="type"
-
                 >
                   <MenuItem value="text">{t('models.text')}</MenuItem>
                   <MenuItem value="vision">{t('models.vision')}</MenuItem>
@@ -673,7 +521,7 @@ export default function ModelSettings({ projectId }) {
                   min={0}
                   max={2}
                   name="temperature"
-                  value={modelForm.temperature}
+                  value={modelConfigForm.temperature}
                   onChange={handleModelFormChange}
                   step={0.1}
                   valueLabelDisplay="auto"
@@ -681,7 +529,7 @@ export default function ModelSettings({ projectId }) {
                   sx={{ flex: 1 }}
                 />
                 <Typography variant="body2" sx={{ minWidth: '40px' }}>
-                  {modelForm.temperature}
+                  {modelConfigForm.temperature}
                 </Typography>
               </Box>
             </Grid>
@@ -695,7 +543,7 @@ export default function ModelSettings({ projectId }) {
                   min={1024}
                   max={16384}
                   name="maxTokens"
-                  value={modelForm.maxTokens}
+                  value={modelConfigForm.maxTokens}
                   onChange={handleModelFormChange}
                   step={1}
                   valueLabelDisplay="auto"
@@ -703,7 +551,7 @@ export default function ModelSettings({ projectId }) {
                   sx={{ flex: 1 }}
                 />
                 <Typography variant="body2" sx={{ minWidth: '40px' }}>
-                  {modelForm.maxTokens}
+                  {modelConfigForm.maxTokens}
                 </Typography>
               </Box>
             </Grid>
@@ -714,31 +562,12 @@ export default function ModelSettings({ projectId }) {
           <Button
             onClick={handleSaveModel}
             variant="contained"
-            disabled={!modelForm.provider || !modelForm.name || !modelForm.endpoint}>
+            disabled={!modelConfigForm.providerId || !modelConfigForm.providerName || !modelConfigForm.endpoint}
+          >
             {t('common.save')}
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Snackbar
-        open={success}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
-          {t('settings.saveSuccess')}
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
-          {error}
-        </Alert>
-      </Snackbar>
     </Card>
   );
 }

@@ -16,7 +16,7 @@
 
 </div>
 
-If you like this project, please leave a Star ⭐️ for it. Or you can buy the author a cup of coffee => [Support the author](./public/imgs/aw.jpg) ❤️! 
+If you like this project, please leave a Star ⭐️ for it. Or you can buy the author a cup of coffee => [Support the author](./public/imgs/aw.jpg) ❤️!
 
 ## Overview
 
@@ -91,41 +91,46 @@ With Easy Dataset, you can transform your domain knowledge into structured datas
 - pnpm (recommended) or npm
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/ConardLi/easy-dataset.git
    cd easy-dataset
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Start the development server:
+
    ```bash
    npm run build
 
    npm run start
    ```
 
-### Build with Local Dockerfile  
+### Build with Local Dockerfile
 
-If you want to build the image yourself, you can use the Dockerfile in the project root directory:  
+If you want to build the image yourself, you can use the Dockerfile in the project root directory:
 
-1. Clone the repository:  
+1. Clone the repository:
    ```bash
    git clone https://github.com/ConardLi/easy-dataset.git
    cd easy-dataset
-   ```  
-2. Build the Docker image:  
+   ```
+2. Build the Docker image:
    ```bash
    docker build -t easy-dataset .
-   ```  
-3. Run the container:  
+   ```
+3. Run the container:
+
    ```bash
    docker run -d -p 1717:1717 -v {YOUR_LOCAL_DB_PATH}:/app/local-db --name easy-dataset easy-dataset
-   ```  
-   **Note:** Replace `{YOUR_LOCAL_DB_PATH}` with the actual path where you want to store the local database.  
+   ```
+
+   **Note:** Replace `{YOUR_LOCAL_DB_PATH}` with the actual path where you want to store the local database.
 
 4. Open your browser and navigate to `http://localhost:1717`
 
@@ -139,7 +144,6 @@ If you want to build the image yourself, you can use the Dockerfile in the proje
         <td><img src="./public/imgs/2.png"></td>
     </tr>
 </table>
-
 
 1. Click the "Create Project" button on the home page
 2. Enter a project name and description
@@ -254,7 +258,6 @@ easy-dataset/
     └── projects/                       # Project data storage
 ```
 
-
 ## Documentation
 
 For detailed documentation on all features and APIs, please visit our [Documentation Site](https://rncg5jvpme.feishu.cn/docx/IRuad1eUIo8qLoxxwAGcZvqJnDb?302from=wiki).
@@ -279,7 +282,6 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=ConardLi/easy-dataset&type=Date)](https://www.star-history.com/#ConardLi/easy-dataset&Date)
-
 
 <div align="center">
   <sub>Built with ❤️ by <a href="https://github.com/ConardLi">ConardLi</a> • Follow  me：<a href="https://mp.weixin.qq.com/s/ac9XWvVsaXpSH1HH2x4TRQ">WeChat</a>｜<a href="https://space.bilibili.com/474921808">Bilibili</a>｜<a href="https://juejin.cn/user/3949101466785709">Juijin</a>｜<a href="https://www.zhihu.com/people/wen-ti-chao-ji-duo-de-xiao-qi">Zhihu</a></sub>

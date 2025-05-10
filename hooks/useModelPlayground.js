@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAtomValue } from 'jotai/index';
+import { modelConfigListAtom } from '@/lib/store';
 
 export default function useModelPlayground(projectId) {
   // 状态管理
-  const [availableModels, setAvailableModels] = useState([]);
   const [selectedModels, setSelectedModels] = useState([]);
   const [loading, setLoading] = useState({});
   const [userInput, setUserInput] = useState('');
@@ -13,26 +14,7 @@ export default function useModelPlayground(projectId) {
   const [outputMode, setOutputMode] = useState('normal'); // 'normal' 或 'streaming'
   const [uploadedImage, setUploadedImage] = useState(null); // 存储上传的图片Base64
 
-  // 获取项目的模型配置
-  useEffect(() => {
-    async function fetchModels() {
-      try {
-        const response = await fetch(`/api/projects/${projectId}/models`);
-        if (!response.ok) {
-          throw new Error('获取模型列表失败');
-        }
-        const models = await response.json();
-        setAvailableModels(models);
-      } catch (error) {
-        console.error('获取模型失败:', error);
-        setError('无法加载模型，请检查设置');
-      }
-    }
-
-    if (projectId) {
-      fetchModels();
-    }
-  }, [projectId]);
+  const availableModels = useAtomValue(modelConfigListAtom);
 
   // 初始化会话状态
   useEffect(() => {
@@ -72,7 +54,7 @@ export default function useModelPlayground(projectId) {
   };
 
   // 处理图片上传
-  const handleImageUpload = (e) => {
+  const handleImageUpload = e => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -100,7 +82,7 @@ export default function useModelPlayground(projectId) {
     // 获取用户输入
     const input = userInput.trim();
     setUserInput('');
-    
+
     // 获取图片（如果有的话）
     const image = uploadedImage;
     setUploadedImage(null); // 清除图片
@@ -114,7 +96,7 @@ export default function useModelPlayground(projectId) {
       // 检查是否有图片并且当前模型是视觉模型
       const model = availableModels.find(m => m.id === modelId);
       const isVisionModel = model && model.type === 'vision';
-      
+
       if (isVisionModel && image) {
         // 如果是视觉模型并且有图片，使用复合格式
         updatedConversations[modelId].push({
@@ -163,10 +145,10 @@ export default function useModelPlayground(projectId) {
       try {
         // 检查是否是视觉模型且有图片
         const isVisionModel = model.type === 'vision';
-        
+
         // 构建请求消息
         let requestMessages = [...updatedConversations[modelId]]; // 复制当前消息历史
-        
+
         // 如果是vision模型并且有图片，将最后一条用户消息替换为包含图片的消息
         if (isVisionModel && image && requestMessages.length > 0) {
           // 找到最后一条用户消息
@@ -180,7 +162,7 @@ export default function useModelPlayground(projectId) {
             ]
           };
         }
-        
+
         // 根据输出模式选择不同的处理方式
         if (outputMode === 'streaming') {
           // 流式输出处理

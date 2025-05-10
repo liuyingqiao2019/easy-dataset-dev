@@ -1,8 +1,11 @@
 # 使用Node.js 18作为基础镜像
-FROM docker.1ms.run/library/node:18
+FROM node:20
 
 # 设置工作目录
 WORKDIR /app
+
+# 安装pnpm
+RUN npm install -g pnpm@9
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -17,16 +20,19 @@ RUN apt-get update && apt-get install -y \
 COPY package.json package-lock.json* ./
 
 # 安装依赖
-RUN npm install
+#使用国内源加速
+#RUN pnpm config set registry https://registry.npmmirror.com && pnpm install
+#正常安装
+RUN pnpm install
 
 # 复制所有文件
 COPY . .
 
 # 构建应用
-RUN npm run build
+RUN pnpm build
 
 # 暴露端口
 EXPOSE 1717
 
 # 启动应用
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]

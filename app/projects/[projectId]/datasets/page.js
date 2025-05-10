@@ -30,7 +30,10 @@ import {
   InputBase,
   Tooltip,
   Checkbox,
-  LinearProgress
+  LinearProgress,
+  Select,
+  MenuItem,
+  TextField
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -40,6 +43,8 @@ import { useRouter } from 'next/navigation';
 import ExportDatasetDialog from '@/components/ExportDatasetDialog';
 import { useTranslation } from 'react-i18next';
 import { processInParallel } from '@/lib/util/async';
+import axios from 'axios';
+import { useDebounce } from '@/hooks/useDebounce';
 
 // 数据集列表组件
 const DatasetList = ({
@@ -57,13 +62,11 @@ const DatasetList = ({
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
-
   const bgColor = theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light;
   const color =
     theme.palette.mode === 'dark'
       ? theme.palette.getContrastText(theme.palette.primary.main)
       : theme.palette.getContrastText(theme.palette.primary.contrastText);
-
   return (
     <Card elevation={2}>
       <TableContainer sx={{ overflowX: 'auto' }}>
@@ -76,11 +79,12 @@ const DatasetList = ({
                   backgroundColor: bgColor,
                   color: color,
                   borderBottom: `2px solid ${theme.palette.divider}`
-                }}>
+                }}
+              >
                 <Checkbox
                   color="primary"
-                  indeterminate={selectedIds.length > 0 && selectedIds.length < datasets.length}
-                  checked={datasets.length > 0 && selectedIds.length === datasets.length}
+                  indeterminate={selectedIds.length > 0 && selectedIds.length < total}
+                  checked={total > 0 && selectedIds.length === total}
                   onChange={onSelectAll}
                 />
               </TableCell>
@@ -91,7 +95,8 @@ const DatasetList = ({
                   fontWeight: 'bold',
                   padding: '16px 8px',
                   borderBottom: `2px solid ${theme.palette.divider}`
-                }}>
+                }}
+              >
                 {t('datasets.question')}
               </TableCell>
               <TableCell
@@ -101,7 +106,8 @@ const DatasetList = ({
                   fontWeight: 'bold',
                   padding: '16px 8px',
                   borderBottom: `2px solid ${theme.palette.divider}`
-                }}>
+                }}
+              >
                 {t('datasets.createdAt')}
               </TableCell>
               <TableCell
@@ -111,7 +117,8 @@ const DatasetList = ({
                   fontWeight: 'bold',
                   padding: '16px 8px',
                   borderBottom: `2px solid ${theme.palette.divider}`
-                }}>
+                }}
+              >
                 {t('datasets.model')}
               </TableCell>
               <TableCell
@@ -121,7 +128,8 @@ const DatasetList = ({
                   fontWeight: 'bold',
                   padding: '16px 8px',
                   borderBottom: `2px solid ${theme.palette.divider}`
-                }}>
+                }}
+              >
                 {t('datasets.domainTag')}
               </TableCell>
               <TableCell
@@ -131,7 +139,8 @@ const DatasetList = ({
                   fontWeight: 'bold',
                   padding: '16px 8px',
                   borderBottom: `2px solid ${theme.palette.divider}`
-                }}>
+                }}
+              >
                 {t('datasets.cot')}
               </TableCell>
               <TableCell
@@ -141,7 +150,8 @@ const DatasetList = ({
                   fontWeight: 'bold',
                   padding: '16px 8px',
                   borderBottom: `2px solid ${theme.palette.divider}`
-                }}>
+                }}
+              >
                 {t('datasets.answer')}
               </TableCell>
               {/* <TableCell
@@ -161,7 +171,8 @@ const DatasetList = ({
                   fontWeight: 'bold',
                   padding: '16px 8px',
                   borderBottom: `2px solid ${theme.palette.divider}`
-                }}>
+                }}
+              >
                 {t('common.actions')}
               </TableCell>
             </TableRow>
@@ -175,12 +186,14 @@ const DatasetList = ({
                   '&:hover': { backgroundColor: alpha(theme.palette.primary.light, 0.1) },
                   cursor: 'pointer'
                 }}
-                onClick={() => onViewDetails(dataset.id)}>
+                onClick={() => onViewDetails(dataset.id)}
+              >
                 <TableCell
                   padding="checkbox"
                   sx={{
                     borderLeft: `4px solid ${theme.palette.primary.main}`
-                  }}>
+                  }}
+                >
                   <Checkbox
                     color="primary"
                     checked={selectedIds.includes(dataset.id)}
@@ -197,8 +210,10 @@ const DatasetList = ({
                     whiteSpace: 'normal',
                     wordBreak: 'break-word',
                     py: 2
-                  }}>
+                  }}
+                >
                   <Typography variant="body2" fontWeight="medium">
+                    {dataset.confirmed}
                     {dataset.confirmed && (
                       <Chip
                         label={t('datasets.confirmed')}
@@ -217,7 +232,7 @@ const DatasetList = ({
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2" color="text.secondary">
-                    {new Date(dataset.createdAt).toLocaleString('zh-CN')}
+                    {new Date(dataset.createAt).toLocaleString('zh-CN')}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -270,7 +285,8 @@ const DatasetList = ({
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical'
-                    }}>
+                    }}
+                  >
                     {dataset.answer}
                   </Typography>
                 </TableCell>
@@ -299,7 +315,8 @@ const DatasetList = ({
                         sx={{
                           color: theme.palette.primary.main,
                           '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.1) }
-                        }}>
+                        }}
+                      >
                         <VisibilityIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -313,7 +330,8 @@ const DatasetList = ({
                         sx={{
                           color: theme.palette.error.main,
                           '&:hover': { backgroundColor: alpha(theme.palette.error.main, 0.1) }
-                        }}>
+                        }}
+                      >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -334,22 +352,54 @@ const DatasetList = ({
         </Table>
       </TableContainer>
       <Divider />
-      <TablePagination
-        component="div"
-        count={total}
-        page={page}
-        onPageChange={onPageChange}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={onRowsPerPageChange}
-        labelRowsPerPage={t('datasets.rowsPerPage')}
-        labelDisplayedRows={({ from, to, count }) => t('datasets.pagination', { from, to, count })}
+      <Box
         sx={{
-          borderTop: `1px solid ${theme.palette.divider}`,
-          '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-            fontWeight: 'medium'
-          }
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 2,
+          py: 1,
+          borderTop: `1px solid ${theme.palette.divider}`
         }}
-      />
+      >
+        <TablePagination
+          component="div"
+          count={total}
+          page={page - 1}
+          onPageChange={onPageChange}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={onRowsPerPageChange}
+          labelRowsPerPage={t('datasets.rowsPerPage')}
+          labelDisplayedRows={({ from, to, count }) => t('datasets.pagination', { from, to, count })}
+          sx={{
+            '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+              fontWeight: 'medium'
+            },
+            border: 'none'
+          }}
+        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="body2">{t('common.jumpTo')}:</Typography>
+          <TextField
+            size="small"
+            type="number"
+            inputProps={{
+              min: 1,
+              max: Math.ceil(total / rowsPerPage),
+              style: { padding: '4px 8px', width: '50px' }
+            }}
+            onKeyPress={e => {
+              if (e.key === 'Enter') {
+                const pageNum = parseInt(e.target.value, 10);
+                if (pageNum >= 1 && pageNum <= Math.ceil(total / rowsPerPage)) {
+                  onPageChange(null, pageNum - 1);
+                  e.target.value = '';
+                }
+              }
+            }}
+          />
+        </Box>
+      </Box>
     </Card>
   );
 };
@@ -366,7 +416,8 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
       PaperProps={{
         elevation: 3,
         sx: { borderRadius: 2 }
-      }}>
+      }}
+    >
       <DialogTitle sx={{ pb: 1 }}>
         <Typography variant="h6" fontWeight="bold">
           {t('common.confirmDelete')}
@@ -376,8 +427,8 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
         <Typography variant="body1" sx={{ mb: 2 }}>
           {batch
             ? t('datasets.batchconfirmDeleteMessage', {
-              count: datasets.length
-            })
+                count: datasets.length
+              })
             : t('common.confirmDeleteDataSet')}
         </Typography>
         {batch ? (
@@ -389,7 +440,8 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
               p: 2,
               backgroundColor: alpha(theme.palette.warning.light, 0.1),
               borderColor: theme.palette.warning.light
-            }}>
+            }}
+          >
             <Typography variant="subtitle2" color="text.secondary" fontWeight="bold">
               {t('datasets.question')}：
             </Typography>
@@ -419,7 +471,10 @@ const DeleteConfirmDialog = ({ open, datasets, onClose, onConfirm, batch, progre
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
               <Typography variant="body2">
-                {t('datasets.batchDeleteProgress', { completed: progress.completed, total: progress.total })}
+                {t('datasets.batchDeleteProgress', {
+                  completed: progress.completed,
+                  total: progress.total
+                })}
               </Typography>
               <Typography variant="body2" color="success.main" sx={{ fontWeight: 'medium' }}>
                 {t('datasets.batchDeleteCount', { count: progress.datasetCount })}
@@ -462,11 +517,13 @@ export default function DatasetsPage({ params }) {
     // 是否正在删除
     deleting: false
   });
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery);
   const [exportDialog, setExportDialog] = useState({ open: false });
   const [selectedIds, setselectedIds] = useState([]);
+  const [filterConfirmed, setFilterConfirmed] = useState('all');
   const { t } = useTranslation();
   // 删除进度状态
   const [deleteProgress, setDeteleProgress] = useState({
@@ -486,13 +543,13 @@ export default function DatasetsPage({ params }) {
   };
 
   // 获取数据集列表
-  const fetchDatasets = async () => {
+  const getDatasetsList = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/projects/${projectId}/datasets`);
-      if (!response.ok) throw new Error(t('datasets.fetchFailed'));
-      const data = await response.json();
-      setDatasets(data);
+      const response = await axios.get(
+        `/api/projects/${projectId}/datasets?page=${page}&size=${rowsPerPage}&status=${filterConfirmed}&input=${searchQuery}`
+      );
+      setDatasets(response.data);
     } catch (error) {
       setSnackbar({
         open: true,
@@ -505,34 +562,19 @@ export default function DatasetsPage({ params }) {
   };
 
   useEffect(() => {
-    fetchDatasets();
-  }, [projectId]);
+    getDatasetsList();
+  }, [projectId, page, rowsPerPage, filterConfirmed, debouncedSearchQuery]);
 
   // 处理页码变化
   const handlePageChange = (event, newPage) => {
-    setPage(newPage);
+    // MUI TablePagination 的页码从 0 开始，而我们的 API 从 1 开始
+    setPage(newPage + 1);
   };
 
   // 处理每页行数变化
   const handleRowsPerPageChange = event => {
+    setPage(1);
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  // 过滤数据
-  const filteredDatasets = datasets.filter(
-    dataset =>
-      dataset.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (dataset.questionLabel && dataset.questionLabel.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      dataset.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dataset.chunkId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // 获取当前页的数据
-  const getCurrentPageData = () => {
-    const start = page * rowsPerPage;
-    const end = start + rowsPerPage;
-    return filteredDatasets.slice(start, end);
   };
 
   // 打开删除确认框
@@ -552,9 +594,19 @@ export default function DatasetsPage({ params }) {
   };
 
   const handleBatchDeleteDataset = async () => {
+    if (selectedIds.length === 0) {
+      setSnackbar({
+        open: true,
+        message: t('datasets.noSelected'),
+        severity: 'warning'
+      });
+      return;
+    }
+
+    const datasetsArray = selectedIds.map(id => ({ id }));
     setDeleteDialog({
       open: true,
-      datasets: datasets.filter(dataset => selectedIds.includes(dataset.id)),
+      datasets: datasetsArray,
       batch: true,
       count: selectedIds.length
     });
@@ -581,22 +633,46 @@ export default function DatasetsPage({ params }) {
       if (!dataset) return;
       await handleDelete(dataset);
     }
+    setselectedIds([]);
     // 刷新数据
-    fetchDatasets();
+    getDatasetsList();
     // 关闭确认框
     handleCloseDeleteDialog();
   };
 
   // 批量删除数据集
   const handleBatchDelete = async () => {
-    // TODO: 并发删除存在问题，这里只能同时删除1个，待优化
-    await processInParallel(deleteDialog.datasets, handleDelete, 1, (cur, total) => {
-      setDeteleProgress({
-        total: total,
-        completed: cur,
-        percentage: Math.floor((cur / total) * 100)
+    try {
+      await processInParallel(
+        selectedIds,
+        async datasetId => {
+          await fetch(`/api/projects/${projectId}/datasets?id=${datasetId}`, {
+            method: 'DELETE'
+          });
+        },
+        3,
+        (cur, total) => {
+          setDeteleProgress({
+            total,
+            completed: cur,
+            percentage: Math.floor((cur / total) * 100)
+          });
+        }
+      );
+
+      setSnackbar({
+        open: true,
+        message: t('datasets.batchDeleteSuccess', { count: selectedIds.length }),
+        severity: 'success'
       });
-    });
+    } catch (error) {
+      console.error('批量删除失败:', error);
+      setSnackbar({
+        open: true,
+        message: error.message || t('datasets.batchDeleteFailed'),
+        severity: 'error'
+      });
+    }
   };
 
   // 删除数据集
@@ -622,15 +698,14 @@ export default function DatasetsPage({ params }) {
   };
 
   // 导出数据集
-  const handleExportDatasets = exportOptions => {
+  const handleExportDatasets = async exportOptions => {
     try {
-      // 根据选项筛选数据
-      let dataToExport = [...filteredDatasets];
-
-      // 如果只导出已确认的数据集
+      let apiUrl = `/api/projects/${projectId}/datasets/export`;
       if (exportOptions.confirmedOnly) {
-        dataToExport = dataToExport.filter(dataset => dataset.confirmed);
+        apiUrl += `?status=confirmed`;
       }
+      const response = await axios.get(apiUrl);
+      let dataToExport = response.data;
 
       // 根据选择的格式转换数据
       let formattedData;
@@ -779,9 +854,13 @@ export default function DatasetsPage({ params }) {
   };
 
   // 处理全选/取消全选
-  const handleSelectAll = event => {
+  const handleSelectAll = async event => {
     if (event.target.checked) {
-      setselectedIds(getCurrentPageData().map(dataset => dataset.id));
+      // 获取所有符合当前筛选条件的数据，不受分页限制
+      const response = await axios.get(
+        `/api/projects/${projectId}/datasets?status=${filterConfirmed}&input=${searchQuery}&selectedAll=1`
+      );
+      setselectedIds(response.data.map(dataset => dataset.id));
     } else {
       setselectedIds([]);
     }
@@ -808,7 +887,8 @@ export default function DatasetsPage({ params }) {
             justifyContent: 'center',
             alignItems: 'center',
             height: '70vh'
-          }}>
+          }}
+        >
           <CircularProgress size={60} thickness={4} />
           <Typography variant="h6" sx={{ mt: 2 }}>
             {t('datasets.loading')}
@@ -827,7 +907,8 @@ export default function DatasetsPage({ params }) {
           p: 3,
           backgroundColor: alpha(theme.palette.primary.light, 0.05),
           borderRadius: 2
-        }}>
+        }}
+      >
         <Box
           sx={{
             display: 'flex',
@@ -835,23 +916,34 @@ export default function DatasetsPage({ params }) {
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: 2
-          }}>
+          }}
+        >
           <Box>
             <Typography variant="h4" fontWeight="bold" sx={{ mb: 0.5 }}>
               {t('datasets.management')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
               {t('datasets.stats', {
-                total: datasets.length,
-                confirmed: datasets.filter(d => d.confirmed).length,
-                percentage:
-                  datasets.length > 0
-                    ? Math.round((datasets.filter(d => d.confirmed).length / datasets.length) * 100)
-                    : 0
+                total: datasets.total,
+                confirmed: datasets.confirmedCount,
+                percentage: datasets.total > 0 ? ((datasets.confirmedCount / datasets.total) * 100).toFixed(2) : 0
               })}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 2 }}>
+            <Select
+              value={filterConfirmed}
+              onChange={e => {
+                setFilterConfirmed(e.target.value);
+                setPage(1);
+              }}
+              displayEmpty
+              sx={{ width: 150 }}
+            >
+              <MenuItem value="all">{t('datasets.filterAll')}</MenuItem>
+              <MenuItem value="confirmed">{t('datasets.filterConfirmed')}</MenuItem>
+              <MenuItem value="unconfirmed">{t('datasets.filterUnconfirmed')}</MenuItem>
+            </Select>
             <Paper
               component="form"
               sx={{
@@ -860,7 +952,8 @@ export default function DatasetsPage({ params }) {
                 alignItems: 'center',
                 width: 300,
                 borderRadius: 2
-              }}>
+              }}
+            >
               <IconButton sx={{ p: '10px' }} aria-label="search">
                 <SearchIcon />
               </IconButton>
@@ -870,7 +963,7 @@ export default function DatasetsPage({ params }) {
                 value={searchQuery}
                 onChange={e => {
                   setSearchQuery(e.target.value);
-                  setPage(0);
+                  setPage(1);
                 }}
               />
             </Paper>
@@ -878,7 +971,8 @@ export default function DatasetsPage({ params }) {
               variant="outlined"
               startIcon={<FileDownloadIcon />}
               sx={{ borderRadius: 2 }}
-              onClick={handleOpenExportDialog}>
+              onClick={handleOpenExportDialog}
+            >
               {t('export.title')}
             </Button>
           </Box>
@@ -893,7 +987,8 @@ export default function DatasetsPage({ params }) {
             flexWrap: 'wrap',
             marginTop: '10px',
             gap: 2
-          }}>
+          }}
+        >
           <Typography variant="body1" color="text.secondary">
             {t('datasets.selected', {
               count: selectedIds.length
@@ -904,7 +999,8 @@ export default function DatasetsPage({ params }) {
             color="error"
             startIcon={<DeleteIcon />}
             sx={{ borderRadius: 2 }}
-            onClick={handleBatchDeleteDataset}>
+            onClick={handleBatchDeleteDataset}
+          >
             {t('datasets.batchDelete')}
           </Button>
         </Box>
@@ -913,14 +1009,14 @@ export default function DatasetsPage({ params }) {
       )}
 
       <DatasetList
-        datasets={getCurrentPageData()}
+        datasets={datasets.data}
         onViewDetails={handleViewDetails}
         onDelete={handleOpenDeleteDialog}
         page={page}
         rowsPerPage={rowsPerPage}
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
-        total={filteredDatasets.length}
+        total={datasets.total}
         selectedIds={selectedIds}
         onSelectAll={handleSelectAll}
         onSelectItem={handleSelectItem}
@@ -938,9 +1034,10 @@ export default function DatasetsPage({ params }) {
 
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>

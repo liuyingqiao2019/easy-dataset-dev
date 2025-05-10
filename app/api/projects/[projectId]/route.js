@@ -1,15 +1,13 @@
-import { getProject, updateProject, deleteProject } from '@/lib/db/index';
-
 // 获取项目详情
+import { deleteProject, getProject, updateProject } from '@/lib/db/projects';
+
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
     const project = await getProject(projectId);
-
     if (!project) {
       return Response.json({ error: '项目不存在' }, { status: 404 });
     }
-
     return Response.json(project);
   } catch (error) {
     console.error('获取项目详情出错:', error);
@@ -24,7 +22,7 @@ export async function PUT(request, { params }) {
     const projectData = await request.json();
 
     // 验证必要的字段
-    if (!projectData.name) {
+    if (!projectData.name && !projectData.defaultModelConfigId) {
       return Response.json({ error: '项目名称不能为空' }, { status: 400 });
     }
 

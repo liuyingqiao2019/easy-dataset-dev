@@ -37,24 +37,27 @@ export default function ChatMessage({ message, modelName }) {
           ) : (
             // 如果是数组类型（用于视觉模型的用户输入）
             <>
-              {Array.isArray(message.content) && 
+              {Array.isArray(message.content) &&
                 message.content.map((item, i) => {
                   if (item.type === 'text') {
-                    return <Typography key={i} variant="body1">{item.text}</Typography>;
+                    return (
+                      <Typography key={i} variant="body1">
+                        {item.text}
+                      </Typography>
+                    );
                   } else if (item.type === 'image_url') {
                     return (
                       <Box key={i} sx={{ mt: 1, mb: 1 }}>
-                        <img 
-                          src={item.image_url.url} 
-                          alt="上传图片" 
+                        <img
+                          src={item.image_url.url}
+                          alt="上传图片"
                           style={{ maxWidth: '100%', borderRadius: '4px' }}
                         />
                       </Box>
                     );
                   }
                   return null;
-                })
-              }
+                })}
             </>
           )}
         </Paper>
@@ -95,24 +98,19 @@ export default function ChatMessage({ message, modelName }) {
             ) : (
               // 如果是数组类型（用于视觉模型的响应）
               <>
-                {Array.isArray(message.content) && 
+                {Array.isArray(message.content) &&
                   message.content.map((item, i) => {
                     if (item.type === 'text') {
                       return <span key={i}>{item.text}</span>;
                     } else if (item.type === 'image_url') {
                       return (
                         <Box key={i} sx={{ mt: 1, mb: 1 }}>
-                          <img 
-                            src={item.image_url.url} 
-                            alt="图片" 
-                            style={{ maxWidth: '100%', borderRadius: '4px' }}
-                          />
+                          <img src={item.image_url.url} alt="图片" style={{ maxWidth: '100%', borderRadius: '4px' }} />
                         </Box>
                       );
                     }
                     return null;
-                  })
-                }
+                  })}
                 {message.isStreaming && <span className="blinking-cursor">|</span>}
               </>
             )}

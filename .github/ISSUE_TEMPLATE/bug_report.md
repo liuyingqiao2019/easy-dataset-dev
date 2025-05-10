@@ -1,17 +1,15 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: "[Bug]"
+title: '[Bug]'
 labels: bug
 assignees: ''
-
 ---
 
 **注意：请务必按照此模版填写 ISSUES 信息，否则 ISSUE 将不会得到回复**
 
 **问题描述**
 清晰、简洁地描述该问题的具体情况。
-
 
 **桌面设备（请完善以下信息）**
 - 操作系统：[例如：、Window、MAC]
@@ -24,6 +22,7 @@ assignees: ''
 
 **复现步骤**
 重现该问题的操作步骤：
+
 1. 进入“……”页面。
 2. 点击“……”。
 3. 向下滚动到“……”。

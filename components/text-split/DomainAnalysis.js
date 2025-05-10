@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -35,6 +35,8 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 /**
  * 领域分析组件
@@ -176,18 +178,18 @@ function DomainTree({ tags, onEdit, onDelete, onAddChild }) {
   );
 }
 
-export default function DomainAnalysis({ projectId, toc = '', tags = [], loading = false, onTagsUpdate }) {
+export default function DomainAnalysis({ projectId, toc = '', loading = false }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
-  const [editingTags, setEditingTags] = useState([...tags]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [currentNode, setCurrentNode] = useState(null);
-  const [parentNode, setParentNode] = useState(null);
+  const [parentNode, setParentNode] = useState('');
   const [dialogMode, setDialogMode] = useState('add');
-  const [labelValue, setLabelValue] = useState('');
+  const [labelValue, setLabelValue] = useState({});
   const [saving, setSaving] = useState(false);
+  const [tags, setTags] = useState([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -198,6 +200,13 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
+  useEffect(() => {
+    getTags();
+  }, []);
+  const getTags = async () => {
+    const response = await axios.get(`/api/projects/${projectId}/tags`);
+    setTags(response.data.tags);
+  };
   // 处理标签切换
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -208,23 +217,23 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
     setDialogMode('add');
     setCurrentNode(null);
     setParentNode(null);
-    setLabelValue('');
+    setLabelValue({});
     setDialogOpen(true);
   };
 
   // 打开编辑标签对话框
   const handleEditTag = node => {
     setDialogMode('edit');
-    setCurrentNode(node);
-    setLabelValue(node.label);
+    setCurrentNode({ id: node.id, label: node.label });
+    setLabelValue({ id: node.id, label: node.label });
     setDialogOpen(true);
   };
 
   // 打开添加子标签对话框
   const handleAddChildTag = parentNode => {
     setDialogMode('addChild');
-    setParentNode(parentNode);
-    setLabelValue('');
+    setParentNode(parentNode.label);
+    setLabelValue({ parentId: parentNode.id });
     setDialogOpen(true);
   };
 
@@ -284,6 +293,7 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
 
   // 保存标签更改
   const saveTagChanges = async updatedTags => {
+    console.log('保存标签更改:', updatedTags);
     setSaving(true);
     try {
       const response = await fetch(`/api/projects/${projectId}/tags`, {
@@ -298,12 +308,7 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
         const errorData = await response.json();
         throw new Error(errorData.error || t('domain.errors.saveFailed'));
       }
-
-      const data = await response.json();
-      setEditingTags(data.tags);
-      if (onTagsUpdate) {
-        onTagsUpdate(data.tags);
-      }
+      getTags();
       setSnackbar({
         open: true,
         message: t('domain.messages.updateSuccess'),
@@ -323,7 +328,7 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
 
   // 提交表单
   const handleSubmit = async () => {
-    if (!labelValue.trim()) {
+    if (!labelValue.label.trim()) {
       setSnackbar({
         open: true,
         message: '标签名称不能为空',
@@ -332,25 +337,19 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
       return;
     }
 
-    let updatedTags = [...editingTags];
-
-    if (dialogMode === 'add') {
-      updatedTags = [...updatedTags, { label: labelValue, child: [] }];
-    } else if (dialogMode === 'edit' && currentNode) {
-      updatedTags = findAndUpdateNode(updatedTags, currentNode, labelValue);
-    } else if (dialogMode === 'addChild' && parentNode) {
-      updatedTags = findAndAddChildNode(updatedTags, parentNode, labelValue);
-    }
-
-    await saveTagChanges(updatedTags);
+    await saveTagChanges(labelValue);
     handleCloseDialog();
   };
 
   const handleConfirmDelete = async () => {
     if (!currentNode) return;
 
-    const updatedTags = findAndDeleteNode(editingTags, currentNode);
-    await saveTagChanges(updatedTags);
+    const res = await axios.delete(`/api/projects/${projectId}/tags?id=${currentNode.id}`);
+    if (res.status === 200) {
+      toast.success('删除成功');
+      getTags();
+    }
+
     setDeleteDialogOpen(false);
   };
 
@@ -436,9 +435,9 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
                   overflow: 'auto'
                 }}
               >
-                {editingTags && editingTags.length > 0 ? (
+                {tags && tags.length > 0 ? (
                   <DomainTree
-                    tags={editingTags}
+                    tags={tags}
                     onEdit={handleEditTag}
                     onDelete={handleDeleteTag}
                     onAddChild={handleAddChildTag}
@@ -515,7 +514,7 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
               ? t('domain.dialog.inputRoot')
               : dialogMode === 'edit'
                 ? t('domain.dialog.inputEdit')
-                : t('domain.dialog.inputChild', { label: parentNode?.label })}
+                : t('domain.dialog.inputChild', { label: parentNode })}
           </DialogContentText>
           <TextField
             autoFocus
@@ -524,13 +523,13 @@ export default function DomainAnalysis({ projectId, toc = '', tags = [], loading
             type="text"
             fullWidth
             variant="outlined"
-            value={labelValue}
-            onChange={e => setLabelValue(e.target.value)}
+            value={labelValue.label}
+            onChange={e => setLabelValue({ ...labelValue, label: e.target.value })}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>{t('common.cancel')}</Button>
-          <Button onClick={handleSubmit} variant="contained" disabled={saving || !labelValue.trim()}>
+          <Button onClick={handleSubmit} variant="contained" disabled={saving || !labelValue?.label?.trim()}>
             {saving ? t('common.saving') : t('common.save')}
           </Button>
         </DialogActions>

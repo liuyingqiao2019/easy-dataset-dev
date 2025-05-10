@@ -139,10 +139,25 @@ export default function TaskSettings({ projectId }) {
                 min={10}
                 max={1000}
               />
-
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
                 {t('settings.questionGenDescription')}
               </Typography>
+
+              <Typography id="question-mark-removing-probability-slider" gutterBottom sx={{ mt: 3 }}>
+                {t('settings.questionMaskRemovingProbability', {
+                  probability: taskSettings.questionMaskRemovingProbability
+                })}
+              </Typography>
+              <Slider
+                value={taskSettings.questionMaskRemovingProbability}
+                onChange={handleSliderChange('questionMaskRemovingProbability')}
+                aria-labelledby="question-generation-length-slider"
+                valueLabelDisplay="auto"
+                step={5}
+                marks
+                min={0}
+                max={100}
+              />
             </Box>
           </Grid>
 
@@ -214,7 +229,7 @@ export default function TaskSettings({ projectId }) {
 
       <Snackbar
         open={success}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
@@ -225,7 +240,7 @@ export default function TaskSettings({ projectId }) {
 
       <Snackbar
         open={!!error}
-        autoHideDuration={6000}
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >

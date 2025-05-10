@@ -1,7 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Box, Typography, IconButton, Chip, Checkbox, Tooltip, Card, CardContent, CardActions, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
+import {
+  Box,
+  Typography,
+  IconButton,
+  Chip,
+  Checkbox,
+  Tooltip,
+  Card,
+  CardContent,
+  CardActions,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import QuizIcon from '@mui/icons-material/Quiz';
@@ -13,7 +29,7 @@ import { useTranslation } from 'react-i18next';
 const EditChunkDialog = ({ open, chunk, onClose, onSave }) => {
   const [content, setContent] = useState(chunk?.content || '');
   const { t } = useTranslation();
-  
+
   // 当文本块变化时更新内容
   useEffect(() => {
     if (chunk?.content) {
@@ -28,14 +44,14 @@ const EditChunkDialog = ({ open, chunk, onClose, onSave }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{t('textSplit.editChunk', { chunkId: chunk?.id })}</DialogTitle>
+      <DialogTitle>{t('textSplit.editChunk', { chunkId: chunk?.name })}</DialogTitle>
       <DialogContent dividers>
         <TextField
           fullWidth
           multiline
           rows={15}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={e => setContent(e.target.value)}
           variant="outlined"
           sx={{ mt: 1 }}
         />
@@ -50,7 +66,16 @@ const EditChunkDialog = ({ open, chunk, onClose, onSave }) => {
   );
 };
 
-export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete, onGenerateQuestions, onEdit, projectId }) {
+export default function ChunkCard({
+  chunk,
+  selected,
+  onSelect,
+  onView,
+  onDelete,
+  onGenerateQuestions,
+  onEdit,
+  projectId
+}) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -71,7 +96,7 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
       // 显示加载状态
       console.log('正在获取文本块完整内容...');
       console.log('projectId:', projectId, 'chunkId:', chunk.id);
-      
+
       // 先获取完整的文本块内容，使用从外部传入的 projectId
       const response = await fetch(`/api/projects/${projectId}/chunks/${encodeURIComponent(chunk.id)}`);
 
@@ -81,7 +106,7 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
 
       const data = await response.json();
       console.log('获取文本块完整内容成功:', data);
-      
+
       // 先设置完整数据，再打开对话框（与 ChunkList.js 中的实现一致）
       setChunkForEdit(data);
       setEditDialogOpen(true);
@@ -93,7 +118,7 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
   };
 
   // 处理保存编辑内容
-  const handleSaveEdit = (newContent) => {
+  const handleSaveEdit = newContent => {
     if (onEdit) {
       onEdit(chunk.id, newContent);
     }
@@ -147,7 +172,7 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
                     color: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.dark
                   }}
                 >
-                  {chunk.id}
+                  {chunk.name}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   <Chip
@@ -162,7 +187,7 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
                     }}
                   />
                   <Chip
-                    label={`${chunk.length || 0} ${t('textSplit.characters')}`}
+                    label={`${chunk.size || 0} ${t('textSplit.characters')}`}
                     size="small"
                     color="secondary"
                     variant="outlined"
@@ -172,11 +197,11 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
                       '& .MuiChip-label': { px: 1 }
                     }}
                   />
-                  {hasQuestions && (
+                  {chunk.Questions.length > 0 && (
                     <Tooltip
                       title={
-                        <Box sx={{ p: 1 }}>
-                          {chunk.questions.map((q, index) => (
+                        <Box sx={{ p: 1 }} style={{ maxHeight: '200px', overflow: 'auto' }}>
+                          {chunk.Questions.map((q, index) => (
                             <Typography key={index} variant="body2" sx={{ mb: 0.5 }}>
                               {index + 1}. {q.question}
                             </Typography>
@@ -187,7 +212,7 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
                       placement="top"
                     >
                       <Chip
-                        label={`${t('textSplit.generatedQuestions', { count: chunk.questions.length })}`}
+                        label={`${t('textSplit.generatedQuestions', { count: chunk.Questions.length })}`}
                         size="small"
                         color="success"
                         variant="outlined"
@@ -257,7 +282,7 @@ export default function ChunkCard({ chunk, selected, onSelect, onView, onDelete,
             </IconButton>
           </Tooltip>
 
-          <Tooltip title={t('textSplit.editChunk')}>
+          <Tooltip title={t('textSplit.editChunk', { chunkId: chunk.name })}>
             <IconButton
               size="small"
               color="warning"

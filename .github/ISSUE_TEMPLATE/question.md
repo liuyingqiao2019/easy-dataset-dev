@@ -1,10 +1,9 @@
 ---
 name: Question
 about: Ask questions you want to know
-title: "[Question]"
+title: '[Question]'
 labels: question
 assignees: ''
-
 ---
 
 **注意：请务必按照此模版填写 ISSUES 信息，否则 ISSUE 将不会得到回复**

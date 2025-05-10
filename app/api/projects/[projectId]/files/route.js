@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
-import { getFiles, deleteFile } from '@/lib/db/texts';
 import { getProject, updateProject } from '@/lib/db/projects';
 import path from 'path';
 import { getProjectRoot, ensureDir } from '@/lib/db/base';
 import { promises as fs } from 'fs';
+import {
+  checkUploadFileInfoByMD5,
+  createUploadFileInfo,
+  delUploadFileInfoById,
+  getUploadFilesPagination
+} from '@/lib/db/upload-files';
+import { getFileMD5 } from '@/lib/util/file';
 
 // Replace the deprecated config export with the new export syntax
 export const dynamic = 'force-dynamic';
@@ -21,9 +27,9 @@ export async function GET(request, { params }) {
     }
 
     // 获取文件列表
-    const files = await getFiles(projectId);
+    const files = await getUploadFilesPagination(projectId, 1, 10, '');
 
-    return NextResponse.json({ files });
+    return NextResponse.json(files);
   } catch (error) {
     console.error('Error obtaining file list:', error);
     return NextResponse.json({ error: error.message || 'Error obtaining file list' }, { status: 500 });
@@ -35,14 +41,14 @@ export async function DELETE(request, { params }) {
   try {
     const { projectId } = params;
     const { searchParams } = new URL(request.url);
-    const fileName = searchParams.get('fileName');
+    const fileId = searchParams.get('fileId');
 
     // 验证项目ID和文件名
     if (!projectId) {
       return NextResponse.json({ error: 'The project ID cannot be empty' }, { status: 400 });
     }
 
-    if (!fileName) {
+    if (!fileId) {
       return NextResponse.json({ error: 'The file name cannot be empty' }, { status: 400 });
     }
 
@@ -51,23 +57,8 @@ export async function DELETE(request, { params }) {
     if (!project) {
       return NextResponse.json({ error: 'The project does not exist' }, { status: 404 });
     }
-
-    // 删除文件及相关数据
-    const result = await deleteFile(projectId, fileName);
-
-    // 更新项目配置，移除已删除的文件
-    const uploadedFiles = project.uploadedFiles || [];
-    const updatedFiles = uploadedFiles.filter(f => f !== fileName);
-
-    await updateProject(projectId, {
-      ...project,
-      uploadedFiles: updatedFiles
-    });
-
-    return NextResponse.json({
-      message: 'File deleted successfully',
-      fileName
-    });
+    await delUploadFileInfoById(fileId);
+    return NextResponse.json({ message: 'File deleted successfully' });
   } catch (error) {
     console.error('Error deleting file:', error);
     return NextResponse.json({ error: error.message || 'Error deleting file' }, { status: 500 });
@@ -110,7 +101,7 @@ export async function POST(request, { params }) {
     }
 
     // 检查文件类型
-    if (!fileName.endsWith('.md')&&!fileName.endsWith('.pdf')) {
+    if (!fileName.endsWith('.md') && !fileName.endsWith('.pdf')) {
       return NextResponse.json({ error: 'Only Markdown files are supported' }, { status: 400 });
     }
 
@@ -126,25 +117,33 @@ export async function POST(request, { params }) {
 
     const filePath = path.join(filesDir, fileName);
     await fs.writeFile(filePath, fileBuffer);
+    //获取文件大小
+    const stats = await fs.stat(filePath);
+    //获取文件md5
+    const md5 = await getFileMD5(filePath);
+    //获取文件扩展名
+    const ext = path.extname(filePath);
 
-    // 更新项目配置，添加上传的文件记录
-    const uploadedFiles = project.uploadedFiles || [];
-    if (!uploadedFiles.includes(fileName)) {
-      uploadedFiles.push(fileName);
-
-      // 更新项目配置
-      await updateProject(projectId, {
-        ...project,
-        uploadedFiles
-      });
+    let res = await checkUploadFileInfoByMD5(projectId, md5);
+    if (res) {
+      return NextResponse.json({ error: `【${fileName}】该文件已在此项目中存在` }, { status: 400 });
     }
+
+    let fileInfo = await createUploadFileInfo({
+      projectId,
+      fileName,
+      size: stats.size,
+      md5,
+      fileExt: ext,
+      path: filesDir
+    });
 
     console.log('The file upload process is complete, and a successful response is returned');
     return NextResponse.json({
       message: 'File uploaded successfully',
       fileName,
-      uploadedFiles,
-      filePath
+      filePath,
+      fileId: fileInfo.id
     });
   } catch (error) {
     console.error('Error processing file upload:', error);
