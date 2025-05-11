@@ -41,11 +41,12 @@ export async function POST(request, { params }) {
       result.totalChunks += totalChunks;
       console.log(projectId, fileName, `Text split completed, ${domainTreeAction} domain tree`);
     }
+
     // 调用领域树处理模块
     const tags = await handleDomainTree({
       projectId,
       action: domainTreeAction,
-      toc: result.toc,
+      newToc: result.toc,
       model,
       language,
       fileNames,
