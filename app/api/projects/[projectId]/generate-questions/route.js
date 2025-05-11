@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProjectChunks } from '@/lib/text-splitter';
+import { getProjectChunks } from '@/lib/file/text-splitter';
 import LLMClient from '@/lib/llm/core/index';
 import getQuestionPrompt from '@/lib/llm/prompts/question';
 import getQuestionEnPrompt from '@/lib/llm/prompts/questionEn';

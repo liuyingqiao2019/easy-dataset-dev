@@ -11,8 +11,8 @@ import {
 } from '@/lib/db/upload-files';
 import { getFileMD5 } from '@/lib/util/file';
 import { batchSaveTags } from '@/lib/db/tags';
-import { getProjectChunks, getProjectTocByName } from '@/lib/text-splitter';
-import { handleDomainTree } from '@/lib/domain-tree-handler';
+import { getProjectChunks, getProjectTocByName } from '@/lib/file/text-splitter';
+import { handleDomainTree } from '@/lib/util/domain-tree';
 
 // Replace the deprecated config export with the new export syntax
 export const dynamic = 'force-dynamic';

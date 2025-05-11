@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import PdfProcessor from '@/lib/pdf-processing/core';
+import PdfProcessor from '@/lib/file/pdf-processing/core';
 import { deleteChunkAndFile } from '@/lib/db/chunks';
 import { getProject, updateProject } from '@/lib/db/projects';
 

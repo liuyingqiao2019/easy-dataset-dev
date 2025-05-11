@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { splitProjectFile, getProjectChunks } from '@/lib/text-splitter';
+import { splitProjectFile, getProjectChunks } from '@/lib/file/text-splitter';
 import { getProject, updateProject } from '@/lib/db/projects';
 import { getTags } from '@/lib/db/tags';
-import { handleDomainTree } from '@/lib/domain-tree-handler';
+import { handleDomainTree } from '@/lib/util/domain-tree';
 
 // 处理文本分割请求
 export async function POST(request, { params }) {
