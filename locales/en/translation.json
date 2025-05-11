@@ -263,7 +263,18 @@
     "deleteFileWarning": "Warning: Deleting this document will also delete the following related items",
     "deleteFileWarningChunks": "All associated text chunks",
     "deleteFileWarningQuestions": "All questions generated from these chunks",
-    "deleteFileWarningDatasets": "All datasets generated from these questions"
+    "deleteFileWarningDatasets": "All datasets created from these questions",
+    "domainTree": {
+      "firstUploadTitle": "Domain Tree Generation",
+      "uploadTitle": "Document Upload - Domain Tree Processing",
+      "deleteTitle": "Document Deletion - Domain Tree Processing",
+      "reviseOption": "Revise Domain Tree",
+      "reviseDesc": "Modify the current domain tree based on added or deleted documents, only affecting changed parts",
+      "rebuildOption": "Rebuild Domain Tree",
+      "rebuildDesc": "Generate a completely new domain tree based on all document contents",
+      "keepOption": "Keep Unchanged",
+      "keepDesc": "Keep the current domain tree structure unchanged without any modifications"
+    }
   },
   "domain": {
     "title": "Domain Knowledge Tree",

@@ -265,7 +265,18 @@
     "deleteFileWarning": "警告：删除文献将同时删除以下相关内容",
     "deleteFileWarningChunks": "所有关联的文本块",
     "deleteFileWarningQuestions": "所有文本块生成的问题",
-    "deleteFileWarningDatasets": "所有问题生成的数据集"
+    "deleteFileWarningDatasets": "所有问题生成的数据集",
+    "domainTree": {
+      "firstUploadTitle": "领域树生成",
+      "uploadTitle": "文献上传 - 领域树处理",
+      "deleteTitle": "文献删除 - 领域树处理",
+      "reviseOption": "修订领域树",
+      "reviseDesc": "针对新增或删除的文献信息，对当前的领域树进行修正，只影响变更的部分",
+      "rebuildOption": "重建领域树",
+      "rebuildDesc": "基于所有文献的目录信息重新生成完整的领域树",
+      "keepOption": "保持不变",
+      "keepDesc": "保持当前领域树结构不变，不做任何修改"
+    }
   },
   "domain": {
     "title": "领域知识树",

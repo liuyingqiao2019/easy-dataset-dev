@@ -5,10 +5,14 @@ import { useTranslation } from 'react-i18next';
 import mammoth from 'mammoth';
 import { Paper, Alert, Snackbar, Grid } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useAtomValue } from 'jotai/index';
+import { selectedModelInfoAtom } from '@/lib/store';
 import UploadArea from './components/UploadArea';
 import FileList from './components/FileList';
 import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import PdfProcessingDialog from './components/PdfProcessingDialog';
+import DomainTreeActionDialog from './components/DomainTreeActionDialog';
+import i18n from '@/lib/i18n';
 
 /**
  * File uploader component
@@ -34,6 +38,7 @@ export default function FileUploader({
   const [files, setFiles] = useState([]);
   const [pdfFiles, setPdfFiles] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState({});
+  const selectedModelInfo = useAtomValue(selectedModelInfoAtom);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,6 +47,10 @@ export default function FileUploader({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [pdfProcessConfirmOpen, setpdfProcessConfirmOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState({});
+  const [domainTreeActionOpen, setDomainTreeActionOpen] = useState(false);
+  const [domainTreeAction, setDomainTreeAction] = useState('');
+  const [isFirstUpload, setIsFirstUpload] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
   const [taskSettings, setTaskSettings] = useState(null);
   const [visionModels, setVisionModels] = useState([]);
   // 设置PDF文件的处理方式
@@ -87,6 +96,9 @@ export default function FileUploader({
 
       const data = await response.json();
       setUploadedFiles(data);
+
+      // 判断是否为第一次上传（没有任何文件）
+      setIsFirstUpload(data.total === 0);
 
       //获取到配置信息，用于判断用户是否启用MinerU和视觉大模型
       const taskResponse = await fetch(`/api/projects/${projectId}/tasks`);
@@ -176,12 +188,35 @@ export default function FileUploader({
   const uploadFiles = async () => {
     if (files.length === 0) return;
 
-    // 直接开始上传文件，不再打开模型选择对话框
-    handleStartUpload();
+    // 如果是第一次上传，直接走默认逻辑
+    if (isFirstUpload) {
+      handleStartUpload('rebuild');
+      return;
+    }
+
+    // 否则打开领域树操作选择对话框
+    setDomainTreeAction('upload');
+    setPendingAction({ type: 'upload' });
+    setDomainTreeActionOpen(true);
+  };
+
+  // 处理领域树操作选择
+  const handleDomainTreeAction = action => {
+    setDomainTreeActionOpen(false);
+
+    // 执行挂起的操作
+    if (pendingAction && pendingAction.type === 'upload') {
+      handleStartUpload(action);
+    } else if (pendingAction && pendingAction.type === 'delete') {
+      handleDeleteFile(action);
+    }
+
+    // 清除挂起的操作
+    setPendingAction(null);
   };
 
   // 开始上传文件
-  const handleStartUpload = async () => {
+  const handleStartUpload = async domainTreeActionType => {
     setUploading(true);
     setError(null);
 
@@ -234,9 +269,9 @@ export default function FileUploader({
 
       await fetchUploadedFiles();
 
-      // 上传成功后，返回文件名列表和选中的模型信息
+      // 上传成功后，返回文件名列表和选中的模型信息，并传递领域树操作类型
       if (onUploadSuccess) {
-        await onUploadSuccess(uploadedFileInfos, pdfFiles);
+        await onUploadSuccess(uploadedFileInfos, pdfFiles, domainTreeActionType);
       }
     } catch (err) {
       setError(err.message || t('textSplit.uploadFailed'));
@@ -257,22 +292,52 @@ export default function FileUploader({
     setFileToDelete(null);
   };
 
+  // 删除文件前确认领域树操作
+  const confirmDeleteFile = () => {
+    setDeleteConfirmOpen(false);
+
+    // 如果没有其他文件了（删除后会变为空），直接删除
+    if (uploadedFiles.total <= 1) {
+      handleDeleteFile('keep');
+      return;
+    }
+
+    // 否则打开领域树操作选择对话框
+    setDomainTreeAction('delete');
+    setPendingAction({ type: 'delete' });
+    setDomainTreeActionOpen(true);
+  };
+
   // 关闭PDF处理框
   const closePdfProcessConfirm = () => {
     setpdfProcessConfirmOpen(false);
   };
 
   // 处理删除文件
-  const handleDeleteFile = async () => {
+  const handleDeleteFile = async domainTreeActionType => {
     if (!fileToDelete) return;
 
     try {
       setLoading(true);
       closeDeleteConfirm();
 
-      const response = await fetch(`/api/projects/${projectId}/files?fileId=${fileToDelete.fileId}`, {
-        method: 'DELETE'
-      });
+      // 使用 Jotai 状态管理获取模型信息
+      const modelInfo = selectedModelInfo || {};
+
+      const response = await fetch(
+        `/api/projects/${projectId}/files?fileId=${fileToDelete.fileId}&domainTreeAction=${domainTreeActionType || 'keep'}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          // 在 DELETE 请求中也传递模型信息和语言环境
+          body: JSON.stringify({
+            model: modelInfo,
+            language: i18n.language === 'zh-CN' ? '中文' : 'en'
+          })
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -366,7 +431,16 @@ export default function FileUploader({
         open={deleteConfirmOpen}
         fileName={fileToDelete?.fileName}
         onClose={closeDeleteConfirm}
-        onConfirm={handleDeleteFile}
+        onConfirm={confirmDeleteFile}
+      />
+
+      {/* 领域树操作选择对话框 */}
+      <DomainTreeActionDialog
+        open={domainTreeActionOpen}
+        onClose={() => setDomainTreeActionOpen(false)}
+        onConfirm={handleDomainTreeAction}
+        isFirstUpload={isFirstUpload}
+        action={domainTreeAction}
       />
       {/* 检测到pdf的处理框 */}
       <PdfProcessingDialog
