@@ -134,7 +134,7 @@ export default function FileList({
           </Typography>
         </Box>
       ) : (
-        <List sx={{ maxHeight: '220px', overflow: 'auto', width: '100%' }}>
+        <List sx={{ maxHeight: '200px', overflow: 'auto', width: '100%' }}>
           {files?.data?.map((file, index) => (
             <Box key={index}>
               <ListItem
