@@ -49,6 +49,18 @@ export default function FileList({
     setViewDialogOpen(false);
   };
 
+  // 刷新文本块列表
+  const refreshTextChunks = () => {
+    if (typeof setPageLoading === 'function') {
+      setPageLoading(true);
+      setTimeout(() => {
+        // 可能需要调用父组件的刷新方法
+        sendToFileUploader(array);
+        setPageLoading(false);
+      }, 500);
+    }
+  };
+
   const handleViewContent = async fileId => {
     getFileContent(fileId);
     setViewDialogOpen(true);
@@ -177,7 +189,13 @@ export default function FileList({
         </List>
       )}
       {/* 文本块详情对话框 */}
-      <MarkdownViewDialog open={viewDialogOpen} text={viewContent} onClose={handleCloseViewDialog} />
+      <MarkdownViewDialog
+        open={viewDialogOpen}
+        text={viewContent}
+        onClose={handleCloseViewDialog}
+        projectId={projectId}
+        onSaveSuccess={refreshTextChunks}
+      />
     </Box>
   );
 }
