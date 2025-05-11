@@ -47,15 +47,17 @@
     "questionMaskRemovingProbability": "将 {{probability}}% 问题结尾的问号去除",
     "questionGenDescription": "设置生成问题的最大长度",
     "huggingfaceSettings": "Hugging Face 设置",
+    "datasetUpload": "数据集上传设置",
     "huggingfaceToken": "Hugging Face Token",
     "huggingfaceNotImplemented": "Hugging Face 功能暂未实现",
     "concurrencyLimit": "并发限制数量",
+    "concurrencyLimitHelper": "限制同时生成问题、生成数据集的任务数量",
     "saveTaskConfig": "保存任务配置",
     "pdfSettings": "PDF文件转换配置",
-    "minerUToken": "MinerU Token 配置",
+    "minerUToken": "PDF 转换（MinerU API）Token 配置",
     "minerUHelper": "MinerU Token 只有14天有效期，请及时更换Token",
     "vision": "自定义视觉模型选择",
-    "visionConcurrencyLimit": "自定义视觉模型并发限制数量"
+    "visionConcurrencyLimit": "PDF 转换（自定义视觉模型）并发数量"
   },
   "questions": {
     "filterAll": "全部问题",

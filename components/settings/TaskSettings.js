@@ -12,11 +12,7 @@ import {
   Slider,
   InputAdornment,
   Alert,
-  Snackbar,
-  FormControl,
-  Select,
-  InputLabel,
-  MenuItem
+  Snackbar
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
@@ -75,158 +71,169 @@ export default function TaskSettings({ projectId }) {
   }
 
   return (
-    <Card>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
-          {t('settings.taskConfig')}
-        </Typography>
-
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom>
-              {t('settings.textSplitSettings')}
-            </Typography>
-            <Box sx={{ px: 2, py: 1 }}>
-              <Typography id="text-split-min-length-slider" gutterBottom>
-                {t('settings.minLength')}: {taskSettings.textSplitMinLength}
+    <>
+      <Card style={{ marginBottom: 20 }}>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                {t('settings.textSplitSettings')}
               </Typography>
-              <Slider
-                value={taskSettings.textSplitMinLength}
-                onChange={handleSliderChange('textSplitMinLength')}
-                aria-labelledby="text-split-min-length-slider"
-                valueLabelDisplay="auto"
-                step={100}
-                marks
-                min={100}
-                max={5000}
+              <Box sx={{ px: 2, py: 1 }}>
+                <Typography id="text-split-min-length-slider" gutterBottom>
+                  {t('settings.minLength')}: {taskSettings.textSplitMinLength}
+                </Typography>
+                <Slider
+                  value={taskSettings.textSplitMinLength}
+                  onChange={handleSliderChange('textSplitMinLength')}
+                  aria-labelledby="text-split-min-length-slider"
+                  valueLabelDisplay="auto"
+                  step={100}
+                  marks
+                  min={100}
+                  max={5000}
+                />
+
+                <Typography id="text-split-max-length-slider" gutterBottom sx={{ mt: 3 }}>
+                  {t('settings.maxLength')}: {taskSettings.textSplitMaxLength}
+                </Typography>
+                <Slider
+                  value={taskSettings.textSplitMaxLength}
+                  onChange={handleSliderChange('textSplitMaxLength')}
+                  aria-labelledby="text-split-max-length-slider"
+                  valueLabelDisplay="auto"
+                  step={100}
+                  marks
+                  min={1000}
+                  max={10000}
+                />
+
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                  {t('settings.textSplitDescription')}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      <Card style={{ marginBottom: 20 }}>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                {t('settings.questionGenSettings')}
+              </Typography>
+              <Box sx={{ px: 2, py: 1 }}>
+                <Typography id="question-generation-length-slider" gutterBottom>
+                  {t('settings.questionGenLength', { length: taskSettings.questionGenerationLength })}
+                </Typography>
+                <Slider
+                  value={taskSettings.questionGenerationLength}
+                  onChange={handleSliderChange('questionGenerationLength')}
+                  aria-labelledby="question-generation-length-slider"
+                  valueLabelDisplay="auto"
+                  step={10}
+                  marks
+                  min={10}
+                  max={1000}
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                  {t('settings.questionGenDescription')}
+                </Typography>
+
+                <Typography id="question-mark-removing-probability-slider" gutterBottom sx={{ mt: 3 }}>
+                  {t('settings.questionMaskRemovingProbability', {
+                    probability: taskSettings.questionMaskRemovingProbability
+                  })}
+                </Typography>
+                <Slider
+                  value={taskSettings.questionMaskRemovingProbability}
+                  onChange={handleSliderChange('questionMaskRemovingProbability')}
+                  aria-labelledby="question-generation-length-slider"
+                  valueLabelDisplay="auto"
+                  step={5}
+                  marks
+                  min={0}
+                  max={100}
+                />
+
+                <TextField
+                  style={{ marginTop: 20 }}
+                  fullWidth
+                  label={t('settings.concurrencyLimit')}
+                  name="concurrencyLimit"
+                  value={taskSettings.concurrencyLimit}
+                  onChange={handleSettingChange}
+                  type="number"
+                  helperText={t('settings.concurrencyLimitHelper')}
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      <Card style={{ marginBottom: 20 }}>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                {t('settings.pdfSettings')}
+              </Typography>
+              <TextField
+                fullWidth
+                label={t('settings.minerUToken')}
+                name="minerUToken"
+                value={taskSettings.minerUToken}
+                onChange={handleSettingChange}
+                type="password"
+                helperText={t('settings.minerUHelper')}
               />
-
-              <Typography id="text-split-max-length-slider" gutterBottom sx={{ mt: 3 }}>
-                {t('settings.maxLength')}: {taskSettings.textSplitMaxLength}
-              </Typography>
-              <Slider
-                value={taskSettings.textSplitMaxLength}
-                onChange={handleSliderChange('textSplitMaxLength')}
-                aria-labelledby="text-split-max-length-slider"
-                valueLabelDisplay="auto"
-                step={100}
-                marks
-                min={1000}
-                max={10000}
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label={t('settings.visionConcurrencyLimit')}
+                name="visionConcurrencyLimit"
+                value={taskSettings.visionConcurrencyLimit ? taskSettings.visionConcurrencyLimit : 5}
+                onChange={handleSettingChange}
+                type="number"
               />
-
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                {t('settings.textSplitDescription')}
-              </Typography>
-            </Box>
+            </Grid>
           </Grid>
+        </CardContent>
+      </Card>
 
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom>
-              {t('settings.questionGenSettings')}
-            </Typography>
-            <Box sx={{ px: 2, py: 1 }}>
-              <Typography id="question-generation-length-slider" gutterBottom>
-                {t('settings.questionGenLength', { length: taskSettings.questionGenerationLength })}
+      <Card>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                {t('settings.datasetUpload')}
               </Typography>
-              <Slider
-                value={taskSettings.questionGenerationLength}
-                onChange={handleSliderChange('questionGenerationLength')}
-                aria-labelledby="question-generation-length-slider"
-                valueLabelDisplay="auto"
-                step={10}
-                marks
-                min={10}
-                max={1000}
+              <TextField
+                fullWidth
+                label={t('settings.huggingfaceToken')}
+                name="huggingfaceToken"
+                value={taskSettings.huggingfaceToken}
+                onChange={handleSettingChange}
+                type="password"
+                helperText={t('settings.huggingfaceNotImplemented')}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">hf_</InputAdornment>
+                }}
               />
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                {t('settings.questionGenDescription')}
-              </Typography>
+            </Grid>
 
-              <Typography id="question-mark-removing-probability-slider" gutterBottom sx={{ mt: 3 }}>
-                {t('settings.questionMaskRemovingProbability', {
-                  probability: taskSettings.questionMaskRemovingProbability
-                })}
-              </Typography>
-              <Slider
-                value={taskSettings.questionMaskRemovingProbability}
-                onChange={handleSliderChange('questionMaskRemovingProbability')}
-                aria-labelledby="question-generation-length-slider"
-                valueLabelDisplay="auto"
-                step={5}
-                marks
-                min={0}
-                max={100}
-              />
-            </Box>
+            <Grid item xs={12}>
+              <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSaveTaskSettings}>
+                {t('settings.saveTaskConfig')}
+              </Button>
+            </Grid>
           </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom>
-              {t('settings.huggingfaceSettings')}
-            </Typography>
-            <TextField
-              fullWidth
-              label={t('settings.huggingfaceToken')}
-              name="huggingfaceToken"
-              value={taskSettings.huggingfaceToken}
-              onChange={handleSettingChange}
-              type="password"
-              helperText={t('settings.huggingfaceNotImplemented')}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">hf_</InputAdornment>
-              }}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom>
-              {t('settings.concurrencyLimit')}
-            </Typography>
-            <TextField
-              fullWidth
-              label={t('settings.concurrencyLimit')}
-              name="concurrencyLimit"
-              value={taskSettings.concurrencyLimit}
-              onChange={handleSettingChange}
-              type="number"
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom>
-              {t('settings.pdfSettings')}
-            </Typography>
-            <TextField
-              fullWidth
-              label={t('settings.minerUToken')}
-              name="minerUToken"
-              value={taskSettings.minerUToken}
-              onChange={handleSettingChange}
-              type="password"
-              helperText={t('settings.minerUHelper')}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label={t('settings.visionConcurrencyLimit')}
-              name="visionConcurrencyLimit"
-              value={taskSettings.visionConcurrencyLimit ? taskSettings.visionConcurrencyLimit : 5}
-              onChange={handleSettingChange}
-              type="number"
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSaveTaskSettings}>
-              {t('settings.saveTaskConfig')}
-            </Button>
-          </Grid>
-        </Grid>
-      </CardContent>
-
+        </CardContent>
+      </Card>
       <Snackbar
         open={success}
         autoHideDuration={2000}
@@ -248,6 +255,6 @@ export default function TaskSettings({ projectId }) {
           {error}
         </Alert>
       </Snackbar>
-    </Card>
+    </>
   );
 }
