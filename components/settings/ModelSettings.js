@@ -97,7 +97,7 @@ export default function ModelSettings({ projectId }) {
       })
       .catch(error => {
         setLoading(false);
-        toast.error('获取模型列表失败');
+        toast.error('Fetch model list Error', { duration: 3000 });
       });
   };
 
@@ -136,7 +136,7 @@ export default function ModelSettings({ projectId }) {
         setModels(response.data);
       })
       .catch(error => {
-        toast.error('获取模型列表失败');
+        toast.error('Get Models Error', { duration: 3000 });
       });
   };
 
@@ -146,16 +146,16 @@ export default function ModelSettings({ projectId }) {
     if (!data) return;
     if (data.length > 0) {
       setModels(data);
-      toast.success('刷新模型成功');
+      toast.success('Refresh Success', { duration: 3000 });
       const newModelsData = await axios.post('/api/llm/model', {
         newModels: data,
         providerId: selectedProvider.id
       });
       if (newModelsData.status === 200) {
-        toast.success('同步模型成功');
+        toast.success('Get Model Success', { duration: 3000 });
       }
     } else {
-      toast.info('没有新的模型需要刷新');
+      toast.info('No Models Need Refresh', { duration: 3000 });
     }
   };
 
@@ -189,9 +189,9 @@ export default function ModelSettings({ projectId }) {
       }
     } catch (err) {
       if (err.response && err.response.status === 401) {
-        toast.error('API Key 错误，请检查后重试');
+        toast.error('API Key invalid', { duration: 3000 });
       } else {
-        toast.error('刷新模型列表失败');
+        toast.error('Get Model List Error', { duration: 3000 });
       }
       return null;
     }
@@ -237,7 +237,7 @@ export default function ModelSettings({ projectId }) {
         if (selectedModelInfo && selectedModelInfo.id === response.data.id) {
           setSelectedModelInfo(response.data);
         }
-        toast.success(t('settings.saveSuccess'));
+        toast.success(t('settings.saveSuccess'), { duration: 3000 });
         getModelConfigList();
         handleCloseModelDialog();
       })
@@ -252,11 +252,11 @@ export default function ModelSettings({ projectId }) {
     axios
       .delete(`/api/projects/${projectId}/model-config/${id}`)
       .then(response => {
-        toast.success(t('settings.deleteSuccess'));
+        toast.success(t('settings.deleteSuccess'), { duration: 3000 });
         getModelConfigList();
       })
       .catch(error => {
-        toast.error(t('settings.deleteFailed'));
+        toast.error(t('settings.deleteFailed'), { duration: 3000 });
       });
   };
 
