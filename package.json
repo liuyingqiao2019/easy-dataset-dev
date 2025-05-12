@@ -26,8 +26,7 @@
     "electron-build-win": "pnpm clean-dist && pnpm db:template && prisma db push && next build && electron-builder --win",
     "electron-build-linux": "pnpm clean-dist && pnpm db:template && prisma db push && next build && electron-builder --linux",
     "docker": "docker build -t easy-dataset .",
-    "prettier": "npx prettier --write .",
-    "prepare": "husky"
+    "prettier": "npx prettier --write ."
   },
   "bin": "desktop/server.js",
   "pkg": {
