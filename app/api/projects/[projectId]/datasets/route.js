@@ -47,7 +47,8 @@ export async function POST (request, { params }) {
         fileContent = fileContent + chunkItem.content + '\n'
       }
     }
-    if (fileContent == '') {
+
+    if (fileContent == '' || fileContent.length > 30000) {
       // 获取单个文本块内容
       const chunk = await getTextChunk(projectId, chunkId);
       if (!chunk) {
