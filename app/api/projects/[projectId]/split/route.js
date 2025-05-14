@@ -1,14 +1,8 @@
 import { NextResponse } from 'next/server';
-import { splitProjectFile, getProjectChunks } from '@/lib/text-splitter';
-import LLMClient from '@/lib/llm/core/index';
-import getLabelPrompt from '@/lib/llm/prompts/label';
-import getLabelEnPrompt from '@/lib/llm/prompts/labelEn';
-import { deleteFile } from '@/lib/db/texts';
+import { splitProjectFile, getProjectChunks } from '@/lib/file/text-splitter';
 import { getProject, updateProject } from '@/lib/db/projects';
-import { saveTags, getTags, batchSaveTags } from '@/lib/db/tags';
-import { deleteChunkAndFile } from '@/lib/db/chunks';
-
-const { extractJsonFromLLMOutput } = require('@/lib/llm/common/util');
+import { getTags } from '@/lib/db/tags';
+import { handleDomainTree } from '@/lib/util/domain-tree';
 
 // 处理文本分割请求
 export async function POST(request, { params }) {
@@ -21,39 +15,51 @@ export async function POST(request, { params }) {
     }
 
     // 获取请求体
-    const { fileName, model, language, fileId } = await request.json();
+    const { fileNames, model, language, fileId, domainTreeAction = 'rebuild' } = await request.json();
 
     if (!model) {
       return NextResponse.json({ error: '请选择模型' }, { status: 400 });
     }
 
     // 验证文件名
-    if (!fileName) {
+    if (!fileNames) {
       return NextResponse.json({ error: '文件名不能为空' }, { status: 400 });
     }
     const project = await getProject(projectId);
-    const { globalPrompt, domainTreePrompt } = project;
 
-    // 分割文本
-    const result = await splitProjectFile(projectId, fileName);
-    const { toc } = result;
-    const llmClient = new LLMClient(model);
-    // 生成领域树
-    console.log(projectId, fileName, 'Text split completed, starting to build domain tree');
-    const promptFunc = language === 'en' ? getLabelEnPrompt : getLabelPrompt;
-    const prompt = promptFunc({ text: toc, globalPrompt, domainTreePrompt });
-    const response = await llmClient.getResponse(prompt);
-    const tags = extractJsonFromLLMOutput(response);
+    let result = {
+      totalChunks: 0,
+      chunks: [],
+      toc: ''
+    };
+    for (let i = 0; i < fileNames.length; i++) {
+      const fileName = fileNames[i];
+      // 分割文本
+      const { toc, chunks, totalChunks } = await splitProjectFile(projectId, fileName);
+      result.toc += toc;
+      result.chunks.push(...chunks);
+      result.totalChunks += totalChunks;
+      console.log(projectId, fileName, `Text split completed, ${domainTreeAction} domain tree`);
+    }
 
-    if (!response || !tags) {
+    // 调用领域树处理模块
+    const tags = await handleDomainTree({
+      projectId,
+      action: domainTreeAction,
+      newToc: result.toc,
+      model,
+      language,
+      fileNames,
+      project
+    });
+
+    if (!tags && domainTreeAction !== 'keep') {
       await updateProject(projectId, { ...project });
       return NextResponse.json(
         { error: 'AI analysis failed, please check model configuration, delete file and retry!' },
         { status: 400 }
       );
     }
-    console.log(projectId, fileName, 'Domain tree built:', tags);
-    await batchSaveTags(projectId, tags);
 
     return NextResponse.json({ ...result, tags });
   } catch (error) {

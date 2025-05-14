@@ -90,7 +90,7 @@ export default function TextSplitPage({ params }) {
   };
 
   // 处理文件上传成功
-  const handleUploadSuccess = async (fileNames, pdfFiles) => {
+  const handleUploadSuccess = async (fileNames, pdfFiles, domainTreeAction) => {
     console.log(t('textSplit.fileUploadSuccess'), fileNames);
     //上传完处理PDF文件
     try {
@@ -144,12 +144,12 @@ export default function TextSplitPage({ params }) {
 
     // 如果有文件上传成功，自动处理第一个文件
     if (fileNames && fileNames.length > 0) {
-      handleSplitText(fileNames[0]);
+      handleSplitText(fileNames, domainTreeAction);
     }
   };
 
   // 处理文本分割
-  const handleSplitText = async fileName => {
+  const handleSplitText = async (fileNames, domainTreeAction = 'rebuild') => {
     try {
       setProcessing(true);
       const language = i18n.language === 'zh-CN' ? '中文' : 'en';
@@ -158,7 +158,7 @@ export default function TextSplitPage({ params }) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ fileName, model: selectedModelInfo, language })
+        body: JSON.stringify({ fileNames, model: selectedModelInfo, language, domainTreeAction })
       });
 
       if (!response.ok) {

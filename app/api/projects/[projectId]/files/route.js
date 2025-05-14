@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProject, updateProject } from '@/lib/db/projects';
+import { getProject } from '@/lib/db/projects';
 import path from 'path';
 import { getProjectRoot, ensureDir } from '@/lib/db/base';
 import { promises as fs } from 'fs';
@@ -10,6 +10,9 @@ import {
   getUploadFilesPagination
 } from '@/lib/db/upload-files';
 import { getFileMD5 } from '@/lib/util/file';
+import { batchSaveTags } from '@/lib/db/tags';
+import { getProjectChunks, getProjectTocByName } from '@/lib/file/text-splitter';
+import { handleDomainTree } from '@/lib/util/domain-tree';
 
 // Replace the deprecated config export with the new export syntax
 export const dynamic = 'force-dynamic';
@@ -42,6 +45,24 @@ export async function DELETE(request, { params }) {
     const { projectId } = params;
     const { searchParams } = new URL(request.url);
     const fileId = searchParams.get('fileId');
+    const domainTreeAction = searchParams.get('domainTreeAction') || 'keep';
+
+    // 从请求体中获取模型信息和语言环境
+    let model, language;
+    try {
+      const requestData = await request.json();
+      model = requestData.model;
+      language = requestData.language || '中文';
+    } catch (error) {
+      console.warn('解析请求体失败，使用默认值:', error);
+      // 如果无法解析请求体，使用默认值
+      model = {
+        providerId: 'openai',
+        modelName: 'gpt-3.5-turbo',
+        apiKey: process.env.OPENAI_API_KEY || ''
+      };
+      language = '中文';
+    }
 
     // 验证项目ID和文件名
     if (!projectId) {
@@ -57,8 +78,63 @@ export async function DELETE(request, { params }) {
     if (!project) {
       return NextResponse.json({ error: 'The project does not exist' }, { status: 404 });
     }
-    await delUploadFileInfoById(fileId);
-    return NextResponse.json({ message: 'File deleted successfully' });
+
+    // 删除文件及其相关的文本块、问题和数据集
+    const { stats, fileName, fileInfo } = await delUploadFileInfoById(fileId);
+
+    // 如果选择了保持领域树不变，直接返回删除结果
+    if (domainTreeAction === 'keep') {
+      return NextResponse.json({
+        message: '文件删除成功',
+        stats: stats,
+        domainTreeAction: 'keep',
+        cascadeDelete: true
+      });
+    }
+
+    // 处理领域树更新
+    try {
+      // 获取项目的所有文件
+      const { chunks, toc } = await getProjectChunks(projectId);
+
+      // 如果不存在文本块，说明项目已经没有文件了
+      if (!chunks || chunks.length === 0) {
+        // 清空领域树
+        await batchSaveTags(projectId, []);
+        return NextResponse.json({
+          message: '文件删除成功，领域树已清空',
+          stats: stats,
+          domainTreeAction,
+          cascadeDelete: true
+        });
+      }
+
+      const deleteToc = await getProjectTocByName(projectId, fileName);
+
+      // 调用领域树处理模块
+      await handleDomainTree({
+        projectId,
+        action: domainTreeAction,
+        allToc: toc,
+        model,
+        language,
+        deleteToc,
+        project
+      });
+
+      const tocPath = path.join(fileInfo.path, '../toc', fileInfo.fileName.replace('.md', '') + '-toc.json');
+      await fs.rm(tocPath, { recursive: true });
+    } catch (error) {
+      console.error('Error updating domain tree after file deletion:', error);
+      // 即使领域树更新失败，也不影响文件删除的结果
+    }
+
+    return NextResponse.json({
+      message: '文件删除成功',
+      stats: stats,
+      domainTreeAction,
+      cascadeDelete: true
+    });
   } catch (error) {
     console.error('Error deleting file:', error);
     return NextResponse.json({ error: error.message || 'Error deleting file' }, { status: 500 });
