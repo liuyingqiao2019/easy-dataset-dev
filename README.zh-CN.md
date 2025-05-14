@@ -12,7 +12,7 @@
 
 [简体中文](./README.zh-CN.md) | [English](./README.md)
 
-[功能特点](#功能特点) • [快速开始](#本地运行) • [使用文档](https://rncg5jvpme.feishu.cn/wiki/NT7aw7rBfi8HwukHaUTcvrQIn6f) • [贡献](#贡献) • [许可证](#许可证)
+[功能特点](#功能特点) • [快速开始](#本地运行) • [使用文档](https://docs.easy-dataset.com/) • [贡献](#贡献) • [许可证](#许可证)
 
 </div>
 
