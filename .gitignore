@@ -18,3 +18,5 @@ mock-login-callback.ts
 /local-db
 prisma/local-db/db.sqlite
 
+.history/*
+docker-compose.yml
