@@ -1,0 +1,13 @@
+{
+  "ragflow":{
+    "base_url":"http://132.113.64.161:1380/",
+    "headers:":{
+      "Authorization":"Bearer ragflow-U4M2NmOWJjZGJiMTExZWZhMjY4MDI0Mm"
+    },
+    "datasets":{
+      "qa_library":{
+        "dataset_id":"0184900a01c911f0afb20242ac190003"
+      }
+    } 
+  }
+}
