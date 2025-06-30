@@ -10,7 +10,7 @@ import HuggingFaceTab from './export/HuggingFaceTab';
 
 const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
   const { t } = useTranslation();
-  const [formatType, setFormatType] = useState('alpaca');
+  const [formatType, setFormatType] = useState('sharegpt');
   const [systemPrompt, setSystemPrompt] = useState('');
   const [confirmedOnly, setConfirmedOnly] = useState(false);
   const [fileFormat, setFileFormat] = useState('json');
@@ -26,11 +26,14 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
     includeLabels: false,
     includeChunk: false // 添加是否包含chunk字段
   });
+  const [fileName, setfileName] = useState('');
 
   const handleFileFormatChange = event => {
     setFileFormat(event.target.value);
   };
-
+  const handlefileName = event => {
+    setfileName(event.target.value)
+  }
   const handleFormatChange = event => {
     setFormatType(event.target.value);
     // 根据格式类型设置默认字段名
@@ -107,7 +110,22 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
       customFields: formatType === 'custom' ? customFields : undefined
     });
   };
-
+  const handleAsync = () => {
+    setCustomFields({
+      questionField: '问题',
+      answerField: '回答'
+    });
+    onExport({
+      formatType,
+      systemPrompt,
+      confirmedOnly,
+      fileFormat,
+      includeCOT,
+      customFields: customFields,
+      asyncFlow: true,
+      fileName: fileName
+    });
+  }
   return (
     <Dialog
       open={open}
@@ -126,6 +144,7 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
           <Tabs value={currentTab} onChange={(e, newValue) => setCurrentTab(newValue)} aria-label="export tabs">
             <Tab label={t('export.localTab')} />
             <Tab label={t('export.llamaFactoryTab')} />
+            <Tab label={t('export.asyncRaglow')} />
             <Tab label={t('export.huggingFaceTab')} />
           </Tabs>
         </Box>
@@ -168,9 +187,27 @@ const ExportDatasetDialog = ({ open, onClose, onExport, projectId }) => {
             handleIncludeCOTChange={handleIncludeCOTChange}
           />
         )}
-
-        {/* 第三个标签页：HuggingFace */}
+        {/* 第三个标签页：Ragflow同步 */}
         {currentTab === 2 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="body1" sx={{ mb: 2 }}>{t('export.asyncFileTip')}</Typography>
+            <Typography variant="subtitle1" color="text.secondary">{t('export.setFileName')}</Typography>
+            <TextField
+              fullWidth
+              name="setFileName"
+              value={fileName}
+              onChange={handlefileName}
+              type="text"
+            />
+            <Typography variant="body1" color="text.secondary">{t('export.setFileNameExample')}</Typography>
+            <Button onClick={handleAsync} variant="contained" sx={{ borderRadius: 2 }}>
+              {t('export.confirmAsync')}
+            </Button>
+          </Box>
+
+        )}
+        {/* 第四个标签页：HuggingFace */}
+        {currentTab === 4 && (
           <HuggingFaceTab
             projectId={projectId}
             systemPrompt={systemPrompt}

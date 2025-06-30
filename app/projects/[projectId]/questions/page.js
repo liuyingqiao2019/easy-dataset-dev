@@ -46,7 +46,7 @@ import { selectedModelInfoAtom } from '@/lib/store';
 import { useGenerateDataset } from '@/hooks/useGenerateDataset';
 import request from '@/lib/util/request';
 
-export default function QuestionsPage({ params }) {
+export default function QuestionsPage ({ params }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const { projectId } = params;
@@ -691,15 +691,19 @@ export default function QuestionsPage({ params }) {
         onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: 2, minWidth: 200 }
+        }}
       >
-        <DialogTitle id="alert-dialog-title">{confirmDialog.title}</DialogTitle>
-        <DialogContent>
+        <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>{confirmDialog.title}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }}>
           <DialogContentText id="alert-dialog-description">{confirmDialog.content}</DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialog({ ...confirmDialog, open: false })} color="primary">
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          {/* <Button onClick={() => setConfirmDialog({ ...confirmDialog, open: false })} color="primary">
             {t('common.cancel')}
-          </Button>
+          </Button> */}
           <Button
             onClick={() => {
               setConfirmDialog({ ...confirmDialog, open: false });
@@ -707,11 +711,11 @@ export default function QuestionsPage({ params }) {
                 confirmDialog.confirmAction();
               }
             }}
-            color="error"
+            color="primary"
             variant="contained"
             autoFocus
           >
-            {t('common.confirmDelete')}
+            {t('common.confirm')}
           </Button>
         </DialogActions>
       </Dialog>

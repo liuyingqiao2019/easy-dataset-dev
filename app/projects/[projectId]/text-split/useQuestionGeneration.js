@@ -13,7 +13,7 @@ import { processInParallel } from '@/lib/util/async';
  * @param {Object} taskSettings - 任务设置
  * @returns {Object} - 问题生成状态和操作方法
  */
-export default function useQuestionGeneration(projectId, taskSettings) {
+export default function useQuestionGeneration (projectId, taskSettings) {
   const { t } = useTranslation();
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState({

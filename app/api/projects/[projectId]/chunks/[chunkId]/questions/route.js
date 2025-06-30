@@ -4,7 +4,7 @@ import logger from '@/lib/util/logger';
 import questionService from '@/lib/services/questions';
 
 // 为指定文本块生成问题
-export async function POST(request, { params }) {
+export async function POST (request, { params }) {
   try {
     const { projectId, chunkId } = params;
 
@@ -48,7 +48,7 @@ export async function POST(request, { params }) {
 }
 
 // 获取指定文本块的问题
-export async function GET(request, { params }) {
+export async function GET (request, { params }) {
   try {
     const { projectId, chunkId } = params;
 

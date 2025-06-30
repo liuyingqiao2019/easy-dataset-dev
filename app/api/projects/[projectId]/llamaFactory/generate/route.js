@@ -4,7 +4,7 @@ import fs from 'fs';
 import { getProjectRoot } from '@/lib/db/base';
 import { getDatasets } from '@/lib/db/datasets';
 
-export async function POST(request, { params }) {
+export async function POST (request, { params }) {
   try {
     const { projectId } = params;
     const { formatType, systemPrompt, confirmedOnly, includeCOT } = await request.json();
@@ -38,7 +38,7 @@ export async function POST(request, { params }) {
         file_name: 'sharegpt.json',
         formatting: 'sharegpt',
         columns: {
-          messages: 'messages'
+          conversations: 'conversations'
         },
         tags: {
           role_tag: 'role',
@@ -59,22 +59,22 @@ export async function POST(request, { params }) {
     }));
 
     const sharegptData = datasets.map(({ question, answer, cot }) => {
-      const messages = [];
+      const conversations = [];
       if (systemPrompt) {
-        messages.push({
+        conversations.push({
           role: 'system',
           content: systemPrompt
         });
       }
-      messages.push({
+      conversations.push({
         role: 'user',
         content: question
       });
-      messages.push({
+      conversations.push({
         role: 'assistant',
         content: cot && includeCOT ? `<think>${cot}</think>\n${answer}` : answer
       });
-      return { messages };
+      return { conversations };
     });
 
     // 写入文件

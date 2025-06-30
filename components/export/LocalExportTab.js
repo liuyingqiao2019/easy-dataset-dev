@@ -114,13 +114,13 @@ const LocalExportTab = ({
       }
     } else if (formatType === 'sharegpt') {
       return {
-        headers: ['messages'],
+        headers: ['conversations'],
         rows: [
           {
-            messages: JSON.stringify(
+            conversations: JSON.stringify(
               [
                 {
-                  messages: [
+                  conversations: [
                     {
                       role: 'system',
                       content: '系统提示词（选填）'
@@ -190,8 +190,8 @@ const LocalExportTab = ({
         </Typography>
         <FormControl component="fieldset">
           <RadioGroup aria-label="format" name="format" value={formatType} onChange={handleFormatChange} row>
-            <FormControlLabel value="alpaca" control={<Radio />} label="Alpaca" />
             <FormControlLabel value="sharegpt" control={<Radio />} label="ShareGPT" />
+            <FormControlLabel value="alpaca" control={<Radio />} label="Alpaca" />
             <FormControlLabel value="custom" control={<Radio />} label={t('export.customFormat')} />
           </RadioGroup>
         </FormControl>
@@ -341,42 +341,42 @@ const LocalExportTab = ({
                 : formatType === 'alpaca'
                   ? fileFormat === 'json'
                     ? JSON.stringify(
-                        [
-                          {
-                            instruction: '人类指令（必填）', // 映射到 question 字段
-                            input: '人类输入（选填）',
-                            output: '模型回答（必填）', // 映射到 cot+answer 字段
-                            system: '系统提示词（选填）'
-                          }
-                        ],
-                        null,
-                        2
-                      )
+                      [
+                        {
+                          instruction: '人类指令（必填）', // 映射到 question 字段
+                          input: '人类输入（选填）',
+                          output: '模型回答（必填）', // 映射到 cot+answer 字段
+                          system: '系统提示词（选填）'
+                        }
+                      ],
+                      null,
+                      2
+                    )
                     : '{"instruction": "人类指令（必填）", "input": "人类输入（选填）", "output": "模型回答（必填）", "system": "系统提示词（选填）"}\n{"instruction": "第二个指令", "input": "", "output": "第二个回答", "system": "系统提示词"}'
                   : fileFormat === 'json'
                     ? JSON.stringify(
-                        [
-                          {
-                            messages: [
-                              {
-                                role: 'system',
-                                content: '系统提示词（选填）'
-                              },
-                              {
-                                role: 'user',
-                                content: '人类指令' // 映射到 question 字段
-                              },
-                              {
-                                role: 'assistant',
-                                content: '模型回答' // 映射到 cot+answer 字段
-                              }
-                            ]
-                          }
-                        ],
-                        null,
-                        2
-                      )
-                    : '{"messages": [{"role": "system", "content": "系统提示词（选填）"}, {"role": "user", "content": "人类指令"}, {"role": "assistant", "content": "模型回答"}]}\n{"messages": [{"role": "user", "content": "第二个问题"}, {"role": "assistant", "content": "第二个回答"}]}'}
+                      [
+                        {
+                          conversations: [
+                            {
+                              role: 'system',
+                              content: '系统提示词（选填）'
+                            },
+                            {
+                              role: 'user',
+                              content: '人类指令' // 映射到 question 字段
+                            },
+                            {
+                              role: 'assistant',
+                              content: '模型回答' // 映射到 cot+answer 字段
+                            }
+                          ]
+                        }
+                      ],
+                      null,
+                      2
+                    )
+                    : '{"conversations": [{"role": "system", "content": "系统提示词（选填）"}, {"role": "user", "content": "人类指令"}, {"role": "assistant", "content": "模型回答"}]}\n{"conversations": [{"role": "user", "content": "第二个问题"}, {"role": "assistant", "content": "第二个回答"}]}'}
             </pre>
           </Paper>
         )}

@@ -20,7 +20,7 @@ import useQuestionGeneration from '@/app/projects/[projectId]/text-split/useQues
 import usePdfProcessing from '@/app/projects/[projectId]/text-split/usePdfProcessing';
 import useTextSplit from '@/app/projects/[projectId]/text-split/useTextSplit';
 
-export default function TextSplitPage({ params }) {
+export default function TextSplitPage ({ params }) {
   const { t } = useTranslation();
   const { projectId } = params;
   const [activeTab, setActiveTab] = useState(0);
