@@ -12,7 +12,7 @@
     "db:studio": "prisma studio",
     "db:push": "prisma db push",
     "db:template": "node prisma/generate-template.js",
-    "dev": "prisma db push && next dev -p 1818",
+    "dev": "prisma db push && next dev -p 1717",
     "build": "prisma db push && next build",
     "start": "next start -p 1717",
     "lint": "next lint",
