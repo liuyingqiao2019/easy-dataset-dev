@@ -78,5 +78,7 @@ export const MODEL_PROVIDERS = [
 
 export const DEFAULT_MODEL_SETTINGS = {
   temperature: 0.7,
-  maxTokens: 8192
+  maxTokens: 8192,
+  presencePenalty: 0.5,
+  frequencyPenalty: 0.5
 };
