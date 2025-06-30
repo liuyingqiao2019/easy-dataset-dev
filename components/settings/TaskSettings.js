@@ -25,7 +25,7 @@ import { useTranslation } from 'react-i18next';
 import SaveIcon from '@mui/icons-material/Save';
 import useTaskSettings from '@/hooks/useTaskSettings';
 
-export default function TaskSettings({ projectId }) {
+export default function TaskSettings ({ projectId }) {
   const { t } = useTranslation();
   const { taskSettings, setTaskSettings, loading, error, success, setSuccess } = useTaskSettings(projectId);
   // 处理设置变更
@@ -314,10 +314,10 @@ export default function TaskSettings({ projectId }) {
                   onChange={handleSliderChange('questionGenerationLength')}
                   aria-labelledby="question-generation-length-slider"
                   valueLabelDisplay="auto"
-                  step={10}
+                  step={1}
                   marks
-                  min={10}
-                  max={1000}
+                  min={3}
+                  max={100}
                 />
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
                   {t('settings.questionGenDescription')}

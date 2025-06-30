@@ -22,7 +22,7 @@ import TurndownService from 'turndown';
  * @param {Function} props.onUploadSuccess - Upload success callback
  * @param {Function} props.onProcessStart - Process start callback
  */
-export default function FileUploader({
+export default function FileUploader ({
   projectId,
   onUploadSuccess,
   onProcessStart,
@@ -135,13 +135,13 @@ export default function FileUploader({
   const handleFileSelect = event => {
     const selectedFiles = Array.from(event.target.files);
 
-    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
-    const oversizedFiles = selectedFiles.filter(file => file.size > MAX_FILE_SIZE);
+    // const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
+    // const oversizedFiles = selectedFiles.filter(file => file.size > MAX_FILE_SIZE);
 
-    if (oversizedFiles.length > 0) {
-      setError(`Max 50MB: ${oversizedFiles.map(f => f.name).join(', ')}`);
-      return;
-    }
+    // if (oversizedFiles.length > 0) {
+    //   setError(`Max 50MB: ${oversizedFiles.map(f => f.name).join(', ')}`);
+    //   return;
+    // }
 
     const validFiles = selectedFiles.filter(
       file =>

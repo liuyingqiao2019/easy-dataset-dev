@@ -5,7 +5,7 @@ import { getChunkById } from '@/lib/db/chunks';
 import { generateQuestionsForChunk, generateQuestionsForChunkWithGA } from '@/lib/services/questions';
 
 // 批量生成问题
-export async function POST(request, { params }) {
+export async function POST (request, { params }) {
   try {
     const { projectId } = params;
 
@@ -56,7 +56,7 @@ export async function POST(request, { params }) {
     for (const chunk of chunks) {
       try {
         // 根据文本长度自动计算问题数量
-        const questionNumber = Math.floor(chunk.length / questionGenerationLength);
+        const questionNumber = questionGenerationLength;
 
         let result;
         if (enableGaExpansion) {

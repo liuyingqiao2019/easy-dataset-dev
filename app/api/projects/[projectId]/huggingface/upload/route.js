@@ -7,7 +7,7 @@ import os from 'os';
 import { uploadFiles, createRepo, checkRepoAccess } from '@huggingface/hub';
 
 // 上传数据集到 HuggingFace
-export async function POST(request, { params }) {
+export async function POST (request, { params }) {
   try {
     const projectId = params.projectId;
     const {
@@ -124,7 +124,7 @@ export async function POST(request, { params }) {
 }
 
 // 格式化数据集
-function formatDataset(questions, formatType, systemPrompt, includeCOT, customFields) {
+function formatDataset (questions, formatType, systemPrompt, includeCOT, customFields) {
   if (formatType === 'alpaca') {
     return questions.map(q => {
       const item = {
@@ -193,7 +193,7 @@ function formatDataset(questions, formatType, systemPrompt, includeCOT, customFi
 }
 
 // 将数据转换为 CSV 格式
-function convertToCSV(data) {
+function convertToCSV (data) {
   if (!data || data.length === 0) return '';
 
   const headers = Object.keys(data[0]);
@@ -220,7 +220,7 @@ function convertToCSV(data) {
 }
 
 // 使用 @huggingface/hub 包上传文件到 HuggingFace
-async function uploadFile(token, datasetName, filePath, destFileName) {
+async function uploadFile (token, datasetName, filePath, destFileName) {
   try {
     // 准备仓库配置
     const repo = { type: 'dataset', name: datasetName };
@@ -250,7 +250,7 @@ async function uploadFile(token, datasetName, filePath, destFileName) {
 }
 
 // Generate README.md file
-function generateReadme(projectName, projectDescription, formatType) {
+function generateReadme (projectName, projectDescription, formatType) {
   return `# ${projectName}
 
 ## Description
