@@ -1,4 +1,4 @@
-# 打包命令： docker build -t easy-dataset:latest -f Dockerfile .
+# 打包命令： docker build -t easy-dataset-dev:latest -f DevDockerfile .
 
 # 使用Node.js 18作为基础镜像
 FROM node:18-alpine as pnpm-base 
@@ -74,5 +74,5 @@ COPY --from=builder /app/prisma ./prisma
 # 设置生产环境
 ENV NODE_ENV=production
 
-EXPOSE 1717
-CMD ["pnpm", "start"]
+EXPOSE 1818
+CMD ["pnpm", "dev"]
