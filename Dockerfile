@@ -1,7 +1,7 @@
-# 打包命令： docker build -t easy-dataset:latest -f Dockerfile .
+# 打包命令： docker build -t easy-dataset-dev:latest -f DevDockerfile .
 
-# 使用Node.js 18作为基础镜像
-FROM node:18-alpine as pnpm-base 
+# 使用Node.js 20作为基础镜像
+FROM node:20-alpine as pnpm-base 
 RUN npm install -g pnpm@9
 
 # 构建阶段
