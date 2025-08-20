@@ -17,6 +17,6 @@ mock-login-callback.ts
 !local-db/empty.txt
 /local-db
 prisma/local-db/db.sqlite
-
+config/*
 .history/*
 docker-compose.yml
